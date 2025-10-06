@@ -108,6 +108,7 @@ Generate a certificate and key pair:
 
 ```sh
 source set-host.sh
+mkdir -p config/traefik/certs
 mkcert --cert-file ./config/traefik/certs/wallet-cert.pem --key-file ./config/traefik/certs/wallet-key.pem "*.wallet.local" localhost 127.0.0.1 ::1
 ```
 
