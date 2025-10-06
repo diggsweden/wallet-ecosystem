@@ -57,7 +57,7 @@ Copy a .env file that fits your machine.
 
 ### Hosts File
 
-- Edit your computer's hosts-file to contain a mapping from `127.0.0.1` to `*.wallet.local` 
+- Edit your computer's hosts-file to contain a mapping from `127.0.0.1` to `*.wallet.local`
 
 ```
 #
