@@ -57,7 +57,8 @@ Copy a .env file that fits your machine.
 
 ### Hosts File
 
-- Edit your computer's hosts-file to contain a mapping from `127.0.0.1` to `*.wallet.local`
+- Edit your computer's hosts-file to contain mappings from `127.0.0.1`
+  to local services at `*.wallet.local`
 
 ```
 #
@@ -67,9 +68,11 @@ Copy a .env file that fits your machine.
 255.255.255.255 broadcasthost
 ::1             localhost
 
-# Wallet
+# Digg Wallet Ecosystem
 #
-127.0.0.1       *.wallet.local
+127.0.0.1       custom-verifier.wallet.local
+127.0.0.1       refimpl-verifier.wallet.local
+127.0.0.1       refimpl-verifier-backend.wallet.local
 ```
 ### Certificate for TLS
 
