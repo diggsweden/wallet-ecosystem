@@ -150,4 +150,3 @@ EUs reference implementation of a verifier backend, used by both above
 Traefik
 Used for TLS
 - http:/localhost:8080
-
