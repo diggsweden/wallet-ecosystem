@@ -1,0 +1,147 @@
+version: '3.9'
+name: wallet-ecosystem-local
+
+networks:
+  wallet-ecosystem-network:
+    name: wallet-ecosystem-network
+
+services:
+  refimpl-verifier-backend:
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt:v0.6.0
+    container_name: refimpl-verifier-backend
+    hostname: refimpl-verifier-backend
+    volumes:
+      - ./config/verifier/refimpl-verifier-backend-keystore.jks:/opt/common/refimpl-verifier-backend-keystore.jks:ro
+      - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:ro
+    environment:
+      VERIFIER_PUBLICURL: "https://refimpl-verifier-backend.wallet.local"
+      VERIFIER_ORIGINALCLIENTID: "refimpl-verifier-backend.wallet.local"
+      VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
+      VERIFIER_JAR_SIGNING_ALGORITHM: "ES256"
+      VERIFIER_JAR_SIGNING_KEY: "LoadFromKeystore"
+      SPRING_PROFILES_ACTIVE: "dev"
+      VERIFIER_JAR_SIGNING_KEY_KEYSTORE: "file:///opt/common/refimpl-verifier-backend-keystore.jks"
+      VERIFIER_JAR_SIGNING_KEY_KEYSTORE_TYPE: "jks"
+      VERIFIER_JAR_SIGNING_KEY_KEYSTORE_PASSWORD: "vpjhIaUd04ucNz6I"
+      VERIFIER_JAR_SIGNING_KEY_ALIAS: "verifier"
+      VERIFIER_JAR_SIGNING_KEY_PASSWORD: "vpjhIaUd04ucNz6I"
+      VERIFIER_VALIDATION_SDJWTVC_STATUSCHECK_ENABLED: "false"
+      VERIFIER_TRUSTSOURCES_0_PATTERN: "urn:eudi:pid:.*"
+      VERIFIER_TRUSTSOURCES_0_KEYSTORE_PATH: "file:///opt/common/verifier_cert.p12"
+      VERIFIER_TRUSTSOURCES_0_KEYSTORE_TYPE: "PKCS12"
+      VERIFIER_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
+      LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.refimpl-verifier-backend.rule=Host(`refimpl-verifier-backend.wallet.local`)"
+      - "traefik.http.routers.refimpl-verifier-backend.entrypoints=websecure"
+      - "traefik.http.routers.refimpl-verifier-backend.tls=true"
+      - "traefik.http.routers.refimpl-verifier-backend.service=refimpl-verifier-backend"
+      - "traefik.http.services.refimpl-verifier-backend.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
+  wallet-provider:
+    image: ghcr.io/diggsweden/wallet-provider:main
+    container_name: wallet-provider
+    hostname: wallet-provider
+    volumes:
+      - ./config/wallet-provider/wallet_provider_cert.p12:/opt/common/wallet_provider_cert.p12
+    environment:
+      SPRING_PROFILES_ACTIVE: "prod"
+      TZ: "Europe/Stockholm"
+      JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      WUA_KEYSTORE_PATH: "file:///opt/common/wallet_provider_cert.p12"
+      WUA_KEYSTORE_PASSWORD: "pass1234"
+      WUA_KEYSTORE_ALIAS: "wallet_provider_cert"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallet-provider.rule=Host(`wallet-provider.wallet.local`)"
+      - "traefik.http.routers.wallet-provider.entrypoints=websecure"
+      - "traefik.http.routers.wallet-provider.tls=true"
+      - "traefik.http.routers.wallet-provider.service=wallet-provider"
+      - "traefik.http.services.wallet-provider.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
+  custom-verifier:
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.0.6
+    container_name: custom-verifier
+    hostname: custom-verifier
+    environment:
+      HOST_API: "https://refimpl-verifier-backend.wallet.local"
+      PORT: "3002"
+      NITRO_PORT: "3002"
+      PUBLIC_BASE_URL: "https://custom-verifier.wallet.local"
+      NUXT_PUBLIC_BASE_URL: "https://custom-verifier.wallet.local"
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+    depends_on:
+      - refimpl-verifier-backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.custom-verifier.rule=Host(`custom-verifier.wallet.local`)"
+      - "traefik.http.routers.custom-verifier.entrypoints=websecure"
+      - "traefik.http.routers.custom-verifier.tls=true"
+      - "traefik.http.services.custom-verifier.loadbalancer.server.port=3002"
+    restart: on-failure
+    networks:
+      - wallet-ecosystem-network
+
+  refimpl-verifier:
+    image: ghcr.io/eu-digital-identity-wallet/eudi-web-verifier:v0.9.1
+    container_name: refimpl-verifier
+    healthcheck:
+      test: curl -f http://refimpl-verifier:4300/home || exit 1
+      start_period: 15s
+      interval: 30s
+      retries: 3
+    environment:
+      DOMAIN_NAME: "refimpl-verifier.wallet.local"
+      HOST_API: "https://refimpl-verifier-backend.wallet.local"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.refimpl-verifier.rule=Host(`refimpl-verifier.wallet.local`)"
+      - "traefik.http.routers.refimpl-verifier.entrypoints=websecure"
+      - "traefik.http.routers.refimpl-verifier.tls=true"
+      - "traefik.http.services.refimpl-verifier.loadbalancer.server.port=4300"
+    networks:
+      - wallet-ecosystem-network
+
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+      - "8080:8080" 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik:/etc/traefik
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.file.directory=/etc/traefik"
+      - "--providers.file.watch=true"
+      - "--serverstransport.insecureskipverify=true"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard-secure.rule=Host(`traefik.wallet.local`)"
+      - "traefik.http.routers.dashboard-secure.entrypoints=websecure"
+      - "traefik.http.routers.dashboard-secure.tls=true"
+      - "traefik.http.routers.dashboard-secure.service=api@internal"
+      - "traefik.http.routers.dashboard-secure.rule=Host(`traefik.wallet.local`)"
+    networks:
+      wallet-ecosystem-network:
+        aliases:
+          - refimpl-verifier-backend.wallet.local
+          - refimpl-verifier.wallet.local
+          - custom-verifier.wallet.local
+          - wallet-provider.wallet.local
+
