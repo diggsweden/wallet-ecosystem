@@ -73,6 +73,8 @@ Copy a .env file that fits your machine.
 127.0.0.1       custom-verifier.wallet.local
 127.0.0.1       refimpl-verifier.wallet.local
 127.0.0.1       refimpl-verifier-backend.wallet.local
+127.0.0.1       wallet-provider.wallet.local
+127.0.0.1       traefik.wallet.local
 ```
 
 ### Certificate for TLS
