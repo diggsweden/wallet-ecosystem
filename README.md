@@ -6,8 +6,6 @@
 
 Docker compose scripts for starting DIGG Wallet PoC environment services locally.
 
-See [mermaid.md](./mermaid.md) for an overview of this local environment.
-
 ---
 
 ## The Docker Compose Script
