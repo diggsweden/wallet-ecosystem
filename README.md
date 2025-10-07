@@ -74,6 +74,7 @@ Copy a .env file that fits your machine.
 127.0.0.1       refimpl-verifier.wallet.local
 127.0.0.1       refimpl-verifier-backend.wallet.local
 ```
+
 ### Certificate for TLS
 
 ### Install mkcert
