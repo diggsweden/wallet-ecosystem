@@ -31,14 +31,13 @@ After this, the local environment can be started by:
 
 ## Key service URL:s
 
-| Service                           | URL                                                                                            |
-|-----------------------------------|------------------------------------------------------------------------------------------------|
-| Reference impl verifier backend   | [https://refimpl-verifier-backend.wallet.local](https://refimpl-verifier-backend.wallet.local) |
-| Refereence impl verifier frontend | [https://refimpl-verifier.wallet.local](https://refimpl-verifier.wallet.local)                 |
-| Custom verifier                   | [https://custom-verifier.wallet.local](https://custom-verifier.wallet.local)                   |
-| Wallet provider                   | [https://wallet-provider.wallet.local](https://wallet-provider.wallet.local)                   |
-| Traefik                           | [https://traefik.wallet.local](https://traefik.wallet.local)                                   |
-
+| Service                          | URL                                                                                            |
+|----------------------------------|------------------------------------------------------------------------------------------------|
+| Reference impl verifier backend  | [https://refimpl-verifier-backend.wallet.local](https://refimpl-verifier-backend.wallet.local) |
+| Reference impl verifier frontend | [https://refimpl-verifier.wallet.local](https://refimpl-verifier.wallet.local)                 |
+| Custom verifier                  | [https://custom-verifier.wallet.local](https://custom-verifier.wallet.local)                   |
+| Wallet provider                  | [https://wallet-provider.wallet.local](https://wallet-provider.wallet.local)                   |
+| Traefik                          | [https://traefik.wallet.local](https://traefik.wallet.local)                                   |
 ---
 
 ## Building Images
