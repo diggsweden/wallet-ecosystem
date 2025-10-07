@@ -133,15 +133,7 @@ echo $GITHUB_ACCESS_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdi
 
 ## Services
 
-Strumpsorteringscentralen
-- https://custom-verifier.wallet.local
-
-EUs reference implementation of a verifier
-- https://refimpl-verifier.wallet.local
-
-EUs reference implementation of a verifier backend, used by both above
-- https://refimpl-verifier-backend.wallet.local
-
-Traefik
-Used for TLS
-- http://localhost:8080
+ * [Strumpsorteringscentralen](https://custom-verifier.wallet.local)
+ * [EUs reference implementation of a verifier](https://refimpl-verifier.wallet.local)
+ * [EUs reference implementation of a verifier backend](https://refimpl-verifier-backend.wallet.local), used by both above
+ * [Traefik](http://localhost:8080), used for TLS
