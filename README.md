@@ -14,8 +14,6 @@ Before running the local environment, it is necessary to pull all images:
 
 > docker compose pull (to ensure you are using the latest images)
 
-Then copy either the file `.env-linux` or `.env-mac` to `.env` to apply the correct configuration for following commands.
-
 It is also necessary to set the environment variable `HOST_IP` to the host's IP address inside a docker container.
 This can be done by running the following shell command:
 
@@ -48,10 +46,6 @@ If you need to add a new application to the Docker compose script its image need
 ## Prerequisites
 
 The following prerequisites are needed for running the scrips:
-
-### .env file setup
-
-Copy an .env file that fits your machine.
 
 ### Hosts File
 
