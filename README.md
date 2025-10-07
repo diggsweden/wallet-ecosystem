@@ -2,9 +2,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# DIGG Wallet PoC Local Development Environment
+# Digg Wallet Local Development Environment
 
-Docker compose scripts for starting DIGG Wallet PoC environment services locally.
+Docker compose scripts for starting Digg Wallet environment services locally.
 
 ---
 
