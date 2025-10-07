@@ -47,7 +47,7 @@ The following prerequisites are needed for running the scrips:
 
 ### .env file setup
 
-Copy a .env file that fits your machine.
+Copy an .env file that fits your machine.
 
 ### Hosts File
 
