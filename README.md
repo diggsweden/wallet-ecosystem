@@ -133,12 +133,6 @@ echo $GITHUB_ACCESS_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdi
 
 ## Services
 
-### Verifier
-
-For running and building the containers for the openid4vp parts we have added a profile in docker-compose.yaml, named "verifier".
-
-URL:s
-
 Strumpsorteringscentralen
 - https://custom-verifier.wallet.local
 
