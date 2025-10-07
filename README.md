@@ -112,24 +112,3 @@ source set-host.sh
 mkdir -p config/traefik/certs
 mkcert --cert-file ./config/traefik/certs/wallet-cert.pem --key-file ./config/traefik/certs/wallet-key.pem "*.wallet.local" localhost 127.0.0.1 ::1
 ```
-
-
-### Access to GitHubs Docker Registry
-
-All images that are used by the Docker Compose script are available from GitHub's Docker Registry
-located at `ghcr.io`. In order to access this registry you need to logon before running the
-docker compose commands.
-
-It is recommended that you assign the following environment variables:
-
-- `GITHUB_USER` - Your GitHub username.
-
-- `GITHUB_ACCESS_TOKEN` - Your GitHub access token, see [Authenticating to the Container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
-
-You can then execute the following command to authenticate:
-
-```
-echo $GITHUB_ACCESS_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdin
-```
-
-> Note: Your GitHub user also needs access to the relevant Sweden Connect-repositories.
