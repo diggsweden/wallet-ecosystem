@@ -30,11 +30,15 @@ After this, the local environment can be started by:
 ---
 ## Services
 
-* [Strumpsorteringscentralen](https://custom-verifier.wallet.local), our custom verifier
+* [Strumpsorteringscentralen](https://custom-verifier.wallet.local),
+  our custom verifier
 * [EUs reference implementation of a verifier](https://refimpl-verifier.wallet.local)
-* [EUs reference implementation of a verifier backend](https://refimpl-verifier-backend.wallet.local), used by both above
-* [Wallet provider](https://wallet-provider.wallet.local), issues and controls the lifecycle of Wallet Unit of Attestations (WUA).
-* [Traefik](http://localhost:8080), used for TLS
+* [EUs reference implementation of a verifier backend](https://refimpl-verifier-backend.wallet.local),
+  used by both above
+* [Wallet provider](https://wallet-provider.wallet.local),
+  our service to issue and control the lifecycle of Wallet Unit of Attestations (WUA).
+* [Traefik](http://localhost:8080),
+  used for TLS
 ---
 
 ## Building Images
