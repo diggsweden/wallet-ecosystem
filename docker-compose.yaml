@@ -143,4 +143,3 @@ services:
           - refimpl-verifier.wallet.local
           - custom-verifier.wallet.local
           - wallet-provider.wallet.local
-
