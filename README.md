@@ -39,8 +39,7 @@ After this, the local environment can be started by:
 
 ## Building Images
 
-If you need to add a new application to the Docker compose script its image need to be published, see
-[Building Images](building-images.md).
+If you need to add a new application to the Docker compose script its image need to be published.
 
 ## Prerequisites
 
