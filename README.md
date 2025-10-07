@@ -28,13 +28,13 @@ After this, the local environment can be started by:
 > docker compose up
 
 ---
+## Services
 
-## Key services
- * [Reference impl verifier backend](https://refimpl-verifier-backend.wallet.local)
- * [Reference impl verifier frontend](https://refimpl-verifier.wallet.local)
- * [Custom verifier](https://custom-verifier.wallet.local)
- * [Wallet provider](https://wallet-provider.wallet.local)
- * [Traefik](https://traefik.wallet.local)
+* [Strumpsorteringscentralen](https://custom-verifier.wallet.local), our custom verifier
+* [EUs reference implementation of a verifier](https://refimpl-verifier.wallet.local)
+* [EUs reference implementation of a verifier backend](https://refimpl-verifier-backend.wallet.local), used by both above
+* [Wallet provider](https://wallet-provider.wallet.local), issues and controls the lifecycle of Wallet Unit of Attestations (WUA).
+* [Traefik](http://localhost:8080), used for TLS
 ---
 
 ## Building Images
@@ -129,11 +129,3 @@ echo $GITHUB_ACCESS_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdi
 ```
 
 > Note: Your GitHub user also needs access to the relevant Sweden Connect-repositories.
-
-
-## Services
-
- * [Strumpsorteringscentralen](https://custom-verifier.wallet.local)
- * [EUs reference implementation of a verifier](https://refimpl-verifier.wallet.local)
- * [EUs reference implementation of a verifier backend](https://refimpl-verifier-backend.wallet.local), used by both above
- * [Traefik](http://localhost:8080), used for TLS
