@@ -1,0 +1,105 @@
+version: '3.8'
+
+networks:
+  default:
+    driver: bridge
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.2-0
+    container_name: keycloak
+    command:
+      - start-dev
+      - --import-realm
+      - --features=dpop,passkeys
+    environment:
+      - KC_PROXY_HEADERS=xforwarded
+      - KC_HTTP_ENABLED=true
+      - KC_HTTP_RELATIVE_PATH=/idp
+      - KC_HOSTNAME=https://localhost/idp
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
+      - KC_HTTPS_CERTIFICATE_FILE=/etc/ssl/certs/keycloak.tls.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/etc/ssl/certs/keycloak.tls.key
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=password
+    healthcheck:
+      test: "bash /opt/keycloak/health-check.sh"
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_interval: 30s
+      start_period: 30s
+    volumes:
+      - ./keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
+      - ./keycloak/realms/:/opt/keycloak/data/import
+      - ./keycloak/certs/:/etc/ssl/certs/
+    networks:
+      - default
+
+  pid-issuer:
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:edge
+    pull_policy: always
+    container_name: pid-issuer
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=insecure
+      - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
+      - SERVER_PORT=8080
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_ID=pid-issuer-srv
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_SECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
+      - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
+      - ISSUER_PUBLICURL=https://localhost/pid-issuer
+      - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=https://localhost/idp/realms/pid-issuer-realm
+      - ISSUER_AUTHORIZATIONSERVER_METADATA=https://keycloak:8443/idp/realms/pid-issuer-realm/.well-known/openid-configuration
+      - ISSUER_AUTHORIZATIONSERVER_INTROSPECTION=https://keycloak:8443/idp/realms/pid-issuer-realm/protocol/openid-connect/token/introspect
+      - ISSUER_CREDENTIALRESPONSEENCRYPTION_SUPPORTED=true
+      - ISSUER_CREDENTIALRESPONSEENCRYPTION_REQUIRED=true
+      - ISSUER_CREDENTIALRESPONSEENCRYPTION_ALGORITHMSSUPPORTED=ECDH-ES
+      - ISSUER_CREDENTIALRESPONSEENCRYPTION_ENCRYPTIONMETHODS=A128GCM
+      - ISSUER_PID_MSO_MDOC_ENABLED=true
+      - ISSUER_PID_MSO_MDOC_ENCODER_DURATION=P30D
+      - ISSUER_PID_MSO_MDOC_NOTIFICATIONS_ENABLED=true
+      - ISSUER_PID_SD_JWT_VC_ENABLED=true
+      - ISSUER_PID_SD_JWT_VC_NOTUSEBEFORE=PT20S
+      - ISSUER_PID_SD_JWT_VC_NOTIFICATIONS_ENABLED=true
+      - ISSUER_PID_ISSUINGCOUNTRY=GR
+      - ISSUER_PID_ISSUINGJURISDICTION=GR-I
+      - ISSUER_MDL_ENABLED=true
+      - ISSUER_MDL_MSO_MDOC_ENCODER_DURATION=P5D
+      - ISSUER_MDL_NOTIFICATIONS_ENABLED=true
+      - ISSUER_CREDENTIALOFFER_URI=openid-credential-offer://
+      - ISSUER_SIGNING_KEY=GenerateRandom
+      - ISSUER_KEYCLOAK_SERVER_URL=https://keycloak:8443/idp
+      - ISSUER_KEYCLOAK_AUTHENTICATION_REALM=master
+      - ISSUER_KEYCLOAK_CLIENT_ID=admin-cli
+      - ISSUER_KEYCLOAK_USERNAME=admin
+      - ISSUER_KEYCLOAK_PASSWORD=password
+      - ISSUER_KEYCLOAK_USER_REALM=pid-issuer-realm
+      - ISSUER_DPOP_PROOF_MAX_AGE=PT1M
+      - ISSUER_DPOP_CACHE_PURGE_INTERVAL=PT10M
+      - ISSUER_DPOP_REALM=pid-issuer
+      - ISSUER_DPOP_NONCE_ENABLED=false
+      - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_ENABLED=true
+      - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_BATCHSIZE=10
+      - ISSUER_CNONCE_EXPIRATION=PT5M
+    networks:
+      - default
+
+  haproxy:
+    image: haproxy:2.8.3
+    container_name: haproxy
+    ports:
+      - "443:443"
+      - "80:80"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      pid-issuer:
+        condition: service_started
+    volumes:
+      - ./haproxy/haproxy.conf:/usr/local/etc/haproxy/haproxy.cfg
+      - ./haproxy/certs/:/etc/ssl/certs/
+    networks:
+      - default
