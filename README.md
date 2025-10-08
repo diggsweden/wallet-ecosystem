@@ -66,6 +66,7 @@ The following prerequisites are needed for running the scrips:
 127.0.0.1       refimpl-verifier.wallet.local
 127.0.0.1       refimpl-verifier-backend.wallet.local
 127.0.0.1       wallet-provider.wallet.local
+127.0.0.1       keycloak.wallet.local
 127.0.0.1       traefik.wallet.local
 ```
 

@@ -106,6 +106,44 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.2-0
+    container_name: keycloak
+    command:
+      - start-dev
+      - --import-realm
+      - --features=dpop,passkeys
+    environment:
+      - KC_PROXY_HEADERS=xforwarded
+      - KC_HTTP_ENABLED=true
+      - KC_HTTP_RELATIVE_PATH=/idp
+      - KC_HOSTNAME=https://keycloak.wallet.local/idp
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
+      - KC_HTTPS_CERTIFICATE_FILE=/etc/ssl/certs/keycloak.tls.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/etc/ssl/certs/keycloak.tls.key
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=password
+    healthcheck:
+      test: "bash /opt/keycloak/health-check.sh"
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_interval: 30s
+      start_period: 30s
+    volumes:
+      - ./eudi-srv-pid-issuer/docker-compose/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
+      - ./eudi-srv-pid-issuer/docker-compose/keycloak/realms/:/opt/keycloak/data/import
+      - ./eudi-srv-pid-issuer/docker-compose/keycloak/certs/:/etc/ssl/certs/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`keycloak.wallet.local`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls=true"
+      - "traefik.http.routers.keycloak.service=keycloak"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
   traefik:
     image: traefik:v3.0
     container_name: traefik
@@ -143,3 +181,4 @@ services:
           - refimpl-verifier.wallet.local
           - custom-verifier.wallet.local
           - wallet-provider.wallet.local
+          - keycloak.wallet.local
