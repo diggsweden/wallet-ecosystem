@@ -199,6 +199,9 @@ services:
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.service=keycloak"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+      - "traefik.http.routers.keycloak.middlewares=keycloak-replace-path"
+      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/.well-known/oauth-authorization-server/idp/realms/pid-issuer-realm/?"
+      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/pid-issuer-realm/.well-known/oauth-authorization-server"
     networks:
       - wallet-ecosystem-network
 
