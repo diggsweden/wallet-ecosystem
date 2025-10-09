@@ -189,9 +189,9 @@ services:
       start_interval: 30s
       start_period: 30s
     volumes:
-      - ./eudi-srv-pid-issuer/docker-compose/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
-      - ./eudi-srv-pid-issuer/docker-compose/keycloak/realms/:/opt/keycloak/data/import
-      - ./eudi-srv-pid-issuer/docker-compose/keycloak/certs/:/etc/ssl/certs/
+      - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
+      - ./config/keycloak/realms/:/opt/keycloak/data/import
+      - ./config/keycloak/certs/:/etc/ssl/certs/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`keycloak.wallet.local`)"
