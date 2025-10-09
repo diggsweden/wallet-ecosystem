@@ -166,7 +166,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.2-0
+    image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak
     command:
       - start-dev
