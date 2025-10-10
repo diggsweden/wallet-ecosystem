@@ -175,7 +175,7 @@ is_command_available 'npm' 'https://nodejs.org/'
 is_command_available 'sed' ''
 
 true || lint
-true || commit
+commit
 true || verify
 true || license
 version_control
