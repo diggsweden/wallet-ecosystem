@@ -140,12 +140,14 @@ Please accept or discard any outstanding changes and try again.${NC}\n\n" \
   printf '\n\n'
 }
 
-# coverage() {
-#   print_header 'COVERAGE (JACOCO)'
-#   mvn clean verify "${MAVEN_CLI_OPTS[@]}" -Dcoverage -Djacoco.fail=true
-#   store_exit_code "$?" "Coverage" "${MISSING} ${RED}Coverage check failed, see logs (./target/jacoco-report/index.html) and fix problems.${NC}\n" "${GREEN}${CHECKMARK}${CHECKMARK} Coverage check passed${NC}\n"
-#   printf '\n\n'
-# }
+coverage() {
+  print_header 'COVERAGE (JACOCO)'
+  mvn clean verify "${MAVEN_CLI_OPTS[@]}" -Dcoverage -Djacoco.fail=true
+  store_exit_code "$?" "Coverage" \
+    "${MISSING} ${RED}Coverage check failed, see logs (./target/jacoco-report/index.html) and fix problems.${NC}\n" \
+    "${GREEN}${CHECKMARK}${CHECKMARK} Coverage check passed${NC}\n"
+  printf '\n\n'
+}
 
 check_exit_codes() {
   printf '%b********* CODE QUALITY RUN SUMMARY ******%b\n\n' "${YELLOW}" "${NC}"
@@ -177,6 +179,7 @@ is_command_available 'sed' ''
 lint
 commit
 true || verify
+true || coverage
 true || license
 version_control
 
