@@ -59,6 +59,25 @@ e.g. VS Code and IntelliJ.
 
 ### Pull Request Workflow
 
+#### Pull Request Workflow Prerequisites
+
+In order to run the code quality script,
+you need a recent version of
+[the Bash shell](https://www.gnu.org/software/bash/)
+(version 4.0 or newer) with support for associative arrays.
+As of this writing, the default version on macOS is version 3.2,
+which is too old.
+You can install a later version using [Homebrew](https://brew.sh/) like so:
+```shell
+brew install bash
+```
+This should get you version 5.3 or later.
+
+You can check your bash version like this:
+```shell
+bash --version
+```
+
 #### Running Code Quality Checks Locally
 
 1. Run the quality check script:
