@@ -184,7 +184,7 @@ lint
 commit
 true || verify
 true || coverage
-true || license
+license
 version_control
 
 check_exit_codes
