@@ -1,0 +1,105 @@
+{
+  "realm": "pid-issuer-realm",
+  "users": [
+    {
+      "id": "60b8ba5f-c73f-4976-b0da-48d0e53335de",
+      "createdTimestamp": 1700060364127,
+      "username": "tneal",
+      "enabled": true,
+      "totp": false,
+      "email": "tyler.neal@example.com",
+      "emailVerified": true,
+      "firstName": "Tyler",
+      "lastName": "Neal",
+      "attributes": {
+        "gender": [
+          "1"
+        ],
+        "gender_as_string": [
+          "male"
+        ],
+        "birthdate": [
+          "1955-04-12"
+        ],
+        "age_over_18": [
+          "true"
+        ],
+        "street": [
+          "Trauner"
+        ],
+        "address_house_number": [
+          "101"
+        ],
+        "locality": [
+          "Gemeinde Biberbach"
+        ],
+        "region": [
+          "Lower Austria"
+        ],
+        "postal_code": [
+          "3331"
+        ],
+        "country": [
+          "AT"
+        ],
+        "birth_country": [
+          "AT"
+        ],
+        "birth_city": [
+          "Gemeinde Biberbach"
+        ],
+        "birth_place": [
+          "101 Trauner"
+        ],
+        "nationality": [
+          "AT"
+        ],
+        "birth_family_name": [
+          "Neal"
+        ],
+        "birth_given_name": [
+          "Tyler"
+        ]
+      },
+      "credentials": [
+        {
+          "id": "7af577bf-6f4c-43d7-b6d3-afb88fd32fc3",
+          "type": "password",
+          "userLabel": "My password",
+          "createdDate": 1700060647131,
+          "secretData": "{\"value\":\"egKcJR5bC34qoA0jlkrnq9ncKUet2Fnik+QY3Y7SLXg=\",\"salt\":\"4Fd5FLOSfE52BT3EGjSfTw==\",\"additionalParameters\":{}}",
+          "credentialData": "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "eid-holder-natural-person"
+      ],
+      "notBefore": 0,
+      "groups": []
+    },
+    {
+      "id": "cfddc8df-b7b8-4038-a74d-1a6582a84989",
+      "createdTimestamp": 1700060675127,
+      "username": "service-account-pid-issuer-srv",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": false,
+      "serviceAccountClientId": "pid-issuer-srv",
+      "credentials": [],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-pid-issuer-realm"
+      ],
+      "clientRoles": {
+        "pid-issuer-srv": [
+          "uma_protection"
+        ]
+      },
+      "notBefore": 0,
+      "groups": []
+    }
+  ]
+}
