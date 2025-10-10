@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 Digg Sweden
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 # Development Guide
 
 This guide outlines core essentials for developing in this project.

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 Digg Sweden
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 # Digg Wallet Local Development Environment
 
 Docker compose scripts for starting Digg Wallet environment services locally.

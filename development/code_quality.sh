@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2025 Digg Sweden
+#
+# SPDX-License-Identifier: EUPL-1.2
+
 # Run a code quality check
 
 # bash strict mode - undefined vars, propagate pipefails
