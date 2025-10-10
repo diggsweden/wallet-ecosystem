@@ -178,6 +178,6 @@ true || lint
 true || commit
 true || verify
 true || license
-true || version_control
+version_control
 
 check_exit_codes
