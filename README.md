@@ -1,7 +1,3 @@
-![Logo](https://raw.githubusercontent.com/swedenconnect/technical-framework/master/img/sweden-connect.png)
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 # Digg Wallet Local Development Environment
 
 Docker compose scripts for starting Digg Wallet environment services locally.
