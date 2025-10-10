@@ -48,7 +48,7 @@ The following prerequisites are needed for running the scrips:
 - Edit your computer's hosts-file to contain mappings from `127.0.0.1`
   to local services at `*.wallet.local`
 
-```
+```text
 #
 # Host Database
 #
