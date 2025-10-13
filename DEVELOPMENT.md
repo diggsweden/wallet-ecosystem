@@ -68,12 +68,15 @@ you need a recent version of
 As of this writing, the default version on macOS is version 3.2,
 which is too old.
 You can install a later version using [Homebrew](https://brew.sh/) like so:
+
 ```shell
 brew install bash
 ```
+
 This should get you version 5.3 or later.
 
 You can check your bash version like this:
+
 ```shell
 bash --version
 ```
