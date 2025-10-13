@@ -13,7 +13,7 @@ This guide outlines core essentials for developing in this project.
 
 ### IDE Setup
 
-Run the code quality script.
+[Run the code quality script](#running-code-quality-checks-locally).
 
 ```shell
 ./development/code_quality.sh
@@ -84,6 +84,20 @@ bash --version
 
    ```shell
    ./development/code_quality.sh
+   ```
+
+   **Note:**
+   If you are behind a corporate proxy you might experience problems
+   where the script hangs for several minutes
+   while it tries to download files from the internet
+   and eventually times out.
+   To avoid this problem you can set the enviroment variable
+   `MEGALINTER_SKIP_LINTER_OUTPUT_SANITIZATION=true`.
+   For instance, you could configure the variable in your global settings,
+   or run the script like so:
+
+   ```shell
+   env MEGALINTER_SKIP_LINTER_OUTPUT_SANITIZATION=true development/code_quality.sh
    ```
 
 2. Fix any identified issues
