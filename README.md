@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 Digg Sweden
+SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
 
 SPDX-License-Identifier: EUPL-1.2
 -->
