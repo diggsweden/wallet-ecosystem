@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
 # Digg Wallet Local Development Environment
 
 Docker compose scripts for starting Digg Wallet environment services locally.

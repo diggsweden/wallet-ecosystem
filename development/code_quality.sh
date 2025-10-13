@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
+#
+# SPDX-License-Identifier: EUPL-1.2
+
 # Run a code quality check
 
 # bash strict mode - undefined vars, propagate pipefails
@@ -180,7 +184,7 @@ lint
 commit
 true || verify
 true || coverage
-true || license
+license
 version_control
 
 check_exit_codes

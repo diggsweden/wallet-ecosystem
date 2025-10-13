@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
 # Development Guide
 
 This guide outlines core essentials for developing in this project.

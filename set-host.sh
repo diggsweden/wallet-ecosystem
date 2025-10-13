@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
+#
+# SPDX-License-Identifier: EUPL-1.2
+
 # Resolve the IP address of host.docker.internal and store it in HOST_IP
 
 export SET_HOST_EXTRA_PARAM='--add-host=host.docker.internal:host-gateway'
