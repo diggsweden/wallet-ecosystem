@@ -1,7 +1,3 @@
-![Logo](https://raw.githubusercontent.com/swedenconnect/technical-framework/master/img/sweden-connect.png)
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 # Digg Wallet Local Development Environment
 
 Docker compose scripts for starting Digg Wallet environment services locally.
@@ -52,7 +48,7 @@ The following prerequisites are needed for running the scrips:
 - Edit your computer's hosts-file to contain mappings from `127.0.0.1`
   to local services at `*.wallet.local`
 
-```
+```text
 #
 # Host Database
 #
