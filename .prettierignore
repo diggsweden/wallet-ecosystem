@@ -6,3 +6,4 @@
 megalinter-reports
 target
 development/format/eclipse-java-google-style.xml
+development/sast/pmd_default_java.xml
