@@ -5,3 +5,4 @@
 **/*.md
 megalinter-reports
 target
+development/format/eclipse-java-google-style.xml
