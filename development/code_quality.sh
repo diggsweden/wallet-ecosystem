@@ -182,7 +182,7 @@ is_command_available 'sed' ''
 
 lint
 commit
-true || verify
+verify
 true || coverage
 license
 version_control
