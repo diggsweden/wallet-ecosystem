@@ -4,3 +4,4 @@
 
 **/*.md
 megalinter-reports
+target
