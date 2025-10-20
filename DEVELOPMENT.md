@@ -63,6 +63,26 @@ e.g. VS Code and IntelliJ.
 
 ## Development Workflow
 
+### Automated tests
+
+We have [an automated test suite](./src/test/java/) for the Wallet ecosystem.
+The main goals of this suite are:
+
+ 1. To document the interaction between the different services,
+ 2. To verify that those services can communicate with each other, and
+ 3. To simplify manual exploration and learning.
+
+ At the current stage the test suite is just a skeleton.
+ However, we except to grow the suite over time.
+
+In order to run the test suite from the command line,
+use the commands below:
+
+```shell
+docker-compose up -d
+mvn test
+```
+
 ### Pull Request Workflow
 
 #### Pull Request Workflow Prerequisites
