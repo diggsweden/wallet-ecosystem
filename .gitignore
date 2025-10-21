@@ -22,6 +22,9 @@ out
 ### VS Code ###
 .vscode/
 
+# Maven
+/target
+
 **/megalinter-reports
 
 # logs
