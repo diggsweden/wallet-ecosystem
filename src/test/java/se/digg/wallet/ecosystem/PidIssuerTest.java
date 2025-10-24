@@ -4,12 +4,9 @@
 
 package se.digg.wallet.ecosystem;
 
-import static io.restassured.config.LogConfig.logConfig;
-import static io.restassured.config.SSLConfig.sslConfig;
 import static org.hamcrest.Matchers.hasItem;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Test;
 
 public class PidIssuerTest {
@@ -24,11 +21,5 @@ public class PidIssuerTest {
         .and().body(
             "authorization_servers",
             hasItem("https://keycloak.wallet.local/idp/realms/pid-issuer-realm"));
-  }
-
-  private static RequestSpecification given() {
-    return RestAssured.given().config(RestAssured.config()
-        .sslConfig(sslConfig().relaxedHTTPSValidation())
-        .logConfig(logConfig().enableLoggingOfRequestAndResponseIfValidationFails()));
   }
 }
