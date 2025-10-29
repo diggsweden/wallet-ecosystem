@@ -75,14 +75,14 @@ services:
       HOST_API: "https://refimpl-verifier-backend.wallet.local"
       PORT: "3002"
       NITRO_PORT: "3002"
-      PUBLIC_BASE_URL: "https://custom-verifier.wallet.local"
-      NUXT_PUBLIC_BASE_URL: "https://custom-verifier.wallet.local"
+      NUXT_PUBLIC_BASE_URL: "https://localhost/custom-verifier"
+      NUXT_APP_BASE_URL: "/custom-verifier"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
     depends_on:
       - refimpl-verifier-backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.custom-verifier.rule=Host(`custom-verifier.wallet.local`)"
+      - "traefik.http.routers.custom-verifier.rule=PathPrefix(`/custom-verifier`)"
       - "traefik.http.routers.custom-verifier.entrypoints=websecure"
       - "traefik.http.routers.custom-verifier.tls=true"
       - "traefik.http.services.custom-verifier.loadbalancer.server.port=3002"
@@ -411,7 +411,6 @@ services:
         aliases:
           - refimpl-verifier-backend.wallet.local
           - refimpl-verifier.wallet.local
-          - custom-verifier.wallet.local
           - wallet-provider.wallet.local
           - pid-issuer.wallet.local
           - wallet-attribute-attestation-db.wallet.local

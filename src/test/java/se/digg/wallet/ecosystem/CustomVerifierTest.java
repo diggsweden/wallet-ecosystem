@@ -15,7 +15,7 @@ public class CustomVerifierTest {
   void isHealthy() {
     given()
         .when()
-        .get("https://custom-verifier.wallet.local")
+        .get("https://localhost/custom-verifier")
         .then()
         .assertThat().statusCode(200)
         .and().body(containsString("Strumpsorteringscentralen"));
