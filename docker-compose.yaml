@@ -168,6 +168,94 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  wallet-attribute-attestation-db:
+    image: "postgres:16"
+    restart: always
+    environment:
+      POSTGRES_USER: wallet-attribute-attestation
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DATABASE: wallet-attribute-attestation
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wallet-attribute-attestation -d wallet-attribute-attestation"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wallet-ecosystem-network
+
+  wallet-attribute-attestation:
+    image: ghcr.io/diggsweden/wallet-attribute-attestation:v0.0.4
+    container_name: wallet-attribute-attestation
+    hostname: wallet-attribute-attestation
+    environment:
+      SPRING_PROFILES_ACTIVE: "prod"
+      TZ: "Europe/Stockholm"
+      JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      SERVER_PORT: "8080"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://wallet-attribute-attestation-db:5432/wallet-attribute-attestation"
+      SPRING_DATASOURCE_USERNAME: "wallet-attribute-attestation"
+      SPRING_DATASOURCE_PASSWORD: "pass"
+    ports:
+      - "8081:8080"
+    depends_on:
+      traefik:
+        condition: service_started
+      wallet-attribute-attestation-db:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://wallet-attribute-attestation:8080/actuator/health || exit 1
+      start_period: 5s
+      interval: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallet-attribute-attestation.rule=Host(`wallet-attribute-attestation.wallet.local`)"
+      - "traefik.http.routers.wallet-attribute-attestation.entrypoints=websecure"
+      - "traefik.http.routers.wallet-attribute-attestation.tls=true"
+      - "traefik.http.routers.wallet-attribute-attestation.service=wallet-attribute-attestation"
+      - "traefik.http.services.wallet-attribute-attestation.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
+  wallet-client-gateway:
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.2.0
+    container_name: wallet-client-gateway
+    hostname: wallet-client-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: "prod"
+      TZ: "Europe/Stockholm"
+      JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      SERVER_PORT: "8080"
+      PROPERTIES_APISECRET: "apikey"
+      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080"
+      PROPERTIES_WALLETPROVIDER_WUAPATH: "/wallet-unit-attestation"
+      PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080"
+    ports:
+      - "8082:8080"
+    depends_on:
+      traefik:
+        condition: service_started
+      wallet-provider:
+        condition: service_started
+      wallet-attribute-attestation:
+        condition: service_started
+    healthcheck:
+      test: curl -f http://wallet-client-gateway:8080/actuator/health || exit 1
+      start_period: 5s
+      interval: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallet-client-gateway.rule=Host(`wallet-client-gateway.wallet.local`)"
+      - "traefik.http.routers.wallet-client-gateway.entrypoints=websecure"
+      - "traefik.http.routers.wallet-client-gateway.tls=true"
+      - "traefik.http.routers.wallet-client-gateway.service=wallet-client-gateway"
+      - "traefik.http.services.wallet-client-gateway.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak
@@ -234,7 +322,6 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard-secure.rule=Host(`traefik.wallet.local`)"
       - "traefik.http.routers.dashboard-secure.entrypoints=websecure"
       - "traefik.http.routers.dashboard-secure.tls=true"
       - "traefik.http.routers.dashboard-secure.service=api@internal"
@@ -247,4 +334,7 @@ services:
           - custom-verifier.wallet.local
           - wallet-provider.wallet.local
           - pid-issuer.wallet.local
+          - wallet-attribute-attestation-db.wallet.local
+          - wallet-attribute-attestation.wallet.local
+          - wallet-client-gateway.wallet.local
           - keycloak.wallet.local
