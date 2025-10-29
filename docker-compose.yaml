@@ -178,7 +178,11 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U wallet-attribute-attestation -d wallet-attribute-attestation"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U wallet-attribute-attestation -d wallet-attribute-attestation",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -189,6 +193,8 @@ services:
     image: ghcr.io/diggsweden/wallet-attribute-attestation:v0.0.4
     container_name: wallet-attribute-attestation
     hostname: wallet-attribute-attestation
+    volumes:
+      - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
@@ -205,7 +211,15 @@ services:
       wallet-attribute-attestation-db:
         condition: service_healthy
     healthcheck:
-      test: curl -f http://wallet-attribute-attestation:8080/actuator/health || exit 1
+      test:
+        [
+          "CMD",
+          "java",
+          "--class-path",
+          "/opt",
+          "Healthcheck",
+          "http://localhost:8080/actuator/health",
+        ]
       start_period: 5s
       interval: 5s
       retries: 5
@@ -223,6 +237,8 @@ services:
     image: ghcr.io/diggsweden/wallet-client-gateway:v0.2.0
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
+    volumes:
+      - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
@@ -242,7 +258,15 @@ services:
       wallet-attribute-attestation:
         condition: service_started
     healthcheck:
-      test: curl -f http://wallet-client-gateway:8080/actuator/health || exit 1
+      test:
+        [
+          "CMD",
+          "java",
+          "--class-path",
+          "/opt",
+          "Healthcheck",
+          "http://localhost:8080/actuator/health",
+        ]
       start_period: 5s
       interval: 5s
       retries: 5
