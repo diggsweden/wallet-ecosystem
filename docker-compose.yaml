@@ -52,6 +52,7 @@ services:
     volumes:
       - ./config/wallet-provider/wallet_provider_cert.p12:/opt/common/wallet_provider_cert.p12
     environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/wallet-provider"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
@@ -60,7 +61,7 @@ services:
       WUA_KEYSTORE_ALIAS: "wallet_provider_cert"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallet-provider.rule=Host(`wallet-provider.wallet.local`)"
+      - "traefik.http.routers.wallet-provider.rule=PathPrefix(`/wallet-provider`)"
       - "traefik.http.routers.wallet-provider.entrypoints=websecure"
       - "traefik.http.routers.wallet-provider.tls=true"
       - "traefik.http.routers.wallet-provider.service=wallet-provider"
@@ -301,7 +302,7 @@ services:
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
       SERVER_PORT: "8080"
       PROPERTIES_APISECRET: "apikey"
-      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080"
+      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
       PROPERTIES_WALLETPROVIDER_WUAPATH: "/wallet-unit-attestation"
       PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080"
@@ -411,7 +412,6 @@ services:
       wallet-ecosystem-network:
         aliases:
           - refimpl-verifier.wallet.local
-          - wallet-provider.wallet.local
           - pid-issuer.wallet.local
           - wallet-attribute-attestation-db.wallet.local
           - wallet-attribute-attestation.wallet.local

@@ -21,7 +21,7 @@ public class WalletProviderTest {
   void isHealthy() {
     given()
         .when()
-        .get("https://wallet-provider.wallet.local/actuator/health")
+        .get("https://localhost/wallet-provider/actuator/health")
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
@@ -37,7 +37,7 @@ public class WalletProviderTest {
             UUID.randomUUID(),
             new ObjectMapper().writeValueAsString(
                 new ECKeyGenerator(Curve.P_256).generate().toPublicJWK().toJSONString())))
-        .post("https://wallet-provider.wallet.local/wallet-unit-attestation")
+        .post("https://localhost/wallet-provider/wallet-unit-attestation")
         .then()
         .assertThat().statusCode(200).and().body(matchesPattern(
             "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));

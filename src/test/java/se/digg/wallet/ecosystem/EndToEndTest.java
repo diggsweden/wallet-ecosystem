@@ -51,7 +51,7 @@ public class EndToEndTest {
   public static final String TOKEN_ENDPOINT = PID_ISSUER_REALM + "/protocol/openid-connect/token";
   public static final String PID_ISSUER_BASE = "https://pid-issuer.wallet.local";
   private static final String WALLET_PROVIDER_WUA_URL =
-      "https://wallet-provider.wallet.local/wallet-unit-attestation";
+      "https://localhost/wallet-provider/wallet-unit-attestation";
   private static final String PID_ISSUER_CREDENTIAL_URL =
       PID_ISSUER_BASE + "/wallet/credentialEndpoint";
   private static final String PID_ISSUER_NONCE_URL = PID_ISSUER_BASE + "/wallet/nonceEndpoint";
