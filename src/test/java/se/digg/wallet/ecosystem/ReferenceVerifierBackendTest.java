@@ -15,7 +15,7 @@ public class ReferenceVerifierBackendTest {
   void isHealthy() {
     given()
         .when()
-        .get("https://refimpl-verifier-backend.wallet.local/actuator/health")
+        .get("https://localhost/refimpl-verifier-backend/actuator/health")
         .then()
         .assertThat().statusCode(200)
         .and().body("status", is("UP"));

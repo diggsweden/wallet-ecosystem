@@ -17,7 +17,8 @@ services:
       - ./config/verifier/refimpl-verifier-backend-keystore.jks:/opt/common/refimpl-verifier-backend-keystore.jks:ro
       - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:ro
     environment:
-      VERIFIER_PUBLICURL: "https://refimpl-verifier-backend.wallet.local"
+      SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
+      VERIFIER_PUBLICURL: "https://localhost/refimpl-verifier-backend"
       VERIFIER_ORIGINALCLIENTID: "refimpl-verifier-backend.wallet.local"
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       VERIFIER_JAR_SIGNING_ALGORITHM: "ES256"
@@ -36,7 +37,7 @@ services:
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.refimpl-verifier-backend.rule=Host(`refimpl-verifier-backend.wallet.local`)"
+      - "traefik.http.routers.refimpl-verifier-backend.rule=PathPrefix(`/refimpl-verifier-backend`)"
       - "traefik.http.routers.refimpl-verifier-backend.entrypoints=websecure"
       - "traefik.http.routers.refimpl-verifier-backend.tls=true"
       - "traefik.http.routers.refimpl-verifier-backend.service=refimpl-verifier-backend"
@@ -72,7 +73,7 @@ services:
     container_name: custom-verifier
     hostname: custom-verifier
     environment:
-      HOST_API: "https://refimpl-verifier-backend.wallet.local"
+      HOST_API: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend"
       PORT: "3002"
       NITRO_PORT: "3002"
       NUXT_PUBLIC_BASE_URL: "https://localhost/custom-verifier"
@@ -100,7 +101,7 @@ services:
       retries: 3
     environment:
       DOMAIN_NAME: "refimpl-verifier.wallet.local"
-      HOST_API: "https://refimpl-verifier-backend.wallet.local"
+      HOST_API: "https://localhost/refimpl-verifier-backend"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.refimpl-verifier.rule=Host(`refimpl-verifier.wallet.local`)"
@@ -409,7 +410,6 @@ services:
     networks:
       wallet-ecosystem-network:
         aliases:
-          - refimpl-verifier-backend.wallet.local
           - refimpl-verifier.wallet.local
           - wallet-provider.wallet.local
           - pid-issuer.wallet.local

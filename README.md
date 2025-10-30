@@ -33,7 +33,7 @@ After this, the local environment can be started by:
 * [Strumpsorteringscentralen](https://localhost/custom-verifier),
   our custom verifier
 * [EUs reference implementation of a verifier](https://refimpl-verifier.wallet.local)
-* [EUs reference implementation of a verifier backend](https://refimpl-verifier-backend.wallet.local),
+* [EUs reference implementation of a verifier backend](https://localhost/refimpl-verifier-backend),
   used by both above
 * [Wallet provider](https://wallet-provider.wallet.local),
   our service to issue and control the lifecycle of Wallet Unit of Attestations (WUA).
@@ -65,7 +65,6 @@ The following prerequisites are needed for running the scrips:
 # Digg Wallet Ecosystem
 #
 127.0.0.1       refimpl-verifier.wallet.local
-127.0.0.1       refimpl-verifier-backend.wallet.local
 127.0.0.1       wallet-provider.wallet.local
 127.0.0.1       pid-issuer.wallet.local
 127.0.0.1       keycloak.wallet.local
