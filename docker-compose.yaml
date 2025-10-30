@@ -190,7 +190,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-attribute-attestation:
-    image: ghcr.io/diggsweden/wallet-attribute-attestation:v0.0.4
+    image: ghcr.io/diggsweden/wallet-attribute-attestation:main
     container_name: wallet-attribute-attestation
     hostname: wallet-attribute-attestation
     volumes:
@@ -234,7 +234,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.2.0
+    image: ghcr.io/diggsweden/wallet-client-gateway:main
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
