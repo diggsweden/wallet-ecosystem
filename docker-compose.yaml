@@ -376,6 +376,13 @@ services:
       - "traefik.http.routers.keycloak.middlewares=keycloak-replace-path"
       - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/keycloak/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
+      - "traefik.http.routers.well-known-oauth-server.rule=PathPrefix(`/.well-known/oauth-authorization-server`)"
+      - "traefik.http.routers.well-known-oauth-server.entrypoints=websecure"
+      - "traefik.http.routers.well-known-oauth-server.tls=true"
+      - "traefik.http.routers.well-known-oauth-server.service=keycloak"
+      - "traefik.http.routers.well-known-oauth-server.middlewares=well-known-oauth-server-replace-path"
+      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
+      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
     networks:
       - wallet-ecosystem-network
 

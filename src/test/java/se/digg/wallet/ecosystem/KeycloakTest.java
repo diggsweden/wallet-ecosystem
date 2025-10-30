@@ -75,4 +75,14 @@ public class KeycloakTest {
         .body("access_token", notNullValue())
         .body("token_type", equalTo("DPoP"));
   }
+
+  @Test
+  void isAccessibleOnAlternateUrl() {
+    given()
+        .when()
+        .get("https://localhost/.well-known/oauth-authorization-server/idp/realms/pid-issuer-realm")
+        .then()
+        .assertThat().statusCode(200)
+        .and().body("issuer", equalTo("https://localhost/idp/realms/pid-issuer-realm"));
+  }
 }
