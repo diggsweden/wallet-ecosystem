@@ -36,6 +36,8 @@ After this, the local environment can be started by:
 * [EUs reference implementation of a verifier backend](https://localhost/refimpl-verifier-backend),
   used by both above
 * [EUs reference implementation of a PID issuer](https://localhost/pid-issuer)
+* [Keycloak](https://localhost/keycloak/idp),
+  identity provider for the PID issuer
 * [Wallet provider](https://localhost/wallet-provider),
   our service to issue and control the lifecycle of Wallet Unit of Attestations (WUA).
 * [Traefik](http://localhost:8080),
