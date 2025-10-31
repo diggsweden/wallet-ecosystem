@@ -421,7 +421,6 @@ services:
       - "traefik.http.routers.dashboard-secure.entrypoints=websecure"
       - "traefik.http.routers.dashboard-secure.tls=true"
       - "traefik.http.routers.dashboard-secure.service=api@internal"
-      - "traefik.http.routers.dashboard-secure.rule=Host(`traefik.wallet.local`)"
     networks:
       wallet-ecosystem-network:
         aliases:
