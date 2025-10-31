@@ -13,6 +13,16 @@ import org.junit.jupiter.api.Test;
 public class TraefikTest {
 
   @Test
+  void respondsToPing() {
+    given()
+        .when()
+        .get("http://traefik.wallet.local:8080/ping")
+        .then()
+        .assertThat().statusCode(200)
+        .and().body(is("OK"));
+  }
+
+  @Test
   void isHealthy() {
     given()
         .when()

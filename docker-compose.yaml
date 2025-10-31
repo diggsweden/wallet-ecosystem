@@ -405,6 +405,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/traefik:/etc/traefik
     command:
+      - "--ping"
       - "--api.dashboard=true"
       - "--api.insecure=true"
       - "--providers.docker=true"
