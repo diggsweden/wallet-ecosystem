@@ -72,8 +72,8 @@ The main goals of this suite are:
  2. To verify that those services can communicate with each other, and
  3. To simplify manual exploration and learning.
 
- At the current stage the test suite is just a skeleton.
- However, we except to grow the suite over time.
+At the current stage the test suite is just a skeleton.
+However, we except to grow the suite over time.
 
 In order to run the test suite from the command line,
 use the commands below:
