@@ -83,6 +83,18 @@ docker-compose up -d
 mvn test
 ```
 
+**Note:** Some of our services uses a custom host mapping,
+e.g. `refimpl-verifier.wallet.local`.
+On machines where the user cannot change the hosts mapping
+the automated tests that try to use a service using such a host name will fail.
+To workaround this problem,
+you can skip those tests by setting an environment variable
+and run the test suite like so:
+
+```shell
+env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS=true mvn test
+```
+
 ### Pull Request Workflow
 
 #### Pull Request Workflow Prerequisites

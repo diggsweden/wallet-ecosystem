@@ -8,7 +8,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
+@DisabledIfEnvironmentVariable(
+    named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS",
+    matches = "true")
 public class ReferenceVerifierFrontendTest {
 
   @Test
