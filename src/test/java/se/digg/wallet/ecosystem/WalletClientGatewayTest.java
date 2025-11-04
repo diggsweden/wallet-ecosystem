@@ -7,10 +7,6 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.jwk.Curve;
-import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import io.restassured.http.ContentType;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
