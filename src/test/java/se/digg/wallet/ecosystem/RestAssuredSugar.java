@@ -4,18 +4,26 @@
 
 package se.digg.wallet.ecosystem;
 
+import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.LogConfig.logConfig;
 import static io.restassured.config.SSLConfig.sslConfig;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
 public final class RestAssuredSugar {
-  static RequestSpecification given() {
-    return RestAssured.given().config(RestAssured.config()
-        .sslConfig(sslConfig().relaxedHTTPSValidation())
-        .logConfig(logConfig().enableLoggingOfRequestAndResponseIfValidationFails()));
-  }
-
   private RestAssuredSugar() {}
+
+  static RequestSpecification given() {
+    return RestAssured.given()
+        .config(
+            RestAssured.config()
+                .sslConfig(sslConfig().relaxedHTTPSValidation())
+                .logConfig(logConfig().enableLoggingOfRequestAndResponseIfValidationFails())
+                .encoderConfig(
+                    encoderConfig()
+                        .encodeContentTypeAs("application/jwt", ContentType.TEXT)
+                        .appendDefaultContentCharsetToContentTypeIfUndefined(false)));
+  }
 }
