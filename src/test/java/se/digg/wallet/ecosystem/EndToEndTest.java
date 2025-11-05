@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Test;
 public class EndToEndTest {
 
   public static final String PID_ISSUER_REALM =
-      "https://localhost/keycloak/idp/realms/pid-issuer-realm";
+      "https://localhost/idp/realms/pid-issuer-realm";
   public static final String TOKEN_ENDPOINT = PID_ISSUER_REALM + "/protocol/openid-connect/token";
   public static final String PID_ISSUER_BASE = "https://localhost/pid-issuer";
   private static final String WALLET_PROVIDER_WUA_URL =
