@@ -166,6 +166,13 @@ services:
       - "traefik.http.routers.pid-issuer.entrypoints=websecure"
       - "traefik.http.routers.pid-issuer.tls=true"
       - "traefik.http.routers.pid-issuer.service=pid-issuer"
+      - "traefik.http.routers.well-known-pid-issuer.rule=PathRegexp(`^/.well-known/([a-zA-Z-]+)/pid-issuer$`)"
+      - "traefik.http.routers.well-known-pid-issuer.entrypoints=websecure"
+      - "traefik.http.routers.well-known-pid-issuer.tls=true"
+      - "traefik.http.routers.well-known-pid-issuer.service=pid-issuer"
+      - "traefik.http.routers.well-known-pid-issuer.middlewares=well-known-pid-issuer-replace-path"
+      - "traefik.http.middlewares.well-known-pid-issuer-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/pid-issuer$"
+      - "traefik.http.middlewares.well-known-pid-issuer-replace-path.replacepathregex.replacement=/pid-issuer/.well-known/$1"
       - "traefik.http.services.pid-issuer.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
