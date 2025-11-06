@@ -424,6 +424,3 @@ services:
       - "traefik.enable=true"
     networks:
       wallet-ecosystem-network:
-        aliases:
-          - refimpl-verifier.wallet.local
-          - wallet-attribute-attestation-db.wallet.local
