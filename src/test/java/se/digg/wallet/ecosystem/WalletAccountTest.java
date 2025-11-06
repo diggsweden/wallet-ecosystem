@@ -15,7 +15,7 @@ public class WalletAccountTest {
   void isHealthy() {
     given()
         .when()
-        .get("https://wallet-account.wallet.local/actuator/health")
+        .get("https://localhost/wallet-account/actuator/health")
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
