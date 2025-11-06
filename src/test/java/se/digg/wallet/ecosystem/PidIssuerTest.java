@@ -19,13 +19,13 @@ public class PidIssuerTest {
   public static final String TOKEN_ENDPOINT =
       "https://keycloak.wallet.local/idp/realms/pid-issuer-realm/protocol/openid-connect/token";
   private static final String PID_ISSUER_NONCE_URL =
-      "https://pid-issuer.wallet.local/wallet/nonceEndpoint";
+      "https://localhost/pid-issuer/wallet/nonceEndpoint";
 
   @Test
   void isHealthy() {
     given()
         .when()
-        .get("https://pid-issuer.wallet.local/.well-known/openid-credential-issuer")
+        .get("https://localhost/pid-issuer/.well-known/openid-credential-issuer")
         .then()
         .assertThat()
         .statusCode(200)

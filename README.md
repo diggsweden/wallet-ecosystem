@@ -65,7 +65,6 @@ The following prerequisites are needed for running the scrips:
 # Digg Wallet Ecosystem
 #
 127.0.0.1       refimpl-verifier.wallet.local
-127.0.0.1       pid-issuer.wallet.local
 127.0.0.1       keycloak.wallet.local
 127.0.0.1       traefik.wallet.local
 127.0.0.1       wallet-account.wallet.local

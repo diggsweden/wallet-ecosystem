@@ -49,7 +49,7 @@ public class EndToEndTest {
   public static final String PID_ISSUER_REALM =
       "https://keycloak.wallet.local/idp/realms/pid-issuer-realm";
   public static final String TOKEN_ENDPOINT = PID_ISSUER_REALM + "/protocol/openid-connect/token";
-  public static final String PID_ISSUER_BASE = "https://pid-issuer.wallet.local";
+  public static final String PID_ISSUER_BASE = "https://localhost/pid-issuer";
   private static final String WALLET_PROVIDER_WUA_URL =
       "https://localhost/wallet-provider/wallet-unit-attestation";
   private static final String PID_ISSUER_CREDENTIAL_URL =
