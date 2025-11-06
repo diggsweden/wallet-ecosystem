@@ -28,6 +28,7 @@ After this, the local environment can be started by:
 > docker compose up
 
 ---
+
 ## Services
 
 * [Strumpsorteringscentralen](https://localhost/custom-verifier),
@@ -42,6 +43,7 @@ After this, the local environment can be started by:
   our service to issue and control the lifecycle of Wallet Unit of Attestations (WUA).
 * [Traefik](http://localhost:8080),
   used for TLS
+  
 ---
 
 ## Building Images
