@@ -306,6 +306,7 @@ services:
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
@@ -332,14 +333,14 @@ services:
           "--class-path",
           "/opt",
           "Healthcheck",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8080/wallet-client-gateway/actuator/health",
         ]
       start_period: 5s
       interval: 5s
       retries: 5
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallet-client-gateway.rule=Host(`wallet-client-gateway.wallet.local`)"
+      - "traefik.http.routers.wallet-client-gateway.rule=PathPrefix(`/wallet-client-gateway`)"
       - "traefik.http.routers.wallet-client-gateway.entrypoints=websecure"
       - "traefik.http.routers.wallet-client-gateway.tls=true"
       - "traefik.http.routers.wallet-client-gateway.service=wallet-client-gateway"
@@ -426,4 +427,3 @@ services:
         aliases:
           - refimpl-verifier.wallet.local
           - wallet-attribute-attestation-db.wallet.local
-          - wallet-client-gateway.wallet.local

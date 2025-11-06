@@ -18,7 +18,7 @@ public class WalletClientGatewayTest {
   void isHealthy() {
     given()
         .when()
-        .get("https://wallet-client-gateway.wallet.local/actuator/health")
+        .get("https://localhost/wallet-client-gateway/actuator/health")
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
@@ -34,7 +34,7 @@ public class WalletClientGatewayTest {
           "attestationData": "string"
         }""")
         .header("X-API-KEY", "apikey")
-        .post("https://wallet-client-gateway.wallet.local/attribute-attestations")
+        .post("https://localhost/wallet-client-gateway/attribute-attestations")
         .then()
         .assertThat().statusCode(201).and()
         .extract()
@@ -48,7 +48,7 @@ public class WalletClientGatewayTest {
         .when()
         .header("X-API-KEY", "apikey")
         .get(
-            "https://wallet-client-gateway.wallet.local/attribute-attestations/%s"
+            "https://localhost/wallet-client-gateway/attribute-attestations/%s"
                 .formatted(createdId))
         .then()
         .assertThat().statusCode(200)
@@ -71,7 +71,7 @@ public class WalletClientGatewayTest {
               }
             }""")
         .header("X-API-KEY", "apikey")
-        .post("https://wallet-client-gateway.wallet.local/wua")
+        .post("https://localhost/wallet-client-gateway/wua")
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
