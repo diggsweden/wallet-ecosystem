@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 public class KeycloakTest {
 
   public static final String PID_ISSUER_REALM =
-      "https://keycloak.wallet.local/idp/realms/pid-issuer-realm";
+      "https://localhost/keycloak/idp/realms/pid-issuer-realm";
   public static final String TOKEN_ENDPOINT = PID_ISSUER_REALM + "/protocol/openid-connect/token";
 
   @Test

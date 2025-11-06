@@ -459,7 +459,7 @@
     "totpAppFreeOTPName",
     "totpAppGoogleName"
   ],
-  "webAuthnPolicyRpEntityName": "https://localhost/idp",
+  "webAuthnPolicyRpEntityName": "https://localhost/keycloak/idp",
   "webAuthnPolicySignatureAlgorithms": [
     "ES256",
     "ES384",
@@ -474,7 +474,7 @@
   "webAuthnPolicyAvoidSameAuthenticatorRegister": false,
   "webAuthnPolicyAcceptableAaguids": [],
   "webAuthnPolicyExtraOrigins": [],
-  "webAuthnPolicyPasswordlessRpEntityName": "https://localhost/idp",
+  "webAuthnPolicyPasswordlessRpEntityName": "https://localhost/keycloak/idp",
   "webAuthnPolicyPasswordlessSignatureAlgorithms": [
     "ES256",
     "ES384",

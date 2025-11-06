@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 public class PidIssuerTest {
   public static final String TOKEN_ENDPOINT =
-      "https://keycloak.wallet.local/idp/realms/pid-issuer-realm/protocol/openid-connect/token";
+      "https://localhost/keycloak/idp/realms/pid-issuer-realm/protocol/openid-connect/token";
   private static final String PID_ISSUER_NONCE_URL =
       "https://localhost/pid-issuer/wallet/nonceEndpoint";
 
@@ -32,7 +32,7 @@ public class PidIssuerTest {
         .and()
         .body(
             "authorization_servers",
-            hasItem("https://keycloak.wallet.local/idp/realms/pid-issuer-realm"));
+            hasItem("https://localhost/keycloak/idp/realms/pid-issuer-realm"));
   }
 
   @Test
