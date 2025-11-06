@@ -17,7 +17,7 @@ public class WalletAttributeAttestationTest {
   void isHealthy() {
     given()
         .when()
-        .get("https://wallet-attribute-attestation.wallet.local/actuator/health")
+        .get("https://localhost/wallet-attribute-attestation/actuator/health")
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
@@ -32,7 +32,7 @@ public class WalletAttributeAttestationTest {
           "wuaId": "790acda4-3dec-4d93-8efe-71375109d30e",
           "attestationData": "string"
         }""")
-        .post("https://wallet-attribute-attestation.wallet.local/attestation")
+        .post("https://localhost/wallet-attribute-attestation/attestation")
         .then()
         .assertThat().statusCode(201).and()
         .extract()
@@ -45,7 +45,7 @@ public class WalletAttributeAttestationTest {
     given()
         .when()
         .get(
-            "https://wallet-attribute-attestation.wallet.local/attestation/%s".formatted(createdId))
+            "https://localhost/wallet-attribute-attestation/attestation/%s".formatted(createdId))
         .then()
         .assertThat().statusCode(200)
         .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));

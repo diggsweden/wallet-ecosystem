@@ -69,7 +69,6 @@ The following prerequisites are needed for running the scrips:
 #
 127.0.0.1       refimpl-verifier.wallet.local
 127.0.0.1       wallet-client-gateway.wallet.local
-127.0.0.1       wallet-attribute-attestation.wallet.local
 ```
 
 ### Certificate for TLS
