@@ -16,7 +16,7 @@ public class TraefikTest {
   void respondsToPing() {
     given()
         .when()
-        .get("http://traefik.wallet.local:8080/ping")
+        .get("http://localhost:8080/ping")
         .then()
         .assertThat().statusCode(200)
         .and().body(is("OK"));
@@ -26,7 +26,7 @@ public class TraefikTest {
   void isHealthy() {
     given()
         .when()
-        .get("https://traefik.wallet.local")
+        .get("http://localhost:8080/dashboard")
         .then()
         .assertThat().statusCode(200)
         .and().body("html.head.title", is("Traefik"))
