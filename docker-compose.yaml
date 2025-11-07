@@ -359,6 +359,7 @@ services:
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
       - KC_HTTP_RELATIVE_PATH=/idp
+      - KC_HEALTH_ENABLED=true
       - KC_HOSTNAME=https://localhost/idp
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_HTTPS_CERTIFICATE_FILE=/etc/ssl/certs/keycloak.tls.crt
@@ -393,6 +394,12 @@ services:
       - "traefik.http.routers.well-known-oauth-server.middlewares=well-known-oauth-server-replace-path"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
+      - "traefik.http.routers.keycloak-health.rule=PathPrefix(`/idp/health`)"
+      - "traefik.http.routers.keycloak-health.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-health.tls=true"
+      - "traefik.http.routers.keycloak-health.service=keycloak-health"
+      - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
+      - "traefik.http.services.keycloak-health.loadbalancer.server.scheme=https"
     networks:
       - wallet-ecosystem-network
 
