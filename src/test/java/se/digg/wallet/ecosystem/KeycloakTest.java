@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 public class KeycloakTest {
 
   public static final String PID_ISSUER_REALM =
-      "https://keycloak.wallet.local/idp/realms/pid-issuer-realm";
+      "https://localhost/idp/realms/pid-issuer-realm";
   public static final String TOKEN_ENDPOINT = PID_ISSUER_REALM + "/protocol/openid-connect/token";
 
   @Test
@@ -74,5 +74,15 @@ public class KeycloakTest {
         .and()
         .body("access_token", notNullValue())
         .body("token_type", equalTo("DPoP"));
+  }
+
+  @Test
+  void isAccessibleOnAlternateUrl() {
+    given()
+        .when()
+        .get("https://localhost/.well-known/oauth-authorization-server/idp/realms/pid-issuer-realm")
+        .then()
+        .assertThat().statusCode(200)
+        .and().body("issuer", equalTo("https://localhost/idp/realms/pid-issuer-realm"));
   }
 }

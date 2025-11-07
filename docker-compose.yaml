@@ -17,7 +17,8 @@ services:
       - ./config/verifier/refimpl-verifier-backend-keystore.jks:/opt/common/refimpl-verifier-backend-keystore.jks:ro
       - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:ro
     environment:
-      VERIFIER_PUBLICURL: "https://refimpl-verifier-backend.wallet.local"
+      SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
+      VERIFIER_PUBLICURL: "https://localhost/refimpl-verifier-backend"
       VERIFIER_ORIGINALCLIENTID: "refimpl-verifier-backend.wallet.local"
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       VERIFIER_JAR_SIGNING_ALGORITHM: "ES256"
@@ -36,7 +37,7 @@ services:
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.refimpl-verifier-backend.rule=Host(`refimpl-verifier-backend.wallet.local`)"
+      - "traefik.http.routers.refimpl-verifier-backend.rule=PathPrefix(`/refimpl-verifier-backend`)"
       - "traefik.http.routers.refimpl-verifier-backend.entrypoints=websecure"
       - "traefik.http.routers.refimpl-verifier-backend.tls=true"
       - "traefik.http.routers.refimpl-verifier-backend.service=refimpl-verifier-backend"
@@ -51,6 +52,7 @@ services:
     volumes:
       - ./config/wallet-provider/wallet_provider_cert.p12:/opt/common/wallet_provider_cert.p12
     environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/wallet-provider"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
@@ -59,7 +61,7 @@ services:
       WUA_KEYSTORE_ALIAS: "wallet_provider_cert"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallet-provider.rule=Host(`wallet-provider.wallet.local`)"
+      - "traefik.http.routers.wallet-provider.rule=PathPrefix(`/wallet-provider`)"
       - "traefik.http.routers.wallet-provider.entrypoints=websecure"
       - "traefik.http.routers.wallet-provider.tls=true"
       - "traefik.http.routers.wallet-provider.service=wallet-provider"
@@ -72,17 +74,17 @@ services:
     container_name: custom-verifier
     hostname: custom-verifier
     environment:
-      HOST_API: "https://refimpl-verifier-backend.wallet.local"
+      HOST_API: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend"
       PORT: "3002"
       NITRO_PORT: "3002"
-      PUBLIC_BASE_URL: "https://custom-verifier.wallet.local"
-      NUXT_PUBLIC_BASE_URL: "https://custom-verifier.wallet.local"
+      NUXT_PUBLIC_BASE_URL: "https://localhost/custom-verifier"
+      NUXT_APP_BASE_URL: "/custom-verifier"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
     depends_on:
       - refimpl-verifier-backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.custom-verifier.rule=Host(`custom-verifier.wallet.local`)"
+      - "traefik.http.routers.custom-verifier.rule=PathPrefix(`/custom-verifier`)"
       - "traefik.http.routers.custom-verifier.entrypoints=websecure"
       - "traefik.http.routers.custom-verifier.tls=true"
       - "traefik.http.services.custom-verifier.loadbalancer.server.port=3002"
@@ -100,7 +102,7 @@ services:
       retries: 3
     environment:
       DOMAIN_NAME: "refimpl-verifier.wallet.local"
-      HOST_API: "https://refimpl-verifier-backend.wallet.local"
+      HOST_API: "https://localhost/refimpl-verifier-backend"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.refimpl-verifier.rule=Host(`refimpl-verifier.wallet.local`)"
@@ -118,13 +120,13 @@ services:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=insecure
-      - SPRING_WEBFLUX_BASE_PATH=/
+      - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
       - SERVER_PORT=8080
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_ID=pid-issuer-srv
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_SECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
       - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
-      - ISSUER_PUBLICURL=https://pid-issuer.wallet.local
-      - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=https://keycloak.wallet.local/idp/realms/pid-issuer-realm
+      - ISSUER_PUBLICURL=https://localhost/pid-issuer
+      - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=https://localhost/idp/realms/pid-issuer-realm
       - ISSUER_AUTHORIZATIONSERVER_METADATA=https://keycloak:8443/idp/realms/pid-issuer-realm/.well-known/openid-configuration
       - ISSUER_AUTHORIZATIONSERVER_INTROSPECTION=https://keycloak:8443/idp/realms/pid-issuer-realm/protocol/openid-connect/token/introspect
       - ISSUER_CREDENTIALRESPONSEENCRYPTION_SUPPORTED=true
@@ -160,10 +162,17 @@ services:
       - ISSUER_CNONCE_EXPIRATION=PT5M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pid-issuer.rule=Host(`pid-issuer.wallet.local`)"
+      - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
       - "traefik.http.routers.pid-issuer.entrypoints=websecure"
       - "traefik.http.routers.pid-issuer.tls=true"
       - "traefik.http.routers.pid-issuer.service=pid-issuer"
+      - "traefik.http.routers.well-known-pid-issuer.rule=PathRegexp(`^/.well-known/([a-zA-Z-]+)/pid-issuer$`)"
+      - "traefik.http.routers.well-known-pid-issuer.entrypoints=websecure"
+      - "traefik.http.routers.well-known-pid-issuer.tls=true"
+      - "traefik.http.routers.well-known-pid-issuer.service=pid-issuer"
+      - "traefik.http.routers.well-known-pid-issuer.middlewares=well-known-pid-issuer-replace-path"
+      - "traefik.http.middlewares.well-known-pid-issuer-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/pid-issuer$"
+      - "traefik.http.middlewares.well-known-pid-issuer-replace-path.replacepathregex.replacement=/pid-issuer/.well-known/$1"
       - "traefik.http.services.pid-issuer.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
@@ -195,6 +204,7 @@ services:
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/wallet-attribute-attestation"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
@@ -215,14 +225,14 @@ services:
           "--class-path",
           "/opt",
           "Healthcheck",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8080/wallet-attribute-attestation/actuator/health",
         ]
       start_period: 5s
       interval: 5s
       retries: 5
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallet-attribute-attestation.rule=Host(`wallet-attribute-attestation.wallet.local`)"
+      - "traefik.http.routers.wallet-attribute-attestation.rule=PathPrefix(`/wallet-attribute-attestation`)"
       - "traefik.http.routers.wallet-attribute-attestation.entrypoints=websecure"
       - "traefik.http.routers.wallet-attribute-attestation.tls=true"
       - "traefik.http.routers.wallet-attribute-attestation.service=wallet-attribute-attestation"
@@ -253,6 +263,7 @@ services:
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/wallet-account"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
@@ -273,14 +284,14 @@ services:
           "--class-path",
           "/opt",
           "Healthcheck",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8080/wallet-account/actuator/health",
         ]
       start_period: 5s
       interval: 5s
       retries: 5
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallet-account.rule=Host(`wallet-account.wallet.local`)"
+      - "traefik.http.routers.wallet-account.rule=PathPrefix(`/wallet-account`)"
       - "traefik.http.routers.wallet-account.entrypoints=websecure"
       - "traefik.http.routers.wallet-account.tls=true"
       - "traefik.http.routers.wallet-account.service=wallet-account"
@@ -295,15 +306,16 @@ services:
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
       SERVER_PORT: "8080"
       PROPERTIES_APISECRET: "apikey"
-      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080"
+      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
       PROPERTIES_WALLETPROVIDER_WUAPATH: "/wallet-unit-attestation"
-      PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080"
-      PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080"
+      PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
+      PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
     ports:
       - "8082:8080"
     depends_on:
@@ -321,14 +333,14 @@ services:
           "--class-path",
           "/opt",
           "Healthcheck",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8080/wallet-client-gateway/actuator/health",
         ]
       start_period: 5s
       interval: 5s
       retries: 5
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallet-client-gateway.rule=Host(`wallet-client-gateway.wallet.local`)"
+      - "traefik.http.routers.wallet-client-gateway.rule=PathPrefix(`/wallet-client-gateway`)"
       - "traefik.http.routers.wallet-client-gateway.entrypoints=websecure"
       - "traefik.http.routers.wallet-client-gateway.tls=true"
       - "traefik.http.routers.wallet-client-gateway.service=wallet-client-gateway"
@@ -347,7 +359,7 @@ services:
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
       - KC_HTTP_RELATIVE_PATH=/idp
-      - KC_HOSTNAME=https://keycloak.wallet.local/idp
+      - KC_HOSTNAME=https://localhost/idp
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_HTTPS_CERTIFICATE_FILE=/etc/ssl/certs/keycloak.tls.crt
       - KC_HTTPS_CERTIFICATE_KEY_FILE=/etc/ssl/certs/keycloak.tls.key
@@ -366,14 +378,21 @@ services:
       - ./config/keycloak/certs/:/etc/ssl/certs/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`keycloak.wallet.local`)"
+      - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp`)"
       - "traefik.http.routers.keycloak.entrypoints=websecure"
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.service=keycloak"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
       - "traefik.http.routers.keycloak.middlewares=keycloak-replace-path"
-      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
+      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/keycloak/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
+      - "traefik.http.routers.well-known-oauth-server.rule=PathPrefix(`/.well-known/oauth-authorization-server`)"
+      - "traefik.http.routers.well-known-oauth-server.entrypoints=websecure"
+      - "traefik.http.routers.well-known-oauth-server.tls=true"
+      - "traefik.http.routers.well-known-oauth-server.service=keycloak"
+      - "traefik.http.routers.well-known-oauth-server.middlewares=well-known-oauth-server-replace-path"
+      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
+      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
     networks:
       - wallet-ecosystem-network
 
@@ -389,6 +408,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/traefik:/etc/traefik
     command:
+      - "--ping"
       - "--api.dashboard=true"
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -402,19 +422,5 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard-secure.entrypoints=websecure"
-      - "traefik.http.routers.dashboard-secure.tls=true"
-      - "traefik.http.routers.dashboard-secure.service=api@internal"
-      - "traefik.http.routers.dashboard-secure.rule=Host(`traefik.wallet.local`)"
     networks:
       wallet-ecosystem-network:
-        aliases:
-          - refimpl-verifier-backend.wallet.local
-          - refimpl-verifier.wallet.local
-          - custom-verifier.wallet.local
-          - wallet-provider.wallet.local
-          - pid-issuer.wallet.local
-          - wallet-attribute-attestation-db.wallet.local
-          - wallet-attribute-attestation.wallet.local
-          - wallet-client-gateway.wallet.local
-          - keycloak.wallet.local

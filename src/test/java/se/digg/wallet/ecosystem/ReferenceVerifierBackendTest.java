@@ -4,20 +4,20 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import org.junit.jupiter.api.Test;
 
-public class WalletAccountTest {
+public class ReferenceVerifierBackendTest {
 
   @Test
   void isHealthy() {
     given()
         .when()
-        .get("https://localhost/wallet-account/actuator/health")
+        .get("https://localhost/refimpl-verifier-backend/actuator/health")
         .then()
         .assertThat().statusCode(200)
-        .and().body("status", equalTo("UP"));
+        .and().body("status", is("UP"));
   }
 }

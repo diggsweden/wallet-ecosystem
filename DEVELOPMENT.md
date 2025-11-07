@@ -72,8 +72,8 @@ The main goals of this suite are:
  2. To verify that those services can communicate with each other, and
  3. To simplify manual exploration and learning.
 
- At the current stage the test suite is just a skeleton.
- However, we except to grow the suite over time.
+At the current stage the test suite is just a skeleton.
+However, we except to grow the suite over time.
 
 In order to run the test suite from the command line,
 use the commands below:
@@ -81,6 +81,18 @@ use the commands below:
 ```shell
 docker-compose up -d
 mvn test
+```
+
+**Note:** Some of our services uses a custom host mapping,
+e.g. `refimpl-verifier.wallet.local`.
+On machines where the user cannot change the hosts mapping
+the automated tests that try to use a service using such a host name will fail.
+To workaround this problem,
+you can skip those tests by setting an environment variable
+and run the test suite like so:
+
+```shell
+env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS=true mvn test
 ```
 
 ### Pull Request Workflow
