@@ -25,6 +25,18 @@ public class KeycloakTest {
   void isHealthy() {
     given()
         .when()
+        .get("https://localhost/idp/health")
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .body("status", equalTo("UP"));
+  }
+
+  @Test
+  void servesPidIssuerRealm() {
+    given()
+        .when()
         .get(PID_ISSUER_REALM)
         .then()
         .assertThat()
