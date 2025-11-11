@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -34,20 +33,16 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 public class EndToEndTest {
 
   public static final String PID_ISSUER_BASE = "https://localhost/pid-issuer";
-  private static final String WALLET_PROVIDER_WUA_URL =
-      "https://localhost/wallet-provider/wallet-unit-attestation";
   private static final String PID_ISSUER_CREDENTIAL_URL =
       PID_ISSUER_BASE + "/wallet/credentialEndpoint";
   private static final String PID_ISSUER_NONCE_URL = PID_ISSUER_BASE + "/wallet/nonceEndpoint";
@@ -55,6 +50,7 @@ public class EndToEndTest {
       PID_ISSUER_BASE + "/.well-known/openid-credential-issuer";
 
   private final KeycloakClient keycloak = new KeycloakClient();
+  private final WalletProviderClient walletProvider = new WalletProviderClient();
 
   @Test
   void getCredential() throws Exception {
@@ -77,24 +73,7 @@ public class EndToEndTest {
             .generate();
 
     // 3. Get WUA
-    String walletAttestation =
-        given()
-            .when()
-            .contentType(ContentType.JSON)
-            .body(
-                String.format(
-                    """
-                        { "walletId": "%s", "jwk": %s }
-                        """,
-                    UUID.randomUUID(),
-                    new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString())))
-            .post(WALLET_PROVIDER_WUA_URL)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract()
-            .body()
-            .asString();
+    String walletAttestation = walletProvider.getWalletUnitAttestation(jwk);
 
     // 4. Get nonce
     String nonce =
