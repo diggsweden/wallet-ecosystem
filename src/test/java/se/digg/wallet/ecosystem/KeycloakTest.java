@@ -14,15 +14,35 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class KeycloakTest {
 
-  public static final String PID_ISSUER_REALM =
-      "https://localhost/idp/realms/pid-issuer-realm";
+  public static final String BASE_URL = "https://localhost/idp";
+  public static final String PID_ISSUER_REALM = BASE_URL + "/realms/pid-issuer-realm";
   public static final String TOKEN_ENDPOINT = PID_ISSUER_REALM + "/protocol/openid-connect/token";
 
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "/health/live",
+      "/health/ready",
+      "/health/started",
+      "/health"
+  })
+  void isHealthy(String path) {
+    given()
+        .when()
+        .get(BASE_URL + path)
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .body("status", equalTo("UP"));
+  }
+
   @Test
-  void isHealthy() {
+  void servesPidIssuerRealm() {
     given()
         .when()
         .get(PID_ISSUER_REALM)

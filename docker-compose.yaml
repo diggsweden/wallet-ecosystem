@@ -127,8 +127,8 @@ services:
       - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
       - ISSUER_PUBLICURL=https://localhost/pid-issuer
       - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=https://localhost/idp/realms/pid-issuer-realm
-      - ISSUER_AUTHORIZATIONSERVER_METADATA=https://keycloak:8443/idp/realms/pid-issuer-realm/.well-known/openid-configuration
-      - ISSUER_AUTHORIZATIONSERVER_INTROSPECTION=https://keycloak:8443/idp/realms/pid-issuer-realm/protocol/openid-connect/token/introspect
+      - ISSUER_AUTHORIZATIONSERVER_METADATA=http://keycloak:8080/idp/realms/pid-issuer-realm/.well-known/openid-configuration
+      - ISSUER_AUTHORIZATIONSERVER_INTROSPECTION=http://keycloak:8080/idp/realms/pid-issuer-realm/protocol/openid-connect/token/introspect
       - ISSUER_CREDENTIALRESPONSEENCRYPTION_SUPPORTED=true
       - ISSUER_CREDENTIALRESPONSEENCRYPTION_REQUIRED=true
       - ISSUER_CREDENTIALRESPONSEENCRYPTION_ALGORITHMSSUPPORTED=ECDH-ES
@@ -147,7 +147,7 @@ services:
       - ISSUER_MDL_NOTIFICATIONS_ENABLED=true
       - ISSUER_CREDENTIALOFFER_URI=openid-credential-offer://
       - ISSUER_SIGNING_KEY=GenerateRandom
-      - ISSUER_KEYCLOAK_SERVER_URL=https://keycloak:8443/idp
+      - ISSUER_KEYCLOAK_SERVER_URL=http://keycloak:8080/idp
       - ISSUER_KEYCLOAK_AUTHENTICATION_REALM=master
       - ISSUER_KEYCLOAK_CLIENT_ID=admin-cli
       - ISSUER_KEYCLOAK_USERNAME=admin
@@ -359,10 +359,9 @@ services:
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
       - KC_HTTP_RELATIVE_PATH=/idp
+      - KC_HEALTH_ENABLED=true
       - KC_HOSTNAME=https://localhost/idp
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
-      - KC_HTTPS_CERTIFICATE_FILE=/etc/ssl/certs/keycloak.tls.crt
-      - KC_HTTPS_CERTIFICATE_KEY_FILE=/etc/ssl/certs/keycloak.tls.key
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
     healthcheck:
@@ -375,7 +374,6 @@ services:
     volumes:
       - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/realms/:/opt/keycloak/data/import
-      - ./config/keycloak/certs/:/etc/ssl/certs/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp`)"
@@ -393,6 +391,11 @@ services:
       - "traefik.http.routers.well-known-oauth-server.middlewares=well-known-oauth-server-replace-path"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
+      - "traefik.http.routers.keycloak-health.rule=PathPrefix(`/idp/health`)"
+      - "traefik.http.routers.keycloak-health.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-health.tls=true"
+      - "traefik.http.routers.keycloak-health.service=keycloak-health"
+      - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
     networks:
       - wallet-ecosystem-network
 
