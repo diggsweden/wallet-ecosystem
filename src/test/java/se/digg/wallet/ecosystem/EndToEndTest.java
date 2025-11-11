@@ -6,7 +6,6 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,9 +45,6 @@ import org.junit.jupiter.api.Test;
 
 public class EndToEndTest {
 
-  public static final String PID_ISSUER_REALM =
-      "https://localhost/idp/realms/pid-issuer-realm";
-  public static final String TOKEN_ENDPOINT = PID_ISSUER_REALM + "/protocol/openid-connect/token";
   public static final String PID_ISSUER_BASE = "https://localhost/pid-issuer";
   private static final String WALLET_PROVIDER_WUA_URL =
       "https://localhost/wallet-provider/wallet-unit-attestation";
@@ -58,32 +54,20 @@ public class EndToEndTest {
   private static final String PID_ISSUER_METADATA_URL =
       PID_ISSUER_BASE + "/.well-known/openid-credential-issuer";
 
+  private final KeycloakClient keycloak = new KeycloakClient();
+
   @Test
   void getCredential() throws Exception {
     ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();
-    String dpopProof = DpopUtil.createDpopProof(userJwk, TOKEN_ENDPOINT, "POST");
 
     // 1. Get access token for user
-    String accessToken =
-        given()
-            .when()
-            .contentType(ContentType.URLENC)
-            .header("DPoP", dpopProof)
-            .formParam("grant_type", "password")
-            .formParam("client_id", "wallet-dev")
-            .formParam("username", "tneal")
-            .formParam("password", "password")
-            .formParam("scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt")
-            .formParam("role", "user")
-            .post(TOKEN_ENDPOINT)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .and()
-            .body("access_token", notNullValue())
-            .body("token_type", org.hamcrest.CoreMatchers.equalTo("DPoP"))
-            .extract()
-            .path("access_token");
+    String accessToken = keycloak.getDpopAccessToken("pid-issuer-realm", userJwk, Map.of(
+        "grant_type", "password",
+        "client_id", "wallet-dev",
+        "username", "tneal",
+        "password", "password",
+        "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+        "role", "user"));
 
     // 2. Create JWK for wallet
     ECKey jwk =
