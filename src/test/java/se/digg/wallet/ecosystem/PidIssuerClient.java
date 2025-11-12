@@ -130,7 +130,7 @@ public class PidIssuerClient {
     return jweObject.serialize();
   }
 
-  private static Payload decryptPayload(String payload, ECPrivateKey privateKey)
+  private Payload decryptPayload(String payload, ECPrivateKey privateKey)
       throws ParseException, JOSEException {
 
     EncryptedJWT encryptedJwt = EncryptedJWT.parse(payload);
