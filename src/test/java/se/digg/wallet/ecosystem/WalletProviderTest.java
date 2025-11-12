@@ -5,23 +5,20 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
-import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
-import io.restassured.http.ContentType;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 public class WalletProviderTest {
 
+  private final WalletProviderClient walletProvider = new WalletProviderClient();
+
   @Test
   void isHealthy() {
-    given()
-        .when()
-        .get("https://localhost/wallet-provider/actuator/health")
+    walletProvider.tryGetHealth()
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
@@ -29,17 +26,10 @@ public class WalletProviderTest {
 
   @Test
   void createsWalletUnitAttestation() throws Exception {
-    given()
-        .when()
-        .contentType(ContentType.JSON)
-        .body(String.format("""
-            { "walletId": "%s", "jwk": %s }""",
-            UUID.randomUUID(),
-            new ObjectMapper().writeValueAsString(
-                new ECKeyGenerator(Curve.P_256).generate().toPublicJWK().toJSONString())))
-        .post("https://localhost/wallet-provider/wallet-unit-attestation")
-        .then()
-        .assertThat().statusCode(200).and().body(matchesPattern(
-            "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+    String wua = walletProvider.getWalletUnitAttestation(
+        new ECKeyGenerator(Curve.P_256).generate());
+
+    assertThat(wua, matchesPattern(
+        "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
   }
 }
