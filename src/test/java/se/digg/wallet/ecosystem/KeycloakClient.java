@@ -13,13 +13,16 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 public class KeycloakClient {
 
   private final URI base;
 
   public KeycloakClient() {
-    this(URI.create("https://localhost/idp/"));
+    this(URI.create(
+        Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_KEYCLOAK_BASE_URI"))
+            .orElse("https://localhost/idp") + "/"));
   }
 
   public KeycloakClient(URI base) {
