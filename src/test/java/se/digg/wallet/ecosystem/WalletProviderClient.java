@@ -12,11 +12,14 @@ import com.nimbusds.jose.jwk.ECKey;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 public class WalletProviderClient {
 
-  private final URI base = URI.create("https://localhost/wallet-provider/");
+  private final URI base = URI.create(
+      Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI"))
+          .orElse("https://localhost/wallet-provider") + "/");
 
   public Response tryGetHealth() {
     return given()

@@ -14,6 +14,7 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import java.net.URI;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -23,6 +24,9 @@ public class KeycloakTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"live", "ready", "started", ""})
+  @DisabledIfEnvironmentVariable(
+      named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH",
+      matches = "true")
   void isHealthy(String path) {
     keycloak.tryGetHealth(path)
         .then()

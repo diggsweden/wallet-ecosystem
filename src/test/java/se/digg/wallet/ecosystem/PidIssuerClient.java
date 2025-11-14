@@ -25,6 +25,7 @@ import java.net.URI;
 import java.security.interfaces.ECPrivateKey;
 import java.text.ParseException;
 import java.util.Map;
+import java.util.Optional;
 
 public class PidIssuerClient {
 
@@ -32,7 +33,8 @@ public class PidIssuerClient {
   private final URI base;
 
   public PidIssuerClient() {
-    name = "https://localhost/pid-issuer";
+    name = Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI"))
+        .orElse("https://localhost/pid-issuer");
     base = URI.create(name + "/");
   }
 

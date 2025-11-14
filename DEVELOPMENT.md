@@ -83,7 +83,9 @@ docker-compose up -d
 mvn test
 ```
 
-**Note:** Some of our services uses a custom host mapping,
+#### Skipping tests using custom hosts
+
+Some of our services uses a custom host mapping,
 e.g. `refimpl-verifier.wallet.local`.
 On machines where the user cannot change the hosts mapping
 the automated tests that try to use a service using such a host name will fail.
@@ -93,6 +95,28 @@ and run the test suite like so:
 
 ```shell
 env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS=true mvn test
+```
+
+#### Running tests on alternate hosts
+
+Normally the tests suite runs against the wallet ecosystem deployed locally.
+In order to run the tests on alternate hosts,
+you can configure the location of those hosts using environment variables like so:
+
+```shell
+env DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI=https://wallet-provider.example.com \
+    DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI=https://pid-issuer.example.com \
+    DIGG_WALLET_ECOSYSTEM_KEYCLOAK_BASE_URI=https://keycloak.example.com \
+    mvn test
+```
+
+#### Skipping Keycloak health tests
+
+Under some configurations the Keycloak health endpoints are not exposed.
+In order to avoid test failures in those situations, you can skip those tests like so:
+
+```shell
+env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH=true mvn test
 ```
 
 ### Pull Request Workflow
