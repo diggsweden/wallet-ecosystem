@@ -4,8 +4,8 @@
 
 tls:
   certificates:
-    - certFile: /certs/wallet-cert.pem
-      keyFile: /certs/wallet-key.pem
+    - certFile: /etc/traefik/certs/wallet-cert.pem
+      keyFile: /etc/traefik/certs/wallet-key.pem
   options:
     default:
       minVersion: "VersionTLS12"

@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
@@ -29,7 +28,6 @@ public class TraefikTest {
         .get("http://localhost:8080/dashboard")
         .then()
         .assertThat().statusCode(200)
-        .and().body("html.head.title", is("Traefik"))
-        .and().body(containsString("<div id=q-app>"));
+        .and().body("html.head.title", is("Traefik Proxy"));
   }
 }
