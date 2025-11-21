@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
@@ -24,8 +25,13 @@ import io.restassured.path.json.JsonPath;
 import java.net.URI;
 import java.security.interfaces.ECPrivateKey;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
 public class PidIssuerClient {
 
@@ -40,6 +46,20 @@ public class PidIssuerClient {
 
   public String getName() {
     return name;
+  }
+
+  public Map<String, String> getUsefulLinks() {
+    String responseBody = given().when().get(base.resolve("."))
+        .then().assertThat().statusCode(200)
+        .and().body("html.head.title",
+            is("EU Digital Identity Wallet :: Generate new Credentials Offer"))
+        .and().extract().body().asString();
+
+    return Jsoup.parse(responseBody).selectStream(".table tbody tr")
+        .map(row -> Stream.concat(
+            row.selectStream("td").map(Element::text).map(String::trim),
+            Stream.of("UNKNOWN", "UNKNOWN")).limit(2).toList())
+        .collect(Collectors.toMap(List::getFirst, List::getLast));
   }
 
   public String getNonce(String accessToken, ECKey key) throws JOSEException {
