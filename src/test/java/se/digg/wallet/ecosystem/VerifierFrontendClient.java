@@ -72,8 +72,4 @@ public class VerifierFrontendClient {
         .extract()
         .response();
   }
-
-  public URI getBaseUri() {
-    return base;
-  }
 }

@@ -47,26 +47,68 @@ public class VerifierBackendClient {
         .body("status", is("UP"));
   }
 
-  public VerifierBackendTransactionResponse createVerificationRequest() {
+  public VerifierBackendTransactionResponse createVerificationRequest(Map<String, Object> body) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
-        .body(
-            Map.of(
-                "type",
-                "id_token",
-                "id_token_type",
-                "subject_signed_id_token",
-                "jar_mode",
-                "by_value",
-                "nonce",
-                UUID.randomUUID().toString()))
+        .body(body)
         .when()
         .post("ui/presentations")
         .then()
         .statusCode(200)
         .extract()
         .as(VerifierBackendTransactionResponse.class);
+  }
+
+  public VerifierBackendTransactionByReferenceResponse createVerificationRequestByReference(
+      Map<String, Object> body) {
+    return given()
+        .baseUri(base.toString())
+        .contentType(ContentType.JSON)
+        .body(body)
+        .when()
+        .post("ui/presentations")
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(VerifierBackendTransactionByReferenceResponse.class);
+  }
+
+  public Response getAuthorizationRequest(String requestUri) {
+    return given()
+        .baseUri(requestUri)
+        .when()
+        .get()
+        .then()
+        .extract()
+        .response();
+  }
+
+  public Response postWalletResponse(String state, String vpToken) {
+    return given()
+        .baseUri(base.toString())
+        .contentType(ContentType.URLENC)
+        .formParam("state", state)
+        .formParam("vp_token", vpToken)
+        .when()
+        .post("wallet/direct_post")
+        .then()
+        .extract()
+        .response();
+  }
+
+  public Response validateSdJwtVc(String sdJwtVc, String nonce, String issuerChain) {
+    return given()
+        .baseUri(base.toString())
+        .contentType(ContentType.URLENC)
+        .formParam("sd_jwt_vc", sdJwtVc)
+        .formParam("nonce", nonce)
+        .formParam("issuer_chain", issuerChain)
+        .when()
+        .post("utilities/validations/sdJwtVc")
+        .then()
+        .extract()
+        .response();
   }
 
   public Response getVerificationStatus(String transactionId) {
@@ -84,19 +126,6 @@ public class VerifierBackendClient {
         .baseUri(base.toString())
         .when()
         .get("ui/presentations/{transactionId}/events", transactionId)
-        .then()
-        .extract()
-        .response();
-  }
-
-  public Response validateSdJwtVc(String sdJwtVc, String nonce) {
-    return given()
-        .baseUri(base.toString())
-        .contentType(ContentType.URLENC)
-        .formParam("sd_jwt_vc", sdJwtVc)
-        .formParam("nonce", nonce)
-        .when()
-        .post("/utilities/validations/sdJwtVc")
         .then()
         .extract()
         .response();
