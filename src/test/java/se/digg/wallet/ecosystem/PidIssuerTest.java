@@ -5,6 +5,8 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -22,6 +24,21 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class PidIssuerTest {
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
   private final KeycloakClient keycloak = new KeycloakClient();
+
+  @Test
+  void presentsUsefulLinks() {
+    Map<String, String> linksByLabel = pidIssuer.getUsefulLinks();
+
+    assertThat(linksByLabel.keySet(), containsInAnyOrder(
+        "Credential Issuer Metadata",
+        "Authorization Server Metadata",
+        "SD-JWT VC Issuer Metadata",
+        "PID SD-JWT VC Type Metadata"));
+
+    linksByLabel.forEach((label, link) -> {
+      given().when().get(link).then().assertThat().statusCode(200);
+    });
+  }
 
   @ParameterizedTest
   @ValueSource(strings = {
