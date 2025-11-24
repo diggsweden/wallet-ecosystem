@@ -35,21 +35,19 @@ import org.jsoup.nodes.Element;
 
 public class PidIssuerClient {
 
-  private final String name;
   private final URI base;
+  private final URI identifier;
 
   public PidIssuerClient() {
-    name = Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI"))
+    String baseUriWithoutFinalSlash =
+        Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI"))
         .orElse("https://localhost/pid-issuer");
-    base = URI.create(name + "/");
+    base = URI.create(baseUriWithoutFinalSlash + "/");
+    identifier = URI.create(baseUriWithoutFinalSlash);
   }
 
   public URI getIdentifier() {
-    return URI.create(name);
-  }
-
-  public String getName() {
-    return name;
+    return identifier;
   }
 
   public Map<String, String> getUsefulLinks() {
