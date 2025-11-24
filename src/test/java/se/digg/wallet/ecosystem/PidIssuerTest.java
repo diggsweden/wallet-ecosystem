@@ -17,7 +17,6 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -45,8 +44,14 @@ public class PidIssuerTest {
         .map(entry -> Arguments.of(entry.getKey(), entry.getValue()));
   }
 
+  public static Stream<Arguments> authorizationServers() {
+    return new PidIssuerClient().getAuthorizationServers().stream()
+        .map(s -> Arguments.of("Authorization Server", s.toString()));
+  }
+
   @ParameterizedTest
   @MethodSource("usefulLinks")
+  @MethodSource("authorizationServers")
   void linkWorks(String labelNotUsedInTestButIncludedInDisplayName, String link) {
     given().when().get(link).then().assertThat().statusCode(200);
   }
@@ -74,7 +79,7 @@ public class PidIssuerTest {
   void servesCredentialIssuerMetadata(
       String labelNotUsedInTestButIncludedInDisplayName, URI uri) {
 
-    List<String> authorizationServers = given()
+    given()
         .when()
         .get(uri)
         .then()
@@ -89,12 +94,6 @@ public class PidIssuerTest {
             "authorization_servers",
             not(empty()))
         .extract().path("authorization_servers");
-
-    given()
-        .when()
-        .get(authorizationServers.getFirst())
-        .then()
-        .assertThat().statusCode(200);
   }
 
   @Test

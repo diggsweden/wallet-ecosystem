@@ -22,6 +22,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.EncryptedJWT;
 import io.restassured.path.json.JsonPath;
+import io.restassured.response.ValidatableResponse;
 import java.net.URI;
 import java.security.interfaces.ECPrivateKey;
 import java.text.ParseException;
@@ -83,17 +84,25 @@ public class PidIssuerClient {
   }
 
   public ECKey getCredentialRequestEncryptionKey() throws ParseException {
-    String issuerMetadata =
-        given()
-            .when()
-            .get(this.base.resolve(".well-known/openid-credential-issuer"))
-            .then().statusCode(200).extract().asString();
+    String issuerMetadata = getCredentialIssuerMetadata().extract().asString();
 
     JsonPath metadataPath = new JsonPath(issuerMetadata);
     Map<String, Object> jwksMap = metadataPath.getMap("credential_request_encryption.jwks");
     JWKSet jwkSet = JWKSet.parse(jwksMap);
 
     return (ECKey) jwkSet.getKeys().getFirst();
+  }
+
+  List<URI> getAuthorizationServers() {
+    return getCredentialIssuerMetadata().extract().<List<String>>path("authorization_servers")
+        .stream().map(URI::create).collect(Collectors.toList());
+  }
+
+  private ValidatableResponse getCredentialIssuerMetadata() {
+    return given()
+        .when()
+        .get(this.base.resolve(".well-known/openid-credential-issuer"))
+        .then().statusCode(200);
   }
 
   public Payload issueCredentials(String accessToken, ECKey userJwk, ECKey jwk, String proof,
