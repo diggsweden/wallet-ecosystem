@@ -299,8 +299,17 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  wallet-client-gateway-valkey:
+    image: valkey/valkey:9.0.0
+    container_name: wallet-client-gateway-valkey
+    hostname: wallet-client-gateway-valkey
+    ports:
+      - "6379:6379"
+    networks:
+      - wallet-ecosystem-network
+
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.2.2
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.2.5
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -316,9 +325,13 @@ services:
       PROPERTIES_WALLETPROVIDER_WUAPATH: "/wallet-unit-attestation"
       PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
+      SPRING_REDIS_HOST: "wallet-client-gateway-valkey"
+      SPRING_REDIS_PORT: "6379"
     ports:
       - "8082:8080"
     depends_on:
+      wallet-client-gateway-valkey:
+        condition: service_started
       wallet-provider:
         condition: service_started
       wallet-attribute-attestation:
