@@ -8,7 +8,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -16,13 +15,15 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 public class PidIssuerTest {
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
@@ -50,26 +51,50 @@ public class PidIssuerTest {
     given().when().get(link).then().assertThat().statusCode(200);
   }
 
+  public static Stream<Arguments> credentialIssuerMetadataUrls() throws URISyntaxException {
+    URI identifier = new PidIssuerClient().getIdentifier();
+
+    return Stream.of(
+        // This is the "raw" location under the PID issuer base path
+        Arguments.of("Basic", new URI(
+            identifier.getScheme(), identifier.getAuthority(),
+            identifier.getPath() + "/.well-known/openid-credential-issuer",
+            null, null)),
+
+        // This is the standard location according to the specification
+        // https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-12.2.2
+        Arguments.of("OpenID4VCI compliant", new URI(
+            identifier.getScheme(), identifier.getAuthority(),
+            "/.well-known/openid-credential-issuer" + identifier.getPath(),
+            null, null)));
+  }
+
   @ParameterizedTest
-  @ValueSource(strings = {
-      "https://localhost/pid-issuer/.well-known/openid-credential-issuer",
-      "https://localhost/.well-known/openid-credential-issuer/pid-issuer"
-  })
-  void servesOpenIdCredentialIssuerMetadata(String url) {
-    given()
+  @MethodSource("credentialIssuerMetadataUrls")
+  void servesCredentialIssuerMetadata(
+      String labelNotUsedInTestButIncludedInDisplayName, URI uri) {
+
+    List<String> authorizationServers = given()
         .when()
-        .get(url)
+        .get(uri)
         .then()
         .assertThat().statusCode(200)
         .and().body(
             "credential_issuer",
-            is("https://localhost/pid-issuer"))
+            is(pidIssuer.getIdentifier().toString()))
         .and().body(
             "credential_request_encryption.jwks.keys",
             not(empty()))
         .and().body(
             "authorization_servers",
-            hasItem("https://localhost/idp/realms/pid-issuer-realm"));
+            not(empty()))
+        .extract().path("authorization_servers");
+
+    given()
+        .when()
+        .get(authorizationServers.getFirst())
+        .then()
+        .assertThat().statusCode(200);
   }
 
   @Test

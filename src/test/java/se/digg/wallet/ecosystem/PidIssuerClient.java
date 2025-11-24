@@ -44,6 +44,10 @@ public class PidIssuerClient {
     base = URI.create(name + "/");
   }
 
+  public URI getIdentifier() {
+    return URI.create(name);
+  }
+
   public String getName() {
     return name;
   }
