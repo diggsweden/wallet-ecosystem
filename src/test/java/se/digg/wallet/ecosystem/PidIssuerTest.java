@@ -96,14 +96,35 @@ public class PidIssuerTest {
         .extract().path("authorization_servers");
   }
 
-  @Test
-  void servesJwtVcIssuerMetadata() {
+  public static Stream<Arguments> jwtVcIssuerMetadataUrls() throws URISyntaxException {
+    URI identifier = new PidIssuerClient().getIdentifier();
+
+    return Stream.of(
+        // This is the "raw" location under the PID issuer base path
+        Arguments.of("Basic", new URI(
+            identifier.getScheme(), identifier.getAuthority(),
+            identifier.getPath() + "/.well-known/jwt-vc-issuer",
+            null, null)),
+
+        // This mimics the standard location of the credential issuer metadata
+        // https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-12.2.2
+        Arguments.of("OpenID4VCI compliant", new URI(
+            identifier.getScheme(), identifier.getAuthority(),
+            "/.well-known/jwt-vc-issuer" + identifier.getPath(),
+            null, null)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("jwtVcIssuerMetadataUrls")
+  void servesJwtVcIssuerMetadata(
+      String labelNotUsedInTestButIncludedInDisplayName, URI uri) {
+
     given()
         .when()
-        .get("https://localhost/.well-known/jwt-vc-issuer/pid-issuer")
+        .get(uri)
         .then()
         .assertThat().statusCode(200)
-        .and().body("issuer", is("https://localhost/pid-issuer"))
+        .and().body("issuer", is(pidIssuer.getIdentifier().toString()))
         .and().body("jwks.keys", not(empty()));
   }
 
