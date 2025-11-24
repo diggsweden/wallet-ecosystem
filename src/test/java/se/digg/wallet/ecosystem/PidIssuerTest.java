@@ -5,6 +5,8 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -15,13 +17,38 @@ import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class PidIssuerTest {
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
   private final KeycloakClient keycloak = new KeycloakClient();
+
+  @Test
+  void presentsUsefulLinks() {
+    Map<String, String> linksByLabel = pidIssuer.getUsefulLinks();
+
+    assertThat(linksByLabel.keySet(), containsInAnyOrder(
+        "Credential Issuer Metadata",
+        "Authorization Server Metadata",
+        "SD-JWT VC Issuer Metadata",
+        "PID SD-JWT VC Type Metadata"));
+  }
+
+  public static Stream<Arguments> usefulLinks() {
+    return new PidIssuerClient().getUsefulLinks().entrySet().stream()
+        .map(entry -> Arguments.of(entry.getKey(), entry.getValue()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("usefulLinks")
+  void linkWorks(String labelNotUsedInTestButIncludedInDisplayName, String link) {
+    given().when().get(link).then().assertThat().statusCode(200);
+  }
 
   @ParameterizedTest
   @ValueSource(strings = {
