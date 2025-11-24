@@ -21,7 +21,6 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.EncryptedJWT;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.ValidatableResponse;
 import java.net.URI;
 import java.security.interfaces.ECPrivateKey;
@@ -84,10 +83,9 @@ public class PidIssuerClient {
   }
 
   public ECKey getCredentialRequestEncryptionKey() throws ParseException {
-    String issuerMetadata = getCredentialIssuerMetadata().extract().asString();
+    Map<String, Object> jwksMap =
+        getCredentialIssuerMetadata().extract().path("credential_request_encryption.jwks");
 
-    JsonPath metadataPath = new JsonPath(issuerMetadata);
-    Map<String, Object> jwksMap = metadataPath.getMap("credential_request_encryption.jwks");
     JWKSet jwkSet = JWKSet.parse(jwksMap);
 
     return (ECKey) jwkSet.getKeys().getFirst();
