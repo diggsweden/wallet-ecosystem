@@ -27,7 +27,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jsoup.Jsoup;
@@ -39,11 +38,8 @@ public class PidIssuerClient {
   private final URI identifier;
 
   public PidIssuerClient() {
-    String baseUriWithoutFinalSlash =
-        Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI"))
-        .orElse("https://localhost/pid-issuer");
-    base = URI.create(baseUriWithoutFinalSlash + "/");
-    identifier = URI.create(baseUriWithoutFinalSlash);
+    base = ServiceIdentifier.PID_ISSUER.getResourceRoot();
+    identifier = ServiceIdentifier.PID_ISSUER.toUri();
   }
 
   public URI getIdentifier() {
