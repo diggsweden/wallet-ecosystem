@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -82,8 +83,8 @@ public class PidIssuerTest {
             not(empty()))
         .and().body(
             "authorization_servers",
-            not(empty()))
-        .extract().path("authorization_servers");
+            hasItem(ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve(
+                "realms/pid-issuer-realm").toString()));
   }
 
   public static Stream<Arguments> jwtVcIssuerMetadataUrls() {
