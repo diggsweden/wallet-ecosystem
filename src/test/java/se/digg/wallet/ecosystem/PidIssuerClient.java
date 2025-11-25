@@ -35,15 +35,9 @@ import org.jsoup.nodes.Element;
 public class PidIssuerClient {
 
   private final URI base;
-  private final URI identifier;
 
   public PidIssuerClient() {
     base = ServiceIdentifier.PID_ISSUER.getResourceRoot();
-    identifier = ServiceIdentifier.PID_ISSUER.toUri();
-  }
-
-  public URI getIdentifier() {
-    return identifier;
   }
 
   public Map<String, String> getUsefulLinks() {

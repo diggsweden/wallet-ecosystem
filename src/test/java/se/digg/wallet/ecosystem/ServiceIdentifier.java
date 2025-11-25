@@ -28,6 +28,11 @@ public enum ServiceIdentifier {
         .orElse(defaultUri);
   }
 
+  @Override
+  public String toString() {
+    return getValue();
+  }
+
   public URI toUri() {
     return URI.create(getValue());
   }

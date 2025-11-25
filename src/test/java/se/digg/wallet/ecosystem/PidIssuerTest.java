@@ -25,6 +25,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class PidIssuerTest {
+
+  private static final ServiceIdentifier IDENTIFIER = ServiceIdentifier.PID_ISSUER;
+
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
   private final KeycloakClient keycloak = new KeycloakClient();
 
@@ -57,7 +60,7 @@ public class PidIssuerTest {
   }
 
   public static Stream<Arguments> credentialIssuerMetadataUrls() throws URISyntaxException {
-    URI identifier = new PidIssuerClient().getIdentifier();
+    URI identifier = IDENTIFIER.toUri();
 
     return Stream.of(
         // This is the "raw" location under the PID issuer base path
@@ -86,7 +89,7 @@ public class PidIssuerTest {
         .assertThat().statusCode(200)
         .and().body(
             "credential_issuer",
-            is(pidIssuer.getIdentifier().toString()))
+            is(IDENTIFIER.toString()))
         .and().body(
             "credential_request_encryption.jwks.keys",
             not(empty()))
@@ -97,7 +100,7 @@ public class PidIssuerTest {
   }
 
   public static Stream<Arguments> jwtVcIssuerMetadataUrls() throws URISyntaxException {
-    URI identifier = new PidIssuerClient().getIdentifier();
+    URI identifier = IDENTIFIER.toUri();
 
     return Stream.of(
         // This is the "raw" location under the PID issuer base path
@@ -124,7 +127,7 @@ public class PidIssuerTest {
         .get(uri)
         .then()
         .assertThat().statusCode(200)
-        .and().body("issuer", is(pidIssuer.getIdentifier().toString()))
+        .and().body("issuer", is(IDENTIFIER.toString()))
         .and().body("jwks.keys", not(empty()));
   }
 

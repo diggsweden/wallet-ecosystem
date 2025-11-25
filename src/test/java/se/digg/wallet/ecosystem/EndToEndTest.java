@@ -69,7 +69,7 @@ public class EndToEndTest {
     Map<String, Object> payloadJson = pidIssuer.issueCredentials(
         accessToken, userJwk, jwk, proof, pidIssuerCredentialRequestEncryptionKey).toJSONObject();
 
-    assertEquals(pidIssuer.getIdentifier().toString(), payloadJson.get("iss"));
+    assertEquals(ServiceIdentifier.PID_ISSUER.toString(), payloadJson.get("iss"));
 
     var credentials = payloadJson.get("credentials");
     assertThat(credentials, instanceOf(List.class));
@@ -86,7 +86,7 @@ public class EndToEndTest {
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
             .issuer(jwk.toPublicJWK().toString())
-            .audience(pidIssuer.getIdentifier().toString())
+            .audience(ServiceIdentifier.PID_ISSUER.toString())
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
             .claim("wua", wua)
