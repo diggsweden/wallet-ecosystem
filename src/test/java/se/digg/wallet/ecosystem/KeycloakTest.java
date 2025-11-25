@@ -86,6 +86,8 @@ public class KeycloakTest {
         .then()
         .assertThat().statusCode(200)
         .and().body("issuer", equalTo(ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve(
-            "realms/pid-issuer-realm").toString()));
+            "realms/pid-issuer-realm").toString()))
+        .and().body("token_endpoint", equalTo(ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve(
+            "realms/pid-issuer-realm/protocol/openid-connect/token").toString()));
   }
 }
