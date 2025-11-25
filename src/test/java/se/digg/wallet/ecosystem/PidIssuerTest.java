@@ -16,7 +16,6 @@ import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -59,22 +58,10 @@ public class PidIssuerTest {
     given().when().get(link).then().assertThat().statusCode(200);
   }
 
-  public static Stream<Arguments> credentialIssuerMetadataUrls() throws URISyntaxException {
-    URI identifier = IDENTIFIER.toUri();
-
-    return Stream.of(
-        // This is the "raw" location under the PID issuer base path
-        Arguments.of("Basic", new URI(
-            identifier.getScheme(), identifier.getAuthority(),
-            identifier.getPath() + "/.well-known/openid-credential-issuer",
-            null, null)),
-
-        // This is the standard location according to the specification
-        // https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-12.2.2
-        Arguments.of("OpenID4VCI compliant", new URI(
-            identifier.getScheme(), identifier.getAuthority(),
-            "/.well-known/openid-credential-issuer" + identifier.getPath(),
-            null, null)));
+  public static Stream<Arguments> credentialIssuerMetadataUrls() {
+    return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
+        s.toString(),
+        s.applyTo(IDENTIFIER.toUri(), "openid-credential-issuer")));
   }
 
   @ParameterizedTest
@@ -99,22 +86,10 @@ public class PidIssuerTest {
         .extract().path("authorization_servers");
   }
 
-  public static Stream<Arguments> jwtVcIssuerMetadataUrls() throws URISyntaxException {
-    URI identifier = IDENTIFIER.toUri();
-
-    return Stream.of(
-        // This is the "raw" location under the PID issuer base path
-        Arguments.of("Basic", new URI(
-            identifier.getScheme(), identifier.getAuthority(),
-            identifier.getPath() + "/.well-known/jwt-vc-issuer",
-            null, null)),
-
-        // This mimics the standard location of the credential issuer metadata
-        // https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-12.2.2
-        Arguments.of("OpenID4VCI compliant", new URI(
-            identifier.getScheme(), identifier.getAuthority(),
-            "/.well-known/jwt-vc-issuer" + identifier.getPath(),
-            null, null)));
+  public static Stream<Arguments> jwtVcIssuerMetadataUrls() {
+    return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
+        s.toString(),
+        s.applyTo(IDENTIFIER.toUri(), "jwt-vc-issuer")));
   }
 
   @ParameterizedTest
