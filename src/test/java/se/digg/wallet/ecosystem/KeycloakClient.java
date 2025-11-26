@@ -26,6 +26,14 @@ public class KeycloakClient {
     this.base = base;
   }
 
+  public Response tryGetOauthAuthorizationServerMetadata(
+      String realm, MetadataLocationStrategy strategy) {
+
+    return given().when().get(strategy.applyTo(
+        base.resolve("realms/" + realm),
+        "/.well-known/oauth-authorization-server"));
+  }
+
   public String getDpopAccessToken(
       String realm, ECKey key, Map<String, String> parameters) throws JOSEException {
 

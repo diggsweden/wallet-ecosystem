@@ -21,6 +21,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.EncryptedJWT;
+import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import java.net.URI;
 import java.security.interfaces.ECPrivateKey;
@@ -38,6 +39,18 @@ public class PidIssuerClient {
 
   public PidIssuerClient() {
     base = ServiceIdentifier.PID_ISSUER.getResourceRoot();
+  }
+
+  public Response tryGetOpenIdCredentialIssuerMetadata(MetadataLocationStrategy strategy) {
+    return given().when().get(strategy.applyTo(
+        ServiceIdentifier.PID_ISSUER.toUri(),
+        "/.well-known/openid-credential-issuer"));
+  }
+
+  public Response tryGetJwtVcIssuerMetadata(MetadataLocationStrategy strategy) {
+    return given().get(strategy.applyTo(
+        ServiceIdentifier.PID_ISSUER.toUri(),
+        "/.well-known/jwt-vc-issuer"));
   }
 
   public Map<String, String> getUsefulLinks() {

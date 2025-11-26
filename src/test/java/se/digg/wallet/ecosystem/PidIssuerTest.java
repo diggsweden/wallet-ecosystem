@@ -16,12 +16,12 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
-import java.net.URI;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class PidIssuerTest {
@@ -59,20 +59,10 @@ public class PidIssuerTest {
     given().when().get(link).then().assertThat().statusCode(200);
   }
 
-  public static Stream<Arguments> credentialIssuerMetadataUrls() {
-    return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
-        s.toString(),
-        s.applyTo(IDENTIFIER.toUri(), "openid-credential-issuer")));
-  }
-
   @ParameterizedTest
-  @MethodSource("credentialIssuerMetadataUrls")
-  void servesCredentialIssuerMetadata(
-      String labelNotUsedInTestButIncludedInDisplayName, URI uri) {
-
-    given()
-        .when()
-        .get(uri)
+  @EnumSource(MetadataLocationStrategy.class)
+  void servesCredentialIssuerMetadata(MetadataLocationStrategy strategy) {
+    pidIssuer.tryGetOpenIdCredentialIssuerMetadata(strategy)
         .then()
         .assertThat().statusCode(200)
         .and().body(
@@ -87,20 +77,10 @@ public class PidIssuerTest {
                 "realms/pid-issuer-realm").toString()));
   }
 
-  public static Stream<Arguments> jwtVcIssuerMetadataUrls() {
-    return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
-        s.toString(),
-        s.applyTo(IDENTIFIER.toUri(), "jwt-vc-issuer")));
-  }
-
   @ParameterizedTest
-  @MethodSource("jwtVcIssuerMetadataUrls")
-  void servesJwtVcIssuerMetadata(
-      String labelNotUsedInTestButIncludedInDisplayName, URI uri) {
-
-    given()
-        .when()
-        .get(uri)
+  @EnumSource(MetadataLocationStrategy.class)
+  void servesJwtVcIssuerMetadata(MetadataLocationStrategy strategy) {
+    pidIssuer.tryGetJwtVcIssuerMetadata(strategy)
         .then()
         .assertThat().statusCode(200)
         .and().body("issuer", is(IDENTIFIER.toString()))
