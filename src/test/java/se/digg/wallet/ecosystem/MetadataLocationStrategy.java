@@ -15,8 +15,8 @@ public enum MetadataLocationStrategy {
    */
   BASIC {
     @Override
-    protected String getPath(String identifierPath, String metadataPath) {
-      return identifierPath + metadataPath;
+    protected String getPath(String identifierFragment, String metadataFragment) {
+      return identifierFragment + metadataFragment;
     }
   },
 
@@ -29,21 +29,21 @@ public enum MetadataLocationStrategy {
    */
   OID4VCI_COMPLIANT {
     @Override
-    protected String getPath(String identifierPath, String metadataPath) {
-      return metadataPath + identifierPath;
+    protected String getPath(String identifierFragment, String metadataFragment) {
+      return metadataFragment + identifierFragment;
     }
   };
 
-  public final URI applyTo(URI identifier, String metadata) {
+  public final URI applyTo(URI identifier, String metadataPathFragment) {
     try {
       return new URI(
           identifier.getScheme(), identifier.getAuthority(),
-          getPath(identifier.getPath(), metadata),
+          getPath(identifier.getPath(), metadataPathFragment),
           null, null);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected abstract String getPath(String identifierPath, String metadataPath);
+  protected abstract String getPath(String identifierFragment, String metadataFragment);
 }
