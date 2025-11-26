@@ -4,11 +4,11 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -16,15 +16,18 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import java.net.URI;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 public class PidIssuerTest {
+
+  private static final ServiceIdentifier IDENTIFIER = ServiceIdentifier.PID_ISSUER;
+
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
   private final KeycloakClient keycloak = new KeycloakClient();
 
@@ -44,42 +47,63 @@ public class PidIssuerTest {
         .map(entry -> Arguments.of(entry.getKey(), entry.getValue()));
   }
 
+  public static Stream<Arguments> authorizationServers() {
+    return new PidIssuerClient().getAuthorizationServers().stream()
+        .map(s -> Arguments.of("Authorization Server", s.toString()));
+  }
+
   @ParameterizedTest
   @MethodSource("usefulLinks")
+  @MethodSource("authorizationServers")
   void linkWorks(String labelNotUsedInTestButIncludedInDisplayName, String link) {
     given().when().get(link).then().assertThat().statusCode(200);
   }
 
+  public static Stream<Arguments> credentialIssuerMetadataUrls() {
+    return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
+        s.toString(),
+        s.applyTo(IDENTIFIER.toUri(), "openid-credential-issuer")));
+  }
+
   @ParameterizedTest
-  @ValueSource(strings = {
-      "https://localhost/pid-issuer/.well-known/openid-credential-issuer",
-      "https://localhost/.well-known/openid-credential-issuer/pid-issuer"
-  })
-  void servesOpenIdCredentialIssuerMetadata(String url) {
+  @MethodSource("credentialIssuerMetadataUrls")
+  void servesCredentialIssuerMetadata(
+      String labelNotUsedInTestButIncludedInDisplayName, URI uri) {
+
     given()
         .when()
-        .get(url)
+        .get(uri)
         .then()
         .assertThat().statusCode(200)
         .and().body(
             "credential_issuer",
-            is("https://localhost/pid-issuer"))
+            is(IDENTIFIER.toString()))
         .and().body(
             "credential_request_encryption.jwks.keys",
             not(empty()))
         .and().body(
             "authorization_servers",
-            hasItem("https://localhost/idp/realms/pid-issuer-realm"));
+            hasItem(ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve(
+                "realms/pid-issuer-realm").toString()));
   }
 
-  @Test
-  void servesJwtVcIssuerMetadata() {
+  public static Stream<Arguments> jwtVcIssuerMetadataUrls() {
+    return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
+        s.toString(),
+        s.applyTo(IDENTIFIER.toUri(), "jwt-vc-issuer")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("jwtVcIssuerMetadataUrls")
+  void servesJwtVcIssuerMetadata(
+      String labelNotUsedInTestButIncludedInDisplayName, URI uri) {
+
     given()
         .when()
-        .get("https://localhost/.well-known/jwt-vc-issuer/pid-issuer")
+        .get(uri)
         .then()
         .assertThat().statusCode(200)
-        .and().body("issuer", is("https://localhost/pid-issuer"))
+        .and().body("issuer", is(IDENTIFIER.toString()))
         .and().body("jwks.keys", not(empty()));
   }
 

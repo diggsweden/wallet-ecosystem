@@ -21,13 +21,12 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.EncryptedJWT;
-import io.restassured.path.json.JsonPath;
+import io.restassured.response.ValidatableResponse;
 import java.net.URI;
 import java.security.interfaces.ECPrivateKey;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jsoup.Jsoup;
@@ -35,17 +34,10 @@ import org.jsoup.nodes.Element;
 
 public class PidIssuerClient {
 
-  private final String name;
   private final URI base;
 
   public PidIssuerClient() {
-    name = Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI"))
-        .orElse("https://localhost/pid-issuer");
-    base = URI.create(name + "/");
-  }
-
-  public String getName() {
-    return name;
+    base = ServiceIdentifier.PID_ISSUER.getResourceRoot();
   }
 
   public Map<String, String> getUsefulLinks() {
@@ -79,17 +71,24 @@ public class PidIssuerClient {
   }
 
   public ECKey getCredentialRequestEncryptionKey() throws ParseException {
-    String issuerMetadata =
-        given()
-            .when()
-            .get(this.base.resolve(".well-known/openid-credential-issuer"))
-            .then().statusCode(200).extract().asString();
+    Map<String, Object> jwksMap =
+        getCredentialIssuerMetadata().extract().path("credential_request_encryption.jwks");
 
-    JsonPath metadataPath = new JsonPath(issuerMetadata);
-    Map<String, Object> jwksMap = metadataPath.getMap("credential_request_encryption.jwks");
     JWKSet jwkSet = JWKSet.parse(jwksMap);
 
     return (ECKey) jwkSet.getKeys().getFirst();
+  }
+
+  List<URI> getAuthorizationServers() {
+    return getCredentialIssuerMetadata().extract().<List<String>>path("authorization_servers")
+        .stream().map(URI::create).collect(Collectors.toList());
+  }
+
+  private ValidatableResponse getCredentialIssuerMetadata() {
+    return given()
+        .when()
+        .get(this.base.resolve(".well-known/openid-credential-issuer"))
+        .then().statusCode(200);
   }
 
   public Payload issueCredentials(String accessToken, ECKey userJwk, ECKey jwk, String proof,
