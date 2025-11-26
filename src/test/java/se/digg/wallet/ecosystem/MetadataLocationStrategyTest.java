@@ -32,6 +32,6 @@ class MetadataLocationStrategyTest {
   @ParameterizedTest
   @MethodSource("uriExamples")
   void producesExpectedUris(MetadataLocationStrategy strategy, URI identifier, URI expected) {
-    assertThat(strategy.applyTo(identifier, "openid-credential-issuer"), is(expected));
+    assertThat(strategy.applyTo(identifier, "/.well-known/openid-credential-issuer"), is(expected));
   }
 }

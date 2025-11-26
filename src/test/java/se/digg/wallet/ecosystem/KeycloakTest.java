@@ -74,8 +74,9 @@ public class KeycloakTest {
   public static Stream<Arguments> pidIssuerRealmMetadataUrls() {
     return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
         s.toString(),
-        s.applyTo(ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve(
-            "realms/pid-issuer-realm"), "oauth-authorization-server")));
+        s.applyTo(
+            ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve("realms/pid-issuer-realm"),
+            "/.well-known/oauth-authorization-server")));
   }
 
   @ParameterizedTest

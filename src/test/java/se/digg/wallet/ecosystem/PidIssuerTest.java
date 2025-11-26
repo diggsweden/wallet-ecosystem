@@ -62,7 +62,7 @@ public class PidIssuerTest {
   public static Stream<Arguments> credentialIssuerMetadataUrls() {
     return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
         s.toString(),
-        s.applyTo(IDENTIFIER.toUri(), "openid-credential-issuer")));
+        s.applyTo(IDENTIFIER.toUri(), "/.well-known/openid-credential-issuer")));
   }
 
   @ParameterizedTest
@@ -90,7 +90,7 @@ public class PidIssuerTest {
   public static Stream<Arguments> jwtVcIssuerMetadataUrls() {
     return Stream.of(MetadataLocationStrategy.values()).map(s -> Arguments.of(
         s.toString(),
-        s.applyTo(IDENTIFIER.toUri(), "jwt-vc-issuer")));
+        s.applyTo(IDENTIFIER.toUri(), "/.well-known/jwt-vc-issuer")));
   }
 
   @ParameterizedTest

@@ -38,7 +38,7 @@ public enum MetadataLocationStrategy {
     try {
       return new URI(
           identifier.getScheme(), identifier.getAuthority(),
-          getPath(identifier.getPath(), "/.well-known/" + metadata),
+          getPath(identifier.getPath(), metadata),
           null, null);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
