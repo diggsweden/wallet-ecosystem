@@ -340,5 +340,38 @@
     <setting id="org.eclipse.jdt.core.formatter.insert_space_before_opening_angle_bracket_in_type_arguments" value="do not insert"/>
     <setting id="org.eclipse.jdt.core.formatter.never_indent_block_comments_on_first_column" value="false"/>
     <setting id="org.eclipse.jdt.core.formatter.keep_then_statement_on_same_line" value="false"/>
+
+    <!-- Custom rules below -->
+
+    <!--
+      Here we allow for having the closing parenthesis of an expression on a separate line
+      instead of the default rule always keeping it on the same line as the enclosed content.
+
+      <code>
+        // This style is now allowed
+        assertThat(actual, containsInAnyOrder(
+          "foo",
+          "bar",
+          "baz"
+        ));
+
+        // This style is still allowed, but no longer enforced
+        assertThat(actual, containsInAnyOrder(
+          "foo",
+          "bar",
+          "baz"));
+      </code>
+    -->
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_annotation" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_catch_clause" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_enum_constant_declaration" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_for_statement" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_if_while_statement" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_lambda_declaration" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_method_declaration" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_method_invocation" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_record_declaration" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_switch_statement" value="preserve_positions"/>
+    <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_try_clause" value="preserve_positions"/>
   </profile>
 </profiles>
