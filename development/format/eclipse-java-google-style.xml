@@ -3,7 +3,7 @@
   <profile kind="CodeFormatterProfile" name="GoogleStyle" version="13">
     <!-- Google style guide, https://github.com/google/styleguide/blob/gh-pages/eclipse-java-google-style.xml.
     Eclipse format, which works for mvn, vscode, intellij.
-    
+
     Slightly modified due to order formatting bug in mvnplugin
         See comments where changed, Otherwise identical.
         If changes, comment them, and why.
