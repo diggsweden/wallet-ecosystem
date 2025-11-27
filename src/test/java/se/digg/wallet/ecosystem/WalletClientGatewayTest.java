@@ -8,9 +8,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import io.restassured.http.ContentType;
-import java.util.UUID;
-import org.junit.jupiter.api.Test;
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -23,12 +20,12 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.restassured.http.ContentType;
 import java.util.Date;
-import io.restassured.http.Header;
-import io.restassured.http.Headers;
-import io.restassured.response.Response;
+import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -51,59 +48,15 @@ public class WalletClientGatewayTest {
   @Order(1)
   void createSessionTest() throws Exception {
     var ecKey = generateKey();
-    // step one, create Account
-    var accountId = given()
-        .when().contentType(ContentType.JSON).body("""
-            {
-              "personalIdentityNumber": "197001011234",
-              "emailAdress": "test@hej.se",
-              "telephoneNumber": "070123123123",
-              "publicKey": %s
-                }""".formatted(ecKey.toPublicJWK().toJSONString())).header("X-API-KEY", "apikey")
-        .post("https://localhost/wallet-client-gateway/accounts/v1")
-        .then()
-        .assertThat()
-        .statusCode(201).and()
-        .extract()
-        .body()
-        .jsonPath()
-        .getString("accountId");
 
-    // step two, create challenge
-    var nonce = given()
-        .get(
-            "https://localhost/wallet-client-gateway/public/auth/session/challenge?accountId=%s&keyId=%s"
-                .formatted(accountId, "123"))
-        .then()
-        .assertThat().statusCode(200).and()
-        .extract()
-        .body()
-        .jsonPath()
-        .getString("nonce");
-    // use nonce to created signedJwt
+    var accountId = createAccount(ecKey);
+    var nonce = initChallenge(accountId);
     var signedJwt = createSignedJwt(ecKey, nonce, accountId);
+    var sessionHeader = respondToChallenge(signedJwt);
 
-    // step three, post response and expect a session in the header
-    var allHeaders = given()
-        .when().contentType(ContentType.JSON).body("""
-            {"signedJwt": "%s"}
-            """.formatted(signedJwt))
-        .post("https://localhost/wallet-client-gateway/public/auth/session/response")
-        .then()
-        .assertThat().statusCode(200)
-        .extract()
-        .response()
-        .getHeaders();
-
-    var headerSession = "";
-    for (var header : allHeaders) {
-      if (header.getName().equals("Session")) {
-        headerSession = header.getValue();
-      }
-    }
-    assert (headerSession != "");
     session = sessionHeader;
   }
+
 
 
   @Test
@@ -166,6 +119,52 @@ public class WalletClientGatewayTest {
         .algorithm(Algorithm.NONE)
         .keyUse(KeyUse.SIGNATURE)
         .generate();
+  }
+
+  private String createAccount(ECKey ecKey) {
+    return given()
+        .when().contentType(ContentType.JSON).body("""
+            {
+              "personalIdentityNumber": "197001011234",
+              "emailAdress": "test@hej.se",
+              "telephoneNumber": "070123123123",
+              "publicKey": %s
+                }""".formatted(ecKey.toPublicJWK().toJSONString())).header("X-API-KEY", "apikey")
+        .post("https://localhost/wallet-client-gateway/accounts/v1")
+        .then()
+        .assertThat()
+        .statusCode(201).and()
+        .extract()
+        .body()
+        .jsonPath()
+        .getString("accountId");
+  }
+
+  private String initChallenge(String accountId) {
+    return given()
+        .get(
+            "https://localhost/wallet-client-gateway/public/auth/session/challenge?accountId=%s&keyId=%s"
+                .formatted(accountId, "123"))
+        .then()
+        .assertThat().statusCode(200).and()
+        .extract()
+        .body()
+        .jsonPath()
+        .getString("nonce");
+  }
+
+  private String respondToChallenge(String signedJwt) {
+    return given()
+        .when().contentType(ContentType.JSON).body("""
+            {"signedJwt": "%s"}
+            """.formatted(signedJwt))
+        .post("https://localhost/wallet-client-gateway/public/auth/session/response")
+        .then()
+        .assertThat().statusCode(200)
+        .extract()
+        .response()
+        .getHeaders()
+        .getValue("session");
   }
 
   private static String createSignedJwt(ECKey ecJwk, String nonce, String accountId)

@@ -27,6 +27,28 @@ After this, the local environment can be started by:
 
 > docker compose up
 
+
+**Note:** When running the `set-host` script and running behind a corporate proxy, you might need
+to add that IP to docker's noProxy config. An example:
+```shell
+echo $HOST_IP
+```
+could yield `172.17.0.1`. In that case, you would edit your docker config and restart docker which would result in something like this:
+```shell
+cat ~/.docker/config.json 
+```
+```json
+{
+  "proxies": {
+    "default": {
+      "httpProxy": "your-regular-proxy",
+      "httpsProxy": "your-regular-proxy",
+      "noProxy": "your-regular-no-proxy,172.0.0.0/8"
+    }
+  }
+}
+```
+
 ---
 
 ## Services
@@ -41,6 +63,12 @@ After this, the local environment can be started by:
   identity provider for the PID issuer
 * [Wallet provider](https://localhost/wallet-provider),
   our service to issue and control the lifecycle of Wallet Unit of Attestations (WUA).
+* [Wallet Client Gateway](https://localhost/wallet-client-gateway),
+  our BFF for the wallet app(s).
+* [Wallet Account](https://localhost/wallet-account),
+  our service to manage user accounts.
+* [Wallet Attribute Attestation](https://localhost/wallet-attribute-attestation),
+  our service to manage user's attribute attestations
 * [Traefik](http://localhost:8080),
   used for TLS
   
