@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
@@ -90,13 +89,7 @@ public class EndToEndTest {
             .keyUse(KeyUse.SIGNATURE)
             .generate();
 
-    ECKey encryptionKey =
-        new ECKeyGenerator(Curve.P_256)
-            .algorithm(JWEAlgorithm.ECDH_ES)
-            .keyUse(KeyUse.ENCRYPTION)
-            .generate();
-
-    String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, encryptionKey);
+    String sdJwtVc = issuanceHelper.issuePidCredentialForTylerNeal(bindingKey);
 
     // 4. Create vp_token
     String vpToken =

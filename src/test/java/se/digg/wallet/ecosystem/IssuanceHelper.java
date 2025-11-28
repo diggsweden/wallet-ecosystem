@@ -6,11 +6,13 @@ package se.digg.wallet.ecosystem;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -54,7 +56,13 @@ public class IssuanceHelper {
     return sdJwtVc.endsWith("~") ? sdJwtVc + kbJwtSerialized : sdJwtVc + "~" + kbJwtSerialized;
   }
 
-  public String issuePidCredential(ECKey bindingKey, ECKey encryptionKey) throws Exception {
+  public String issuePidCredentialForTylerNeal(ECKey bindingKey) throws Exception {
+    ECKey encryptionKey =
+        new ECKeyGenerator(Curve.P_256)
+            .algorithm(JWEAlgorithm.ECDH_ES)
+            .keyUse(KeyUse.ENCRYPTION)
+            .generate();
+
     ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();
     String accessToken =
         keycloak.getDpopAccessToken(

@@ -9,19 +9,20 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import io.restassured.response.Response;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class VerifierBackendTest {
+  private static final String dcqlId = UUID.randomUUID().toString();
 
   private static final Map<String, Object> body =
       Map.of(
@@ -36,10 +37,10 @@ class VerifierBackendTest {
           "dcql_query",
           Map.of(
               "credentials",
-              java.util.List.of(
+              List.of(
                   Map.of(
                       "id",
-                      "32f54163-7166-48f1-93d8-ff217bdb0653",
+                      dcqlId,
                       "format",
                       "dc+sd-jwt",
                       "vct",
@@ -47,10 +48,10 @@ class VerifierBackendTest {
                       "meta",
                       Map.of("doctype_value", "eu.europa.ec.eudi.pid.1"))),
               "credential_sets",
-              java.util.List.of(
+              List.of(
                   Map.of(
                       "options",
-                      java.util.List.of(java.util.List.of("32f54163-7166-48f1-93d8-ff217bdb0653")),
+                      List.of(List.of(dcqlId)),
                       "purpose",
                       "We need to verify your identity"))));
   private VerifierBackendClient verifierBackendClient;
@@ -75,6 +76,7 @@ class VerifierBackendTest {
     assertNotNull(verifierRequestResponse);
     assertThat(verifierRequestResponse.transaction_id(), notNullValue());
     assertThat(verifierRequestResponse.request(), notNullValue());
+    assertThat(verifierRequestResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
   }
 
   @Test
@@ -83,7 +85,10 @@ class VerifierBackendTest {
         verifierBackendClient.createVerificationRequest(body);
     String transactionId = verificationRequest.transaction_id();
     Response response = verifierBackendClient.getVerificationEvents(transactionId);
+
     assertThat(response.getStatusCode(), is(200));
+    List<String> events = response.jsonPath().getList("events.event");
+    assertThat(events, is(List.of("Transaction initialized")));
   }
 
   @Test
@@ -94,23 +99,24 @@ class VerifierBackendTest {
             .keyUse(KeyUse.SIGNATURE)
             .generate();
 
-    ECKey encryptionKey =
-        new ECKeyGenerator(Curve.P_256)
-            .algorithm(JWEAlgorithm.ECDH_ES)
-            .keyUse(KeyUse.ENCRYPTION)
-            .generate();
-
-    String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, encryptionKey);
+    // 1. Get credential
+    String sdJwtVc = issuanceHelper.issuePidCredentialForTylerNeal(bindingKey);
     String nonce = UUID.randomUUID().toString();
 
-    // 3. Create Key Binding JWT
+    // 2. Create Key Binding JWT
     String vpToken =
         issuanceHelper.createVpToken(
             sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
 
-    // 4. Validate SD-JWT VC using the utility endpoint
+    // 3. Validate SD-JWT VC using the utility endpoint
     Response validationResponse =
         verifierBackendClient.validateSdJwtVc(vpToken, nonce, issuanceHelper.getIssuerChain());
     assertThat(validationResponse.getStatusCode(), is(200));
+    assertThat(validationResponse.jsonPath().getString("vct"), is("urn:eudi:pid:1"));
+    assertThat(validationResponse.jsonPath().getString("iss"), is("https://localhost/pid-issuer"));
+    assertThat(validationResponse.jsonPath().getString("family_name"), is("Neal"));
+    assertThat(
+        validationResponse.jsonPath().getString("issuing_authority"),
+        is("SE Administrative authority"));
   }
 }

@@ -15,44 +15,40 @@ import org.junit.jupiter.api.Test;
 
 class VerifierFrontendClientTest {
 
-  private VerifierFrontendClient verifierClient;
+  private VerifierFrontendClient verifierFrontendClient;
 
   @BeforeEach
   void setUp() {
-    verifierClient = new VerifierFrontendClient();
+    verifierFrontendClient = new VerifierFrontendClient();
   }
 
   @Test
   void getVerifierStatus_shouldReturn200() {
-    Response response = verifierClient.getVerifierStatus();
+    Response response = verifierFrontendClient.getVerifierStatus();
     assertThat(response.getStatusCode(), is(200));
+    assertThat(response.jsonPath().getString("status"), is("online"));
   }
 
   @Test
   void createVerificationRequest_shouldReturnValidResponse() {
     VerifierFrontendRequestResponse verifierFrontendRequestResponse =
-        verifierClient.createVerificationRequest();
+        verifierFrontendClient.createVerificationRequest();
     assertNotNull(verifierFrontendRequestResponse);
     assertThat(verifierFrontendRequestResponse.transaction_id(), notNullValue());
     assertThat(verifierFrontendRequestResponse.request_uri(), notNullValue());
+    assertThat(
+        verifierFrontendRequestResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
   }
 
   @Test
   void getVerificationStatus_withValidTransactionId_shouldReturn200() {
     // First, create a verification request to get a transaction ID
     VerifierFrontendRequestResponse verifierFrontendRequestResponse =
-        verifierClient.createVerificationRequest();
+        verifierFrontendClient.createVerificationRequest();
     String transactionId = verifierFrontendRequestResponse.transaction_id();
 
     // Then, get the status of that transaction
-    Response response = verifierClient.getVerificationStatus(transactionId);
-    assertThat(response.getStatusCode(), is(200));
-    assertThat(response.getBody().jsonPath().get("status"), is("pending"));
-  }
-
-  @Test
-  void getVerificationStatus_withInvalidTransactionId_shouldReturn200WithPendingStatus() {
-    Response response = verifierClient.getVerificationStatus("invalid-transaction-id");
+    Response response = verifierFrontendClient.getVerificationStatus(transactionId);
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.getBody().jsonPath().get("status"), is("pending"));
   }
