@@ -15,7 +15,10 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,31 @@ public class IssuanceHelper {
   private final KeycloakClient keycloak = new KeycloakClient();
   private final WalletProviderClient walletProvider = new WalletProviderClient();
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
+
+  public String createVpToken(String sdJwtVc, ECKey bindingKey, String nonce, String audience)
+      throws Exception {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(sdJwtVc.getBytes(StandardCharsets.US_ASCII));
+    String sdHash = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+
+    JWTClaimsSet kbJwtClaims =
+        new JWTClaimsSet.Builder()
+            .audience(audience)
+            .issueTime(Date.from(Instant.now()))
+            .claim("nonce", nonce)
+            .claim("sd_hash", sdHash)
+            .build();
+    SignedJWT kbJwt =
+        new SignedJWT(
+            new JWSHeader.Builder(JWSAlgorithm.ES256)
+                .jwk(bindingKey.toPublicJWK())
+                .type(new JOSEObjectType("kb+jwt"))
+                .build(),
+            kbJwtClaims);
+    kbJwt.sign(new ECDSASigner(bindingKey));
+    String kbJwtSerialized = kbJwt.serialize();
+    return sdJwtVc.endsWith("~") ? sdJwtVc + kbJwtSerialized : sdJwtVc + "~" + kbJwtSerialized;
+  }
 
   public String issuePidCredential(ECKey bindingKey, ECKey encryptionKey) throws Exception {
     ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();

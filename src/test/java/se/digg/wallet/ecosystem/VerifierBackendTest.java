@@ -9,19 +9,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import io.restassured.response.Response;
-import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -110,28 +104,9 @@ class VerifierBackendTest {
     String nonce = UUID.randomUUID().toString();
 
     // 3. Create Key Binding JWT
-    java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-    byte[] hash = digest.digest(sdJwtVc.getBytes(java.nio.charset.StandardCharsets.US_ASCII));
-    String sdHash = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
-
-    JWTClaimsSet kbJwtClaims =
-        new JWTClaimsSet.Builder()
-            .audience("x509_san_dns:refimpl-verifier-backend.wallet.local")
-            .issueTime(new Date())
-            .claim("nonce", nonce)
-            .claim("sd_hash", sdHash)
-            .build();
-    SignedJWT kbJwt =
-        new SignedJWT(
-            new JWSHeader.Builder(JWSAlgorithm.ES256)
-                .jwk(bindingKey.toPublicJWK())
-                .type(new JOSEObjectType("kb+jwt"))
-                .build(),
-            kbJwtClaims);
-    kbJwt.sign(new ECDSASigner(bindingKey));
-    String kbJwtSerialized = kbJwt.serialize();
     String vpToken =
-        sdJwtVc.endsWith("~") ? sdJwtVc + kbJwtSerialized : sdJwtVc + "~" + kbJwtSerialized;
+        issuanceHelper.createVpToken(
+            sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
 
     // 4. Validate SD-JWT VC using the utility endpoint
     Response validationResponse =

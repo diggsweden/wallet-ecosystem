@@ -7,23 +7,19 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import com.nimbusds.jose.JOSEObjectType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.response.Response;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.Instant;
+import java.util.Arrays;
 import java.util.Base64;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,6 +29,7 @@ public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
   private final IssuanceHelper issuanceHelper = new IssuanceHelper();
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void getCredential() throws Exception {
@@ -101,28 +98,9 @@ public class EndToEndTest {
     String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, encryptionKey);
 
     // 4. Create vp_token
-    MessageDigest digest = MessageDigest.getInstance("SHA-256");
-    byte[] hash = digest.digest(sdJwtVc.getBytes(StandardCharsets.US_ASCII));
-    String sdHash = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
-
-    JWTClaimsSet kbJwtClaims =
-        new JWTClaimsSet.Builder()
-            .audience("x509_san_dns:refimpl-verifier-backend.wallet.local")
-            .issueTime(Date.from(Instant.now()))
-            .claim("nonce", nonce)
-            .claim("sd_hash", sdHash)
-            .build();
-    SignedJWT kbJwt =
-        new SignedJWT(
-            new JWSHeader.Builder(JWSAlgorithm.ES256)
-                .jwk(bindingKey.toPublicJWK())
-                .type(new JOSEObjectType("kb+jwt"))
-                .build(),
-            kbJwtClaims);
-    kbJwt.sign(new ECDSASigner(bindingKey));
-    String kbJwtSerialized = kbJwt.serialize();
     String vpToken =
-        sdJwtVc.endsWith("~") ? sdJwtVc + kbJwtSerialized : sdJwtVc + "~" + kbJwtSerialized;
+        issuanceHelper.createVpToken(
+            sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
 
     // 5. Post wallet response
     String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
@@ -130,11 +108,50 @@ public class EndToEndTest {
         verifierBackend.postWalletResponse(responseUri, state, vpTokenJson);
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
-    // 6. Check verification status and events
+    // 6. Verify the received Verifiable Presentation Token
     Response verificationStatusResponse = verifierBackend.getVerificationStatus(transactionId);
     assertThat(verificationStatusResponse.getStatusCode(), is(200));
 
+    Map<String, List<String>> vpTokenMap = verificationStatusResponse.jsonPath().getMap("vp_token");
+    String returnedVpToken = vpTokenMap.get(dcqlId).getFirst();
+
+    String issuerSignedJwtString = returnedVpToken.split("~")[0];
+    SignedJWT issuerSignedJwt = SignedJWT.parse(issuerSignedJwtString);
+    assertThat(issuerSignedJwt.getJWTClaimsSet().getIssuer(), is("https://localhost/pid-issuer"));
+
+    Map<String, String> disclosedClaims = new HashMap<>();
+    String[] parts = returnedVpToken.split("~");
+    Arrays.stream(parts, 1, parts.length)
+        .filter(part -> !part.contains("."))
+        .forEach(
+            part -> {
+              try {
+                String decoded = new String(Base64.getUrlDecoder().decode(part));
+                JsonNode jsonArray = objectMapper.readTree(decoded);
+                if (jsonArray.isArray() && jsonArray.size() == 3) {
+                  String claimName = jsonArray.get(1).asText();
+                  String claimValue = jsonArray.get(2).asText();
+                  disclosedClaims.put(claimName, claimValue);
+                }
+              } catch (Exception e) {
+                // ignore
+              }
+            });
+
+    assertThat(disclosedClaims.get("given_name"), is("Tyler"));
+    assertThat(disclosedClaims.get("family_name"), is("Neal"));
+
+    // 7. Verify Events Response
     Response verificationEventsResponse = verifierBackend.getVerificationEvents(transactionId);
     assertThat(verificationEventsResponse.getStatusCode(), is(200));
+    List<String> events = verificationEventsResponse.jsonPath().getList("events.event");
+    assertThat(
+        events,
+        is(
+            List.of(
+                "Transaction initialized",
+                "Request object retrieved",
+                "Wallet response posted",
+                "Verifier got wallet response")));
   }
 }

@@ -14,6 +14,9 @@ import java.util.Map;
 
 public class VerifierBackendClient {
 
+  public static final String VERIFIER_AUDIENCE =
+      "x509_san_dns:refimpl-verifier-backend.wallet.local";
+
   private final URI base;
 
   public VerifierBackendClient() {
