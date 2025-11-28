@@ -13,7 +13,11 @@ public enum ServiceIdentifier {
   PID_ISSUER("https://localhost/pid-issuer",
       "DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI"),
   WALLET_PROVIDER("https://localhost/wallet-provider",
-      "DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI");
+      "DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI"),
+  VERIFIER_BACKEND("https://localhost/refimpl-verifier-backend",
+      "DIGG_WALLET_ECOSYSTEM_VERIFIER_BACKEND_BASE_URI"),
+  VERIFIER_FRONTEND("https://localhost/custom-verifier",
+      "DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI");
 
   private final String defaultUri;
   private final String environmentVariable;

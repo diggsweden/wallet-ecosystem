@@ -4,13 +4,9 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -22,78 +18,123 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.restassured.response.Response;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 public class EndToEndTest {
 
-  private final KeycloakClient keycloak = new KeycloakClient();
-  private final WalletProviderClient walletProvider = new WalletProviderClient();
-  private final PidIssuerClient pidIssuer = new PidIssuerClient();
+  private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
+  private final IssuanceHelper issuanceHelper = new IssuanceHelper();
 
   @Test
   void getCredential() throws Exception {
-    ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();
+    // 1. Initialize transaction
+    String issuerChain = issuanceHelper.getIssuerChain();
+    String nonce = UUID.randomUUID().toString();
+    String dcqlId = UUID.randomUUID().toString();
+    Map<String, Object> requestBody =
+        Map.of(
+            "type",
+            "vp_token",
+            "vp_token_type",
+            "sd-jwt",
+            "jar_mode",
+            "by_reference",
+            "nonce",
+            nonce,
+            "issuer_chain",
+            issuerChain,
+            "dcql_query",
+            Map.of(
+                "credentials",
+                List.of(
+                    Map.of(
+                        "id",
+                        dcqlId,
+                        "format",
+                        "dc+sd-jwt",
+                        "vct",
+                        "urn:eudi:pid:1",
+                        "meta",
+                        Map.of("doctype_value", "eu.europa.ec.eudi.pid.1"))),
+                "credential_sets",
+                List.of(
+                    Map.of(
+                        "options",
+                        List.of(List.of(dcqlId)),
+                        "purpose",
+                        "We need to verify your identity"))));
 
-    // 1. Get access token for user
-    String accessToken = keycloak.getDpopAccessToken("pid-issuer-realm", userJwk, Map.of(
-        "grant_type", "password",
-        "client_id", "wallet-dev",
-        "username", "tneal",
-        "password", "password",
-        "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
-        "role", "user"));
+    VerifierBackendTransactionByReferenceResponse transactionResponse =
+        verifierBackend.createVerificationRequestByReference(requestBody);
+    String transactionId = transactionResponse.transaction_id();
+    String requestUri = transactionResponse.request_uri();
 
-    // 2. Create JWK for wallet
-    ECKey jwk =
+    // 2. Get authorization request
+    Response authRequestResponse = verifierBackend.getAuthorizationRequest(requestUri);
+    String authRequest = authRequestResponse.body().asString();
+    SignedJWT signedAuthRequest = SignedJWT.parse(authRequest);
+    String state = signedAuthRequest.getJWTClaimsSet().getStringClaim("state");
+    String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
+
+    // 3. Get credential
+    ECKey bindingKey =
+        new ECKeyGenerator(Curve.P_256)
+            .algorithm(JWSAlgorithm.ES256)
+            .keyUse(KeyUse.SIGNATURE)
+            .generate();
+
+    ECKey encryptionKey =
         new ECKeyGenerator(Curve.P_256)
             .algorithm(JWEAlgorithm.ECDH_ES)
             .keyUse(KeyUse.ENCRYPTION)
             .generate();
 
-    // 3. Get WUA
-    String walletAttestation = walletProvider.getWalletUnitAttestation(jwk);
+    String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, encryptionKey);
 
-    // 4. Get nonce
-    String nonce = pidIssuer.getNonce(accessToken, userJwk);
+    // 4. Create vp_token
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(sdJwtVc.getBytes(StandardCharsets.US_ASCII));
+    String sdHash = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
 
-    // 5. Create proof
-    String proof = createProof(jwk, walletAttestation, nonce);
-
-    ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
-
-    // 6. Get credential from issuer
-    Map<String, Object> payloadJson = pidIssuer.issueCredentials(
-        accessToken, userJwk, jwk, proof, pidIssuerCredentialRequestEncryptionKey).toJSONObject();
-
-    assertEquals(ServiceIdentifier.PID_ISSUER.toString(), payloadJson.get("iss"));
-
-    var credentials = payloadJson.get("credentials");
-    assertThat(credentials, instanceOf(List.class));
-    assertThat((List<?>) credentials, not(empty()));
-  }
-
-  private String createProof(ECKey jwk, String wua, String nonce) throws JOSEException {
-    JWSHeader header =
-        new JWSHeader.Builder(JWSAlgorithm.ES256)
-            .type(new JOSEObjectType("openid4vci-proof+jwt"))
-            .jwk(jwk.toPublicJWK())
-            .build();
-
-    JWTClaimsSet claims =
+    JWTClaimsSet kbJwtClaims =
         new JWTClaimsSet.Builder()
-            .issuer(jwk.toPublicJWK().toString())
-            .audience(ServiceIdentifier.PID_ISSUER.toString())
+            .audience("x509_san_dns:refimpl-verifier-backend.wallet.local")
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
-            .claim("wua", wua)
+            .claim("sd_hash", sdHash)
             .build();
+    SignedJWT kbJwt =
+        new SignedJWT(
+            new JWSHeader.Builder(JWSAlgorithm.ES256)
+                .jwk(bindingKey.toPublicJWK())
+                .type(new JOSEObjectType("kb+jwt"))
+                .build(),
+            kbJwtClaims);
+    kbJwt.sign(new ECDSASigner(bindingKey));
+    String kbJwtSerialized = kbJwt.serialize();
+    String vpToken =
+        sdJwtVc.endsWith("~") ? sdJwtVc + kbJwtSerialized : sdJwtVc + "~" + kbJwtSerialized;
 
-    SignedJWT jwt = new SignedJWT(header, claims);
-    jwt.sign(new ECDSASigner(jwk));
-    return jwt.serialize();
+    // 5. Post wallet response
+    String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
+    Response postWalletResponse =
+        verifierBackend.postWalletResponse(responseUri, state, vpTokenJson);
+    assertThat(postWalletResponse.getStatusCode(), is(200));
+
+    // 6. Check verification status and events
+    Response verificationStatusResponse = verifierBackend.getVerificationStatus(transactionId);
+    assertThat(verificationStatusResponse.getStatusCode(), is(200));
+
+    Response verificationEventsResponse = verifierBackend.getVerificationEvents(transactionId);
+    assertThat(verificationEventsResponse.getStatusCode(), is(200));
   }
 }

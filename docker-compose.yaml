@@ -10,7 +10,7 @@ networks:
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt:v0.6.0
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt:v0.6.4
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
@@ -34,6 +34,7 @@ services:
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_PATH: "file:///opt/common/verifier_cert.p12"
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_TYPE: "PKCS12"
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
+      VERIFIER_RESPONSE_MODE: "DirectPost"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
     labels:
       - "traefik.enable=true"
@@ -108,6 +109,7 @@ services:
       - "traefik.http.routers.refimpl-verifier.rule=Host(`refimpl-verifier.wallet.local`)"
       - "traefik.http.routers.refimpl-verifier.entrypoints=websecure"
       - "traefik.http.routers.refimpl-verifier.tls=true"
+      - "traefik.http.routers.refimpl-verifier.service=refimpl-verifier"
       - "traefik.http.services.refimpl-verifier.loadbalancer.server.port=4300"
     networks:
       - wallet-ecosystem-network
@@ -146,7 +148,13 @@ services:
       - ISSUER_MDL_MSO_MDOC_ENCODER_DURATION=P5D
       - ISSUER_MDL_NOTIFICATIONS_ENABLED=true
       - ISSUER_CREDENTIALOFFER_URI=openid-credential-offer://
-      - ISSUER_SIGNING_KEY=GenerateRandom
+      - ISSUER_SIGNING_KEY=LoadFromKeystore
+      - ISSUER_SIGNING_KEY_KEYSTORE=file:///opt/common/issuer_cert.p12
+      - ISSUER_SIGNING_KEY_KEYSTORE_TYPE=PKCS12
+      - ISSUER_SIGNING_KEY_KEYSTORE_PASSWORD=pass1234
+      - ISSUER_SIGNING_KEY_ALIAS=issuer_cert
+      - ISSUER_SIGNING_KEY_PASSWORD=pass1234
+      - ISSUER_METADATA_SIGNED_METADATA_ENABLED=false
       - ISSUER_KEYCLOAK_SERVER_URL=http://keycloak:8080/idp
       - ISSUER_KEYCLOAK_AUTHENTICATION_REALM=master
       - ISSUER_KEYCLOAK_CLIENT_ID=admin-cli
@@ -160,6 +168,8 @@ services:
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_ENABLED=true
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_BATCHSIZE=10
       - ISSUER_CNONCE_EXPIRATION=PT5M
+    volumes:
+      - ./config/issuer/issuer_cert.p12:/opt/common/issuer_cert.p12:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
