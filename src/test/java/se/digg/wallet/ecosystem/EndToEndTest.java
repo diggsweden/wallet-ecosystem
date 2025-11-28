@@ -6,6 +6,7 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -134,7 +135,7 @@ public class EndToEndTest {
                   disclosedClaims.put(claimName, claimValue);
                 }
               } catch (Exception e) {
-                // ignore
+                fail("Failed to parse SD-JWT disclosure: " + e.getMessage());
               }
             });
 
