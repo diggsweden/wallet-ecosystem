@@ -6,10 +6,8 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.Curve;
@@ -21,10 +19,10 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 public class EndToEndTest {
@@ -94,24 +92,22 @@ public class EndToEndTest {
     SignedJWT issuerSignedJwt = SignedJWT.parse(issuerSignedJwtString);
     assertThat(issuerSignedJwt.getJWTClaimsSet().getIssuer(), is("https://localhost/pid-issuer"));
 
-    Map<String, String> disclosedClaims = new HashMap<>();
-    String[] parts = returnedVpToken.split("~");
-    Arrays.stream(parts, 1, parts.length)
-        .filter(part -> !part.contains("."))
-        .forEach(
-            part -> {
-              try {
-                String decoded = new String(Base64.getUrlDecoder().decode(part));
-                JsonNode jsonArray = objectMapper.readTree(decoded);
-                if (jsonArray.isArray() && jsonArray.size() == 3) {
-                  String claimName = jsonArray.get(1).asText();
-                  String claimValue = jsonArray.get(2).asText();
-                  disclosedClaims.put(claimName, claimValue);
-                }
-              } catch (Exception e) {
-                fail("Failed to parse SD-JWT disclosure: " + e.getMessage());
-              }
-            });
+    Map<String, String> disclosedClaims =
+        Arrays.stream(returnedVpToken.split("~"))
+            .skip(1)
+            .filter(part -> !part.contains("."))
+            .map(part -> new String(Base64.getUrlDecoder().decode(part)))
+            .map(
+                decoded -> {
+                  try {
+                    return objectMapper.readTree(decoded);
+                  } catch (Exception e) {
+                    throw new RuntimeException("Failed to parse SD-JWT disclosure", e);
+                  }
+                })
+            .filter(node -> node.isArray() && node.size() == 3)
+            .map(node -> List.of(node.get(1).asText(), node.get(2).asText()))
+            .collect(Collectors.toMap(List::getFirst, List::getLast, (a, b) -> b));
 
     assertThat(disclosedClaims.get("given_name"), is("Tyler"));
     assertThat(disclosedClaims.get("family_name"), is("Neal"));
@@ -120,10 +116,13 @@ public class EndToEndTest {
     Response verificationEventsResponse = verifierBackend.getVerificationEvents(transactionId);
     assertThat(verificationEventsResponse.getStatusCode(), is(200));
     List<String> events = verificationEventsResponse.jsonPath().getList("events.event");
-    assertThat(events, is(List.of(
-        "Transaction initialized",
-        "Request object retrieved",
-        "Wallet response posted",
-        "Verifier got wallet response")));
+    assertThat(
+        events,
+        is(
+            List.of(
+                "Transaction initialized",
+                "Request object retrieved",
+                "Wallet response posted",
+                "Verifier got wallet response")));
   }
 }
