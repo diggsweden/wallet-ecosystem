@@ -30,7 +30,7 @@ public class VerifierBackendClient {
     return given().when().get(base.resolve("actuator/health"));
   }
 
-  private VerifierBackendTransaction getTransaction(String body) {
+  private VerifierPresentationResponse postPresentation(String body) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
@@ -40,11 +40,11 @@ public class VerifierBackendClient {
         .then()
         .statusCode(200)
         .extract()
-        .as(VerifierBackendTransaction.class);
+        .as(VerifierPresentationResponse.class);
   }
 
-  public VerifierBackendTransaction createVerificationRequestByValue(String dcqlId) {
-    return getTransaction(getRequestBodyByValue(dcqlId));
+  public VerifierPresentationResponse createPresentationRequestByValue(String dcqlId) {
+    return postPresentation(getRequestBodyByValue(dcqlId));
   }
 
   public String getRequestBodyByValue(String dcqlId) {
@@ -72,10 +72,10 @@ public class VerifierBackendClient {
         dcqlId, dcqlId, UUID.randomUUID());
   }
 
-  public VerifierBackendTransaction createVerificationRequestByReference(
+  public VerifierPresentationResponse createPresentationRequestByReference(
       String nonce, String issuerChain, String dcqlId) {
 
-    return getTransaction(getRequestBodyByReference(nonce, issuerChain, dcqlId));
+    return postPresentation(getRequestBodyByReference(nonce, issuerChain, dcqlId));
   }
 
   public String getRequestBodyByReference(String nonce, String issuerChain, String dcqlId) {
@@ -118,7 +118,7 @@ public class VerifierBackendClient {
         .response();
   }
 
-  public Response getVerificationStatus(String transactionId) {
+  public Response getPresentationsStatus(String transactionId) {
     return given()
         .baseUri(base.toString())
         .when()
@@ -128,7 +128,7 @@ public class VerifierBackendClient {
         .response();
   }
 
-  public Response getVerificationEvents(String transactionId) {
+  public Response getPresentationsEvents(String transactionId) {
     return given()
         .baseUri(base.toString())
         .when()

@@ -26,8 +26,6 @@ class VerifierBackendTest {
   private VerifierBackendClient verifierBackendClient;
   private IssuanceHelper issuanceHelper;
 
-
-
   @BeforeEach
   void setUp() {
     verifierBackendClient = new VerifierBackendClient();
@@ -46,22 +44,22 @@ class VerifierBackendTest {
   }
 
   @Test
-  void createVerificationRequest() {
-    VerifierBackendTransaction verifierRequestResponse =
-        verifierBackendClient.createVerificationRequestByValue(dcqlId);
+  void createPresentationRequest() {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackendClient.createPresentationRequestByValue(dcqlId);
 
-    assertNotNull(verifierRequestResponse);
-    assertThat(verifierRequestResponse.transaction_id(), notNullValue());
-    assertThat(verifierRequestResponse.request(), notNullValue());
-    assertThat(verifierRequestResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
+    assertNotNull(presentationResponse);
+    assertThat(presentationResponse.transaction_id(), notNullValue());
+    assertThat(presentationResponse.request(), notNullValue());
+    assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
   }
 
   @Test
-  void returnsVerificationEvents() {
-    VerifierBackendTransaction verificationRequest =
-        verifierBackendClient.createVerificationRequestByValue(dcqlId);
-    String transactionId = verificationRequest.transaction_id();
-    Response response = verifierBackendClient.getVerificationEvents(transactionId);
+  void returnsPresentationEvents() {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackendClient.createPresentationRequestByValue(dcqlId);
+    String transactionId = presentationResponse.transaction_id();
+    Response response = verifierBackendClient.getPresentationsEvents(transactionId);
 
     assertThat(response.getStatusCode(), is(200));
     List<String> events = response.jsonPath().getList("events.event");

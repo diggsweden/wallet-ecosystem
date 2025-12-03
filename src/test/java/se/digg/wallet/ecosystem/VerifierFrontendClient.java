@@ -22,7 +22,7 @@ public class VerifierFrontendClient {
     this.base = base;
   }
 
-  public VerifierFrontendRequestResponse createVerificationRequest() {
+  public VerifierPresentationResponse createPresentationRequest() {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
@@ -42,10 +42,10 @@ public class VerifierFrontendClient {
         .then()
         .statusCode(200)
         .extract()
-        .as(VerifierFrontendRequestResponse.class);
+        .as(VerifierPresentationResponse.class);
   }
 
-  public Response getVerificationStatus(String transactionId) {
+  public Response getPresentationStatus(String transactionId) {
     return given()
         .baseUri(base.toString())
         .when()

@@ -25,24 +25,20 @@ class VerifierFrontendTest {
 
   @Test
   void createsVerificationRequest() {
-    VerifierFrontendRequestResponse verifierFrontendRequestResponse =
-        verifierFrontendClient.createVerificationRequest();
-    assertNotNull(verifierFrontendRequestResponse);
-    assertThat(verifierFrontendRequestResponse.transaction_id(), notNullValue());
-    assertThat(verifierFrontendRequestResponse.request_uri(), notNullValue());
-    assertThat(
-        verifierFrontendRequestResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
+    VerifierPresentationResponse response = verifierFrontendClient.createPresentationRequest();
+    assertNotNull(response);
+    assertThat(response.transaction_id(), notNullValue());
+    assertThat(response.request_uri(), notNullValue());
+    assertThat(response.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
   }
 
   @Test
   void returnsVerificationStatusForValidTransaction() {
-    // First, create a verification request to get a transaction ID
-    VerifierFrontendRequestResponse verifierFrontendRequestResponse =
-        verifierFrontendClient.createVerificationRequest();
-    String transactionId = verifierFrontendRequestResponse.transaction_id();
+    VerifierPresentationResponse presentationResponse =
+        verifierFrontendClient.createPresentationRequest();
+    String transactionId = presentationResponse.transaction_id();
 
-    // Then, get the status of that transaction
-    Response response = verifierFrontendClient.getVerificationStatus(transactionId);
+    Response response = verifierFrontendClient.getPresentationStatus(transactionId);
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.getBody().jsonPath().get("status"), is("pending"));
   }

@@ -38,8 +38,8 @@ public class EndToEndTest {
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
 
-    VerifierBackendTransaction transaction =
-        verifierBackend.createVerificationRequestByReference(nonce, issuerChain, dcqlId);
+    VerifierPresentationResponse transaction =
+        verifierBackend.createPresentationRequestByReference(nonce, issuerChain, dcqlId);
     String transactionId = transaction.transaction_id();
     String requestUri = transaction.request_uri();
 
@@ -82,10 +82,10 @@ public class EndToEndTest {
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
     // 6. Verify the received Verifiable Presentation Token
-    Response verificationStatusResponse = verifierBackend.getVerificationStatus(transactionId);
-    assertThat(verificationStatusResponse.getStatusCode(), is(200));
+    Response response = verifierBackend.getPresentationsStatus(transactionId);
+    assertThat(response.getStatusCode(), is(200));
 
-    Map<String, List<String>> vpTokenMap = verificationStatusResponse.jsonPath().getMap("vp_token");
+    Map<String, List<String>> vpTokenMap = response.jsonPath().getMap("vp_token");
     String returnedVpToken = vpTokenMap.get(dcqlId).getFirst();
 
     String issuerSignedJwtString = returnedVpToken.split("~")[0];
@@ -113,9 +113,9 @@ public class EndToEndTest {
     assertThat(disclosedClaims.get("family_name"), is("Neal"));
 
     // 7. Verify Events Response
-    Response verificationEventsResponse = verifierBackend.getVerificationEvents(transactionId);
-    assertThat(verificationEventsResponse.getStatusCode(), is(200));
-    List<String> events = verificationEventsResponse.jsonPath().getList("events.event");
+    Response presentationsEvents = verifierBackend.getPresentationsEvents(transactionId);
+    assertThat(presentationsEvents.getStatusCode(), is(200));
+    List<String> events = presentationsEvents.jsonPath().getList("events.event");
     assertThat(
         events,
         is(
