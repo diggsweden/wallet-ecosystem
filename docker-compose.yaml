@@ -324,12 +324,13 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.2.8
+    image: wcg-local
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
@@ -342,6 +343,12 @@ services:
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_MYPROVIDER_CLIENT_ID: "wallet-test"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_MYPROVIDER_REDIRECT-URI: "https://localhost/wallet-client-gateway/login/oauth2/code/myprovider"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_JWK_SET_URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/certs"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_AUTHORIZATION-URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/auth"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_TOKEN-URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/token"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_USER-INFO-ENDPOINT-URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/userinfo"
     ports:
       - "8082:8080"
     depends_on:
@@ -352,6 +359,8 @@ services:
       wallet-account:
         condition: service_started
       wallet-client-gateway-valkey:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     healthcheck:
       test:
