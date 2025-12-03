@@ -60,7 +60,7 @@ public class EndToEndTest {
             .keyUse(KeyUse.SIGNATURE)
             .generate();
 
-    String sdJwtVc = issuanceHelper.issuePidCredentialForTylerNeal(bindingKey);
+    String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, "tneal", "password");
 
     // 4. Create vp_token
     String vpToken =
@@ -120,13 +120,10 @@ public class EndToEndTest {
     Response verificationEventsResponse = verifierBackend.getVerificationEvents(transactionId);
     assertThat(verificationEventsResponse.getStatusCode(), is(200));
     List<String> events = verificationEventsResponse.jsonPath().getList("events.event");
-    assertThat(
-        events,
-        is(
-            List.of(
-                "Transaction initialized",
-                "Request object retrieved",
-                "Wallet response posted",
-                "Verifier got wallet response")));
+    assertThat(events, is(List.of(
+        "Transaction initialized",
+        "Request object retrieved",
+        "Wallet response posted",
+        "Verifier got wallet response")));
   }
 }

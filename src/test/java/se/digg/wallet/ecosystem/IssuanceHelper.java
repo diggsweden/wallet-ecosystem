@@ -56,7 +56,8 @@ public class IssuanceHelper {
     return sdJwtVc + kbJwtSerialized;
   }
 
-  public String issuePidCredentialForTylerNeal(ECKey bindingKey) throws Exception {
+  public String issuePidCredential(ECKey bindingKey, String username, String password)
+      throws Exception {
     ECKey encryptionKey =
         new ECKeyGenerator(Curve.P_256)
             .algorithm(JWEAlgorithm.ECDH_ES)
@@ -71,8 +72,8 @@ public class IssuanceHelper {
             Map.of(
                 "grant_type", "password",
                 "client_id", "wallet-dev",
-                "username", "tneal",
-                "password", "password",
+                "username", username,
+                "password", password,
                 "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
                 "role", "user"));
 

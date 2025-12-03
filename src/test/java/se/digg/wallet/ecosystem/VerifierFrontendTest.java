@@ -10,17 +10,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class VerifierFrontendClientTest {
+class VerifierFrontendTest {
 
-  private VerifierFrontendClient verifierFrontendClient;
-
-  @BeforeEach
-  void setUp() {
-    verifierFrontendClient = new VerifierFrontendClient();
-  }
+  private final VerifierFrontendClient verifierFrontendClient = new VerifierFrontendClient();
 
   @Test
   void getVerifierStatus_shouldReturn200() {

@@ -76,7 +76,7 @@ class VerifierBackendTest {
   }
 
   @Test
-  void createVerificationRequest_shouldReturnValidResponse() {
+  void createVerificationRequest() {
     VerifierBackendTransactionResponse verifierRequestResponse =
         verifierBackendClient.createVerificationRequest(body);
 
@@ -99,7 +99,7 @@ class VerifierBackendTest {
   }
 
   @Test
-  void validateSdJwtVcUtilityEndpoint_shouldReturnValidResponse() throws Exception {
+  void acceptsValidSdJwtVcCredential() throws Exception {
     ECKey bindingKey =
         new ECKeyGenerator(Curve.P_256)
             .algorithm(JWSAlgorithm.ES256)
@@ -107,7 +107,7 @@ class VerifierBackendTest {
             .generate();
 
     // 1. Get credential
-    String sdJwtVc = issuanceHelper.issuePidCredentialForTylerNeal(bindingKey);
+    String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, "tneal", "password");
     String nonce = UUID.randomUUID().toString();
 
     // 2. Create Key Binding JWT
@@ -116,14 +116,13 @@ class VerifierBackendTest {
             sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
 
     // 3. Validate SD-JWT VC using the utility endpoint
-    Response validationResponse =
-        verifierBackendClient.validateSdJwtVc(vpToken, nonce, issuanceHelper.getIssuerChain());
-    assertThat(validationResponse.getStatusCode(), is(200));
-    assertThat(validationResponse.jsonPath().getString("vct"), is("urn:eudi:pid:1"));
-    assertThat(validationResponse.jsonPath().getString("iss"), is("https://localhost/pid-issuer"));
-    assertThat(validationResponse.jsonPath().getString("family_name"), is("Neal"));
-    assertThat(
-        validationResponse.jsonPath().getString("issuing_authority"),
-        is("SE Administrative authority"));
+    verifierBackendClient
+        .validateSdJwtVc(vpToken, nonce, issuanceHelper.getIssuerChain())
+        .then()
+        .assertThat().statusCode(200)
+        .and().body("vct", is("urn:eudi:pid:1"))
+        .and().body("iss", is("https://localhost/pid-issuer"))
+        .and().body("family_name", is("Neal"))
+        .and().body("issuing_authority", is("SE Administrative authority"));
   }
 }
