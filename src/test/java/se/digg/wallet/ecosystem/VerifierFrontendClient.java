@@ -9,7 +9,6 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
-import java.util.Map;
 
 public class VerifierFrontendClient {
 
@@ -28,13 +27,16 @@ public class VerifierFrontendClient {
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
         .body(
-            Map.of(
-                "type",
-                "vp_token",
-                "dcql_query",
-                Map.of("credentials", new Object[] {}),
-                "nonce",
-                "nonce"))
+            """
+                {
+                      "dcql_query": {
+                          "credentials": [ {
+                          }]
+                      },
+                      "nonce": "nonce",
+                      "type": "vp_token"
+                  }
+                """)
         .when()
         .post("api/verifier-request")
         .then()

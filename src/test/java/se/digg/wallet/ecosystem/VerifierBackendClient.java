@@ -9,7 +9,6 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
-import java.util.Map;
 
 public class VerifierBackendClient {
 
@@ -30,7 +29,7 @@ public class VerifierBackendClient {
     return given().when().get(base.resolve("actuator/health"));
   }
 
-  public VerifierBackendTransactionResponse createVerificationRequest(Map<String, Object> body) {
+  public VerifierBackendTransactionResponse createVerificationRequest(String body) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)

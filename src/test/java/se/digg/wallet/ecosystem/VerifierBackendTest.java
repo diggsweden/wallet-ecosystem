@@ -17,46 +17,39 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import io.restassured.response.Response;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
-
-  private static final Map<String, Object> body =
-      Map.of(
-          "type",
-          "vp_token",
-          "vp_token_type",
-          "sd-jwt",
-          "jar_mode",
-          "by_value",
-          "nonce",
-          UUID.randomUUID().toString(),
-          "dcql_query",
-          Map.of(
-              "credentials",
-              List.of(
-                  Map.of(
-                      "id",
-                      dcqlId,
-                      "format",
-                      "dc+sd-jwt",
-                      "vct",
-                      "urn:eudi:pid:1",
-                      "meta",
-                      Map.of("doctype_value", "eu.europa.ec.eudi.pid.1"))),
-              "credential_sets",
-              List.of(
-                  Map.of(
-                      "options",
-                      List.of(List.of(dcqlId)),
-                      "purpose",
-                      "We need to verify your identity"))));
   private VerifierBackendClient verifierBackendClient;
   private IssuanceHelper issuanceHelper;
+
+  public String getRequestBody(String dcqlId) {
+    return String.format(
+        """
+            {
+                "dcql_query": {
+                    "credentials": [ {
+                            "format": "dc+sd-jwt",
+                            "vct": "urn:eudi:pid:1",
+                            "id": "%s",
+                            "meta": { "doctype_value": "eu.europa.ec.eudi.pid.1" }
+                    }],
+                    "credential_sets": [ {
+                            "purpose": "We need to verify your identity",
+                            "options": [["%s"]]
+                    }]
+                },
+                "nonce": "%s",
+                "vp_token_type": "sd-jwt",
+                "type": "vp_token",
+                "jar_mode": "by_value"
+            }
+            """,
+        dcqlId, dcqlId, UUID.randomUUID());
+  }
 
   @BeforeEach
   void setUp() {
@@ -78,7 +71,7 @@ class VerifierBackendTest {
   @Test
   void createVerificationRequest() {
     VerifierBackendTransactionResponse verifierRequestResponse =
-        verifierBackendClient.createVerificationRequest(body);
+        verifierBackendClient.createVerificationRequest(getRequestBody(dcqlId));
 
     assertNotNull(verifierRequestResponse);
     assertThat(verifierRequestResponse.transaction_id(), notNullValue());
@@ -89,7 +82,7 @@ class VerifierBackendTest {
   @Test
   void returnsVerificationEvents() {
     VerifierBackendTransactionResponse verificationRequest =
-        verifierBackendClient.createVerificationRequest(body);
+        verifierBackendClient.createVerificationRequest(getRequestBody(dcqlId));
     String transactionId = verificationRequest.transaction_id();
     Response response = verifierBackendClient.getVerificationEvents(transactionId);
 
