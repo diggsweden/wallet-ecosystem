@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.Matchers.is;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import io.restassured.http.ContentType;
@@ -27,16 +26,8 @@ public class VerifierBackendClient {
     this.base = base;
   }
 
-  public void isHealthy() {
-    given()
-        .baseUri(base.toString())
-        .when()
-        .get("actuator/health")
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("status", is("UP"));
+  public Response tryGetHealth() {
+    return given().when().get(base.resolve("actuator/health"));
   }
 
   public VerifierBackendTransactionResponse createVerificationRequest(Map<String, Object> body) {

@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,7 +66,13 @@ class VerifierBackendTest {
 
   @Test
   void isHealthy() {
-    verifierBackendClient.isHealthy();
+    verifierBackendClient
+        .tryGetHealth()
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .body("status", equalTo("UP"));
   }
 
   @Test
