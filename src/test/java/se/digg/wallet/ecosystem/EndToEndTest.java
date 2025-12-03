@@ -116,13 +116,10 @@ public class EndToEndTest {
     Response presentationsEvents = verifierBackend.getPresentationsEvents(transactionId);
     assertThat(presentationsEvents.getStatusCode(), is(200));
     List<String> events = presentationsEvents.jsonPath().getList("events.event");
-    assertThat(
-        events,
-        is(
-            List.of(
-                "Transaction initialized",
-                "Request object retrieved",
-                "Wallet response posted",
-                "Verifier got wallet response")));
+    assertThat(events, is(List.of(
+        "Transaction initialized",
+        "Request object retrieved",
+        "Wallet response posted",
+        "Verifier got wallet response")));
   }
 }

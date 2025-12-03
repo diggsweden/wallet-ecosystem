@@ -26,17 +26,16 @@ public class VerifierFrontendClient {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
-        .body(
-            """
-                {
-                      "dcql_query": {
-                          "credentials": [ {
-                          }]
-                      },
-                      "nonce": "nonce",
-                      "type": "vp_token"
-                  }
-                """)
+        .body("""
+            {
+                  "dcql_query": {
+                      "credentials": [ {
+                      }]
+                  },
+                  "nonce": "nonce",
+                  "type": "vp_token"
+              }
+            """)
         .when()
         .post("api/verifier-request")
         .then()
