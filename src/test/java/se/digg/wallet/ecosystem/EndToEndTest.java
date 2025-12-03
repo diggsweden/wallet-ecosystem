@@ -37,41 +37,9 @@ public class EndToEndTest {
     String issuerChain = issuanceHelper.getIssuerChain();
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
-    Map<String, Object> requestBody =
-        Map.of(
-            "type",
-            "vp_token",
-            "vp_token_type",
-            "sd-jwt",
-            "jar_mode",
-            "by_reference",
-            "nonce",
-            nonce,
-            "issuer_chain",
-            issuerChain,
-            "dcql_query",
-            Map.of(
-                "credentials",
-                List.of(
-                    Map.of(
-                        "id",
-                        dcqlId,
-                        "format",
-                        "dc+sd-jwt",
-                        "vct",
-                        "urn:eudi:pid:1",
-                        "meta",
-                        Map.of("doctype_value", "eu.europa.ec.eudi.pid.1"))),
-                "credential_sets",
-                List.of(
-                    Map.of(
-                        "options",
-                        List.of(List.of(dcqlId)),
-                        "purpose",
-                        "We need to verify your identity"))));
 
     VerifierBackendTransactionByReferenceResponse transactionResponse =
-        verifierBackend.createVerificationRequestByReference(requestBody);
+        verifierBackend.createVerificationRequestByReference(nonce, issuerChain, dcqlId);
     String transactionId = transactionResponse.transaction_id();
     String requestUri = transactionResponse.request_uri();
 

@@ -52,12 +52,39 @@ public class VerifierBackendClient {
         .as(VerifierBackendTransactionResponse.class);
   }
 
+  public String getRequestBody(String nonce, String issuerChain, String dcqlId) {
+    return String.format(
+        """
+            {
+                "dcql_query": {
+                    "credentials": [ {
+                            "format": "dc+sd-jwt",
+                            "vct": "urn:eudi:pid:1",
+                            "id": "%s",
+                            "meta": { "doctype_value": "eu.europa.ec.eudi.pid.1" }
+                    }],
+                    "credential_sets": [ {
+                            "purpose": "We need to verify your identity",
+                            "options": [["%s"]]
+                    }]
+                },
+                "nonce": "%s",
+                "vp_token_type": "sd-jwt",
+                "type": "vp_token",
+                "jar_mode": "by_reference",
+                "issuer_chain": "%s"
+            }
+            """,
+        dcqlId, dcqlId, nonce, issuerChain);
+  }
+
   public VerifierBackendTransactionByReferenceResponse createVerificationRequestByReference(
-      Map<String, Object> body) {
+      String nonce, String issuerChain, String dcqlId) {
+
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
-        .body(body)
+        .body(getRequestBody(nonce, issuerChain, dcqlId))
         .when()
         .post("ui/presentations")
         .then()
