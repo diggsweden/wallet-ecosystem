@@ -7,6 +7,7 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +45,8 @@ public class EndToEndTest {
     String requestUri = transactionResponse.request_uri();
 
     // 2. Get authorization request
-    Response authRequestResponse = verifierBackend.getAuthorizationRequest(requestUri);
+    Response authRequestResponse =
+        given().baseUri(requestUri).when().get().then().extract().response();
     String authRequest = authRequestResponse.body().asString();
     SignedJWT signedAuthRequest = SignedJWT.parse(authRequest);
     String state = signedAuthRequest.getJWTClaimsSet().getStringClaim("state");

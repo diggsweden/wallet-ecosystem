@@ -93,10 +93,6 @@ public class VerifierBackendClient {
         .as(VerifierBackendTransactionByReferenceResponse.class);
   }
 
-  public Response getAuthorizationRequest(String requestUri) {
-    return given().baseUri(requestUri).when().get().then().extract().response();
-  }
-
   public Response postWalletResponse(String responseUri, String state, String vpToken) {
     return given()
         .baseUri(responseUri)
