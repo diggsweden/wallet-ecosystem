@@ -34,7 +34,7 @@ public class IssuanceHelper {
   public String createVpToken(String sdJwtVc, ECKey bindingKey, String nonce, String audience)
       throws Exception {
     MessageDigest digest = MessageDigest.getInstance("SHA-256");
-    byte[] hash = digest.digest(sdJwtVc.getBytes(StandardCharsets.US_ASCII));
+    byte[] hash = digest.digest(sdJwtVc.getBytes(StandardCharsets.UTF_8));
     String sdHash = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
 
     JWTClaimsSet kbJwtClaims =
@@ -53,7 +53,7 @@ public class IssuanceHelper {
             kbJwtClaims);
     kbJwt.sign(new ECDSASigner(bindingKey));
     String kbJwtSerialized = kbJwt.serialize();
-    return sdJwtVc.endsWith("~") ? sdJwtVc + kbJwtSerialized : sdJwtVc + "~" + kbJwtSerialized;
+    return sdJwtVc + kbJwtSerialized;
   }
 
   public String issuePidCredentialForTylerNeal(ECKey bindingKey) throws Exception {
