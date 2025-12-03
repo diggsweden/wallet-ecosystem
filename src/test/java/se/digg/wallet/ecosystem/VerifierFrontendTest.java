@@ -17,14 +17,14 @@ class VerifierFrontendTest {
   private final VerifierFrontendClient verifierFrontendClient = new VerifierFrontendClient();
 
   @Test
-  void getVerifierStatus_shouldReturn200() {
+  void returnsVerifierStatus() {
     Response response = verifierFrontendClient.getVerifierStatus();
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.jsonPath().getString("status"), is("online"));
   }
 
   @Test
-  void createVerificationRequest_shouldReturnValidResponse() {
+  void createsVerificationRequest() {
     VerifierFrontendRequestResponse verifierFrontendRequestResponse =
         verifierFrontendClient.createVerificationRequest();
     assertNotNull(verifierFrontendRequestResponse);
@@ -35,7 +35,7 @@ class VerifierFrontendTest {
   }
 
   @Test
-  void getVerificationStatus_withValidTransactionId_shouldReturn200() {
+  void returnsVerificationStatusForValidTransaction() {
     // First, create a verification request to get a transaction ID
     VerifierFrontendRequestResponse verifierFrontendRequestResponse =
         verifierFrontendClient.createVerificationRequest();

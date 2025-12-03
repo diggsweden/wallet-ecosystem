@@ -87,7 +87,7 @@ class VerifierBackendTest {
   }
 
   @Test
-  void getVerificationEvents_shouldReturnValidResponse() {
+  void returnsVerificationEvents() {
     VerifierBackendTransactionResponse verificationRequest =
         verifierBackendClient.createVerificationRequest(body);
     String transactionId = verificationRequest.transaction_id();
