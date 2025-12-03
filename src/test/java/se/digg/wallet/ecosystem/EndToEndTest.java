@@ -17,6 +17,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.Arrays;
 import java.util.Base64;
@@ -69,7 +70,17 @@ public class EndToEndTest {
     // 5. Post wallet response
     String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
     Response postWalletResponse =
-        verifierBackend.postWalletResponse(responseUri, state, vpTokenJson);
+        given()
+            .baseUri(responseUri)
+            .contentType(ContentType.URLENC)
+            .formParam("state", state)
+            .formParam("vp_token", vpTokenJson)
+            .when()
+            .post()
+            .then()
+            .extract()
+            .response();
+
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
     // 6. Verify the received Verifiable Presentation Token

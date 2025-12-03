@@ -93,19 +93,6 @@ public class VerifierBackendClient {
         .as(VerifierBackendTransactionByReferenceResponse.class);
   }
 
-  public Response postWalletResponse(String responseUri, String state, String vpToken) {
-    return given()
-        .baseUri(responseUri)
-        .contentType(ContentType.URLENC)
-        .formParam("state", state)
-        .formParam("vp_token", vpToken)
-        .when()
-        .post()
-        .then()
-        .extract()
-        .response();
-  }
-
   public Response validateSdJwtVc(String sdJwtVc, String nonce, String issuerChain) {
     return given()
         .baseUri(base.toString())
