@@ -113,9 +113,9 @@ public class EndToEndTest {
     assertThat(disclosedClaims.get("family_name"), is("Neal"));
 
     // 7. Verify Events Response
-    Response presentationsEvents = verifierBackend.getPresentationsEvents(transactionId);
-    assertThat(presentationsEvents.getStatusCode(), is(200));
-    List<String> events = presentationsEvents.jsonPath().getList("events.event");
+    Response presentationEvents = verifierBackend.getPresentationEvents(transactionId);
+    assertThat(presentationEvents.getStatusCode(), is(200));
+    List<String> events = presentationEvents.jsonPath().getList("events.event");
     assertThat(events, is(List.of(
         "Transaction initialized",
         "Request object retrieved",

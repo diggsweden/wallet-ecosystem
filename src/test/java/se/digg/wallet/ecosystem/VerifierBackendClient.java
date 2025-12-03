@@ -128,7 +128,7 @@ public class VerifierBackendClient {
         .response();
   }
 
-  public Response getPresentationsEvents(String transactionId) {
+  public Response getPresentationEvents(String transactionId) {
     return given()
         .baseUri(base.toString())
         .when()

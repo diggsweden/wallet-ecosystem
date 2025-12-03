@@ -44,7 +44,7 @@ class VerifierBackendTest {
   }
 
   @Test
-  void createPresentationRequest() {
+  void createsPresentationRequest() {
     VerifierPresentationResponse presentationResponse =
         verifierBackendClient.createPresentationRequestByValue(dcqlId);
 
@@ -59,7 +59,7 @@ class VerifierBackendTest {
     VerifierPresentationResponse presentationResponse =
         verifierBackendClient.createPresentationRequestByValue(dcqlId);
     String transactionId = presentationResponse.transaction_id();
-    Response response = verifierBackendClient.getPresentationsEvents(transactionId);
+    Response response = verifierBackendClient.getPresentationEvents(transactionId);
 
     assertThat(response.getStatusCode(), is(200));
     List<String> events = response.jsonPath().getList("events.event");
