@@ -26,30 +26,7 @@ class VerifierBackendTest {
   private VerifierBackendClient verifierBackendClient;
   private IssuanceHelper issuanceHelper;
 
-  public String getRequestBody(String dcqlId) {
-    return String.format(
-        """
-            {
-                "dcql_query": {
-                    "credentials": [ {
-                            "format": "dc+sd-jwt",
-                            "vct": "urn:eudi:pid:1",
-                            "id": "%s",
-                            "meta": { "doctype_value": "eu.europa.ec.eudi.pid.1" }
-                    }],
-                    "credential_sets": [ {
-                            "purpose": "We need to verify your identity",
-                            "options": [["%s"]]
-                    }]
-                },
-                "nonce": "%s",
-                "vp_token_type": "sd-jwt",
-                "type": "vp_token",
-                "jar_mode": "by_value"
-            }
-            """,
-        dcqlId, dcqlId, UUID.randomUUID());
-  }
+
 
   @BeforeEach
   void setUp() {
@@ -70,8 +47,8 @@ class VerifierBackendTest {
 
   @Test
   void createVerificationRequest() {
-    VerifierBackendTransactionResponse verifierRequestResponse =
-        verifierBackendClient.createVerificationRequest(getRequestBody(dcqlId));
+    VerifierBackendTransaction verifierRequestResponse =
+        verifierBackendClient.createVerificationRequestByValue(dcqlId);
 
     assertNotNull(verifierRequestResponse);
     assertThat(verifierRequestResponse.transaction_id(), notNullValue());
@@ -81,8 +58,8 @@ class VerifierBackendTest {
 
   @Test
   void returnsVerificationEvents() {
-    VerifierBackendTransactionResponse verificationRequest =
-        verifierBackendClient.createVerificationRequest(getRequestBody(dcqlId));
+    VerifierBackendTransaction verificationRequest =
+        verifierBackendClient.createVerificationRequestByValue(dcqlId);
     String transactionId = verificationRequest.transaction_id();
     Response response = verifierBackendClient.getVerificationEvents(transactionId);
 

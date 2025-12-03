@@ -38,10 +38,10 @@ public class EndToEndTest {
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
 
-    VerifierBackendTransactionByReferenceResponse transactionResponse =
+    VerifierBackendTransaction transaction =
         verifierBackend.createVerificationRequestByReference(nonce, issuerChain, dcqlId);
-    String transactionId = transactionResponse.transaction_id();
-    String requestUri = transactionResponse.request_uri();
+    String transactionId = transaction.transaction_id();
+    String requestUri = transaction.request_uri();
 
     // 2. Get authorization request
     Response authRequestResponse =

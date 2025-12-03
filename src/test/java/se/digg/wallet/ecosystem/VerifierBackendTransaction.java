@@ -5,6 +5,10 @@
 package se.digg.wallet.ecosystem;
 
 @SuppressWarnings("checkstyle:RecordComponentName")
-public record VerifierBackendTransactionResponse(
-    String transaction_id, String client_id, String request) {
+public record VerifierBackendTransaction(
+    String transaction_id,
+    String client_id,
+    String request_uri,
+    String request_uri_method,
+    String request) {
 }

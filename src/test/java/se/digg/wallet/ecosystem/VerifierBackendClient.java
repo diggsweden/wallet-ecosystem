@@ -9,6 +9,7 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
+import java.util.UUID;
 
 public class VerifierBackendClient {
 
@@ -29,7 +30,7 @@ public class VerifierBackendClient {
     return given().when().get(base.resolve("actuator/health"));
   }
 
-  public VerifierBackendTransactionResponse createVerificationRequest(String body) {
+  private VerifierBackendTransaction getTransaction(String body) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
@@ -39,10 +40,45 @@ public class VerifierBackendClient {
         .then()
         .statusCode(200)
         .extract()
-        .as(VerifierBackendTransactionResponse.class);
+        .as(VerifierBackendTransaction.class);
   }
 
-  public String getRequestBody(String nonce, String issuerChain, String dcqlId) {
+  public VerifierBackendTransaction createVerificationRequestByValue(String dcqlId) {
+    return getTransaction(getRequestBodyByValue(dcqlId));
+  }
+
+  public String getRequestBodyByValue(String dcqlId) {
+    return String.format(
+        """
+            {
+                "dcql_query": {
+                    "credentials": [ {
+                            "format": "dc+sd-jwt",
+                            "vct": "urn:eudi:pid:1",
+                            "id": "%s",
+                            "meta": { "doctype_value": "eu.europa.ec.eudi.pid.1" }
+                    }],
+                    "credential_sets": [ {
+                            "purpose": "We need to verify your identity",
+                            "options": [["%s"]]
+                    }]
+                },
+                "nonce": "%s",
+                "vp_token_type": "sd-jwt",
+                "type": "vp_token",
+                "jar_mode": "by_value"
+            }
+            """,
+        dcqlId, dcqlId, UUID.randomUUID());
+  }
+
+  public VerifierBackendTransaction createVerificationRequestByReference(
+      String nonce, String issuerChain, String dcqlId) {
+
+    return getTransaction(getRequestBodyByReference(nonce, issuerChain, dcqlId));
+  }
+
+  public String getRequestBodyByReference(String nonce, String issuerChain, String dcqlId) {
     return String.format(
         """
             {
@@ -66,21 +102,6 @@ public class VerifierBackendClient {
             }
             """,
         dcqlId, dcqlId, nonce, issuerChain);
-  }
-
-  public VerifierBackendTransactionByReferenceResponse createVerificationRequestByReference(
-      String nonce, String issuerChain, String dcqlId) {
-
-    return given()
-        .baseUri(base.toString())
-        .contentType(ContentType.JSON)
-        .body(getRequestBody(nonce, issuerChain, dcqlId))
-        .when()
-        .post("ui/presentations")
-        .then()
-        .statusCode(200)
-        .extract()
-        .as(VerifierBackendTransactionByReferenceResponse.class);
   }
 
   public Response validateSdJwtVc(String sdJwtVc, String nonce, String issuerChain) {
