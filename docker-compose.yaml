@@ -341,14 +341,15 @@ services:
       PROPERTIES_WALLETPROVIDER_WUAPATH: "/wallet-unit-attestation"
       PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
+      PROPERTIES_AUTHORIZATION_SERVER_BASEURL: "http://keycloak:8080/idp"
+      PROPERTIES_AUTHORIZATION_SERVER_PRIVATE_JWT_AUDIENCE: "https://localhost/idp/realms/wallet/protocol/openid-connect/token"
+      PROPERTIES_OIDC_CLAIMS_PERSONAL_IDENTITY_NUMBER: personalIdentityNumberClaim
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_MYPROVIDER_CLIENT_ID: "wallet-test"
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_MYPROVIDER_REDIRECT-URI: "https://localhost/wallet-client-gateway/login/oauth2/code/myprovider"
-      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_JWK_SET_URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/certs"
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_AUTHORIZATION-URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/auth"
-      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_TOKEN-URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/token"
-      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYPROVIDER_USER-INFO-ENDPOINT-URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/userinfo"
+      SERVER_FORWARD_HEADERS_STRATEGY: "framework"
     ports:
       - "8082:8080"
     depends_on:
@@ -400,6 +401,7 @@ services:
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
+
     healthcheck:
       test: "bash /opt/keycloak/health-check.sh"
       interval: 5s

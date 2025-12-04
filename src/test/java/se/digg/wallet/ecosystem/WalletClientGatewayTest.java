@@ -4,12 +4,12 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.matchesPattern;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.LogConfig.logConfig;
 import static io.restassured.config.SSLConfig.sslConfig;
-
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -24,12 +24,12 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.RestAssured;
 import io.restassured.filter.cookie.CookieFilter;
-import io.restassured.filter.session.SessionFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import java.util.Date;
 import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -37,7 +37,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
-  
+
 
   static RequestSpecification given() {
     return RestAssured.given()
@@ -52,7 +52,15 @@ public class WalletClientGatewayTest {
   }
 
   private static final String KEY_ID = "123";
-  private static String session = "";
+  private static ECKey ecKey;
+  private static String oidcSession;
+  private static String accountId;
+  private static String session;
+
+  @BeforeAll
+  static void beforeAll() throws Exception {
+    ecKey = generateKey();
+  }
 
   @Test
   void isHealthy() {
@@ -66,22 +74,48 @@ public class WalletClientGatewayTest {
 
   @Test
   @Order(1)
-  void createSessionTest() throws Exception {
-    var ecKey = generateKey();
+  void loginOidc() throws Exception {
+    oidcSession = oidcLogin(ecKey);
+    assertNotNull(oidcSession);
+  }
 
-    var accountId = createAccount(ecKey);
-    System.out.println("Expected an account " + accountId);
-    // var nonce = initChallenge(accountId);
-    // var signedJwt = createSignedJwt(ecKey, nonce, accountId);
-    // var sessionHeader = respondToChallenge(signedJwt);
+  @Test
+  @Order(2)
+  void createAccount() throws Exception {
+    accountId = given()
+        .when()
+        .contentType(ContentType.JSON)
+        .cookie("SESSION", oidcSession)
+        .body("""
+            {
+              "emailAdress": "test@hej.se",
+              "telephoneNumber": "070123123123",
+              "publicKey": %s
+                }""".formatted(ecKey.toPublicJWK().toJSONString()))
+        .post("https://localhost/wallet-client-gateway/oidc/accounts/v1")
+        .then()
+        .assertThat()
+        .statusCode(201)
+        .and()
+        .extract()
+        .response()
+        .jsonPath()
+        .getString("accountId");
+    assertNotNull(accountId);
+  }
 
-    session = "sessionHeader";
+  @Test
+  @Order(3)
+  void loginChallengeResponse() throws Exception {
+    var nonce = initChallenge(accountId);
+    var signedJwt = createSignedJwt(ecKey, nonce, accountId);
+    session = respondToChallenge(signedJwt);
+
+    assertNotNull(session);
   }
 
 
-
   @Test
-  @Order(99)
   void createsAndGetAttributeAttestation()
       throws Exception {
     var createdId = given().when().contentType(ContentType.JSON).body("""
@@ -142,8 +176,8 @@ public class WalletClientGatewayTest {
         .generate();
   }
 
-  private String createAccount(ECKey ecKey) {
-  CookieFilter cookies = new CookieFilter();
+  private String oidcLogin(ECKey ecKey) { // TODO no nneed for key
+    CookieFilter cookies = new CookieFilter();
 
     var springSession = given()
         .filter(cookies)
@@ -155,7 +189,6 @@ public class WalletClientGatewayTest {
               "publicKey": %s
                 }""".formatted(ecKey.toPublicJWK().toJSONString()))
         .post("https://localhost/wallet-client-gateway/oidc/accounts/v1")
-        
         .then()
         .assertThat()
         .statusCode(302).and()
@@ -163,58 +196,45 @@ public class WalletClientGatewayTest {
         .response();
 
     var redirectUrl = springSession.getHeader("Location");
-    var sessionId = springSession.header("session");
-    System.out.println("Session " + springSession);
-    System.out.print("redirect URL " + redirectUrl); //need https ?
-    redirectUrl =  redirectUrl.replace("http:", "https:");
 
-    var keyCloakSession =  new SessionFilter();
-  
-    var myProviderResponse =  given()
-      .filter(keyCloakSession)
-      .filter(cookies)
-      .redirects().follow(false)
-      .get(redirectUrl)
-      .then()
-      .extract()
-      .response();
-
-    System.out.println("Status on myprovider" + myProviderResponse.getStatusCode());  
+    var myProviderResponse = given()
+        .filter(cookies)
+        .redirects().follow(false)
+        .get(redirectUrl)
+        .then()
+        .extract()
+        .response();
 
     var redirectUrltoKeyCloak = myProviderResponse.getHeader("Location");
-    var sessionId2 = myProviderResponse.header("session");
-    System.out.println("Session " + springSession.toString());
-    System.out.print("redirectUrltoKeyCloak " + redirectUrltoKeyCloak  +  "  session2 "+  sessionId2);
-     redirectUrltoKeyCloak =  redirectUrltoKeyCloak.replace("http:", "https:");
-     var keycloakLoginPage = given()
-                .filter(cookies)
-                 .filter(keyCloakSession)
-                .redirects().follow(true)
-                .get(redirectUrltoKeyCloak);
-     String loginAction = keycloakLoginPage.htmlPath().getString("**.find { it.@id=='kc-form-login' }.@action");
-        System.out.println("Keycloak login action: " + loginAction);
+    var keycloakLoginPage = given()
+        .filter(cookies)
+        .redirects().follow(true)
+        .log().all()
+        .urlEncodingEnabled(false)
+        .get(redirectUrltoKeyCloak);
 
-     var loginResponse = given()
-                .filter(cookies)
-                .filter(keyCloakSession)
-                .redirects().follow(false)
-                .formParam("username", "test1")
-                .formParam("password", "test1")
-                .post(loginAction);
+    String loginAction =
+        keycloakLoginPage.htmlPath().getString("**.find { it.@id=='kc-form-login' }.@action");
+    var loginResponse = given()
+        .filter(cookies)
+        .redirects().follow(false)
+        .formParam("username", "test1")
+        .formParam("password", "test1")
+        .log()
+        .all()
+        .post(loginAction);
 
-     String backToApp = loginResponse.getHeader("Location");
-      System.out.println("Redirect after login: " + backToApp);
+    String backToApp = loginResponse.getHeader("Location");
     var applicationResponse = given()
-          .filter(cookies)
-          .filter(keyCloakSession)
-          .redirects().follow(false)
-          .get(backToApp);
-    System.out.println("Result: " + applicationResponse.statusCode());
-    System.out.println("Final session:  " + applicationResponse.getSessionId());
-     System.out.println("Final header:  " + applicationResponse.headers().toString());
-    System.out.println("We have some session ID: " + keyCloakSession.getSessionId());
-    return keyCloakSession.getSessionId();
+        .filter(cookies)
+        .redirects().follow(false)
+        .urlEncodingEnabled(false)
+        .log()
+        .all()
+        .get(backToApp);
 
+    System.out.println("We have some session ID: " + applicationResponse.cookies());
+    return applicationResponse.cookie("SESSION");
   }
 
   private String initChallenge(String accountId) {
@@ -256,96 +276,9 @@ public class WalletClientGatewayTest {
         new JWSHeader.Builder(JWSAlgorithm.ES256).keyID(ecJwk.getKeyID()).build(),
         claimsSet);
 
-    // Compute the EC signature
     signedJwt.sign(signer);
 
-    // Serialize the JWS to compact form
     return signedJwt.serialize();
   }
-
-   private final String APP_BASE = "https://localhost/wallet-client-gateway";
-    private final String KEYCLOAK_BASE = "http://localhost:8180";
-    private final String REALM = "myrealm";
-    private final String CLIENT_ID = "myclient";
-    
-    @Test
-    void testOidcLoginFlow() {
-
-        CookieFilter cookies = new CookieFilter();
-
-        //
-        // 1️⃣ Call your app (this endpoint triggers Spring Security redirect to OIDC)
-        //
-        var createAccount = given()
-                .filter(cookies)
-                .redirects().follow(false)
-                .post(APP_BASE + "/oidc/createAccount");
-
-        String authRedirect = createAccount.getHeader("Location").replace("http", "https");
-        System.out.println("Redirected to: " + authRedirect);
-
-        // assertThat(authRedirect, containsString("/realms/" + REALM + "/protocol/openid-connect/auth"));
-        var springRoutePage = given()
-                .filter(cookies)
-                .redirects().follow(false)
-                .get(authRedirect)
-                ;
-        String keycloakRedirect = springRoutePage.getHeader("Location");
-        System.out.println("Redirected to: " + keycloakRedirect);
-        //
-        // 2️⃣ Follow redirect to Keycloak login page (GET)
-        //
-        var keycloakLoginPage = given()
-                .filter(cookies)
-                .redirects().follow(true)
-                .get(keycloakRedirect);
-
-        // Extract login form action URL (Keycloak changes this per login session)
-        String loginAction = keycloakLoginPage.htmlPath().getString("**.find { it.@id=='kc-form-login' }.@action");
-        System.out.println("Keycloak login action: " + loginAction);
-
-        //
-        // 3️⃣ POST username/password to Keycloak login form
-        //
-        var loginResponse = given()
-                .filter(cookies)
-                .redirects().follow(false)
-                .formParam("username", "testuser")
-                .formParam("password", "testpassword")
-                .post(loginAction);
-
-        String backToApp = loginResponse.getHeader("Location");
-        // assertThat(backToApp, containsString(APP_BASE));
-
-        System.out.println("Redirect after login: " + backToApp);
-
-        //
-        // 4️⃣ Follow redirect back to your Spring Boot app (authorization_code callback)
-        //
-        var callbackResponse = given()
-                .filter(cookies)
-                .redirects().follow(true)
-                .get(backToApp);
-
-        //
-        // 5️⃣ Spring Boot now automatically exchanges the authorization code with Keycloak.
-        //     If successful, it issues a SESSION cookie.
-        //
-
-        String sessionId = "";
-        System.out.println("SESSION cookie = " + sessionId);
-
-        // assertThat("Spring session must exist after successful OIDC login", sessionId != null);
-
-        //
-        // 6️⃣ Optional: Access a secured endpoint with the session cookie
-        //
-        // var secured = RestAssured.given()
-        //         .filter(cookies)
-        //         .get(APP_BASE + "/secured/profile");
-
-        // secured.then().statusCode(200);
-        // System.out.println("Secured content: " + secured.getBody().asString());
-    }
 
 }
