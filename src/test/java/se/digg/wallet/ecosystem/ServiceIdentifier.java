@@ -17,7 +17,9 @@ public enum ServiceIdentifier {
   VERIFIER_BACKEND("https://localhost/refimpl-verifier-backend",
       "DIGG_WALLET_ECOSYSTEM_VERIFIER_BACKEND_BASE_URI"),
   VERIFIER_FRONTEND("https://localhost/custom-verifier",
-      "DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI");
+      "DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI"),
+  WALLET_CLIENT_GATEWAY("https://localhost/wallet-client-gateway",
+      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI");
 
   private final String defaultUri;
   private final String environmentVariable;
