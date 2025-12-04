@@ -4,12 +4,12 @@
 
 package se.digg.wallet.ecosystem;
 
-import static io.restassured.config.EncoderConfig.encoderConfig;
-import static io.restassured.config.LogConfig.logConfig;
-import static io.restassured.config.SSLConfig.sslConfig;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
+
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -22,7 +22,6 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import io.restassured.RestAssured;
 import io.restassured.filter.cookie.CookieFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -36,20 +35,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
-
-
-
-  static RequestSpecification given() {
-    return RestAssured.given()
-        .config(
-            RestAssured.config()
-                .sslConfig(sslConfig().relaxedHTTPSValidation())
-                .logConfig(logConfig().enableLoggingOfRequestAndResponseIfValidationFails())
-                .encoderConfig(
-                    encoderConfig()
-                        .encodeContentTypeAs("application/jwt", ContentType.TEXT)
-                        .appendDefaultContentCharsetToContentTypeIfUndefined(false)));
-  }
 
   private static final String KEY_ID = "123";
   private static ECKey ecKey;
@@ -75,7 +60,7 @@ public class WalletClientGatewayTest {
   @Test
   @Order(1)
   void loginOidc() throws Exception {
-    oidcSession = oidcLogin(ecKey);
+    oidcSession = oidcLogin();
     assertNotNull(oidcSession);
   }
 
@@ -176,7 +161,7 @@ public class WalletClientGatewayTest {
         .generate();
   }
 
-  private String oidcLogin(ECKey ecKey) { // TODO no nneed for key
+  private String oidcLogin() {
     CookieFilter cookies = new CookieFilter();
 
     var springSession = given()
