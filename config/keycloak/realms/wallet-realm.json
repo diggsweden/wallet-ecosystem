@@ -33,6 +33,35 @@
       ]
     }
   ],
+  "clientScopes": [
+    {
+      "id": "naturalPersonNumber",
+      "name": "https://id.oidc.se/scope/naturalPersonNumber",
+      "description": "https://id.oidc.se/scope/naturalPersonNumber",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "https://id.oidc.se/scope/naturalPersonNumber"
+      },
+      "protocolMappers": [
+        {
+          "name": "personalIdentityNumber claim",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "personalIdentityNumberClaim",
+            "jsonType.label": "String",
+            "user.attribute": "lastName"
+          }
+        }
+      ]
+    }
+  ],
   "clients": [
     {
       "clientId": "wallet-test",
@@ -52,23 +81,9 @@
       "webOrigins": [
         "https://localhost"
       ],
-      "protocolMappers": [
-        {
-          "name": "personalIdentityNumber claim",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "userinfo.token.claim": "true",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-
-            "claim.name": "personalIdentityNumberClaim",
-            "jsonType.label": "String",
-            "user.attribute": "lastName"
-          }
-        }
-    ]
+      "optionalClientScopes": [
+        "https://id.oidc.se/scope/naturalPersonNumber"
+      ]
     }
   ]
 }

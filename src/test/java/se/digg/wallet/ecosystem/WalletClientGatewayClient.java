@@ -5,6 +5,7 @@
 package se.digg.wallet.ecosystem;
 
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
+
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
@@ -23,7 +24,7 @@ public class WalletClientGatewayClient {
     return given()
         .when().contentType(ContentType.JSON).body(postBody)
         .cookie("SESSION", oidcSession)
-        .post(base.resolve("accounts/v1"))
+        .post(base.resolve("oidc/accounts/v1"))
         .then()
         .assertThat()
         .statusCode(201).and()

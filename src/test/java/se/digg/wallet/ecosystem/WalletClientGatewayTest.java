@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
+
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -57,6 +58,7 @@ public class WalletClientGatewayTest {
   void loginOidc() throws Exception {
     oidcSession = oidcLogin();
     assertNotNull(oidcSession);
+    System.out.println("OIDC Session: " + oidcSession);
   }
 
   @Test
@@ -72,16 +74,18 @@ public class WalletClientGatewayTest {
             """.formatted(ecKey.toPublicJWK().toJSONString()),
         oidcSession);
     assertNotNull(accountId);
+    System.out.println("Account id: " + accountId);
   }
 
   @Test
   @Order(3)
   void loginChallengeResponse() throws Exception {
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
-    var signedJwt = createSignedJwt(ecKey, nonce, accountId);
+    var signedJwt = createSignedJwt(ecKey, nonce);
     session = walletClientGateway.respondToChallenge(signedJwt);
 
     assertNotNull(session);
+    System.out.println("Challenge response session: " + session);
   }
 
 
@@ -177,11 +181,10 @@ public class WalletClientGatewayTest {
         .all()
         .get(loginResponse.getHeader("Location"));
 
-    System.out.println("We have a session ID: " + applicationResponse.cookies());
     return applicationResponse.cookie("SESSION");
   }
 
-  private static String createSignedJwt(ECKey ecJwk, String nonce, String accountId)
+  private static String createSignedJwt(ECKey ecJwk, String nonce)
       throws JOSEException {
     var claims = new JWTClaimsSet.Builder()
         .claim("nonce", nonce)
