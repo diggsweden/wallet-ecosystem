@@ -16,7 +16,6 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
@@ -88,12 +87,6 @@ public class IssuanceHelper {
             .toJSONObject();
 
     return extractSdJwtVc(payloadJson);
-  }
-
-  public String getIssuerChain() throws IOException {
-    return new String(
-        java.nio.file.Files.readAllBytes(
-            java.nio.file.Paths.get("config/issuer/issuer_chain.pem")));
   }
 
   private String createProof(ECKey jwk, String wua, String nonce) throws JOSEException {
