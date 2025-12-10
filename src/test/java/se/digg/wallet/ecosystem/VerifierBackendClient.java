@@ -9,12 +9,14 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 public class VerifierBackendClient {
 
   public static final String VERIFIER_AUDIENCE =
-      "x509_san_dns:refimpl-verifier-backend.wallet.local";
+      Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_VERIFIER_AUDIENCE"))
+          .orElse("x509_san_dns:refimpl-verifier-backend.wallet.local");
 
   private final URI base;
 
@@ -73,12 +75,12 @@ public class VerifierBackendClient {
   }
 
   public VerifierPresentationResponse createPresentationRequestByReference(
-      String nonce, String issuerChain, String dcqlId) {
+      String nonce, String dcqlId) {
 
-    return postPresentation(getRequestBodyByReference(nonce, issuerChain, dcqlId));
+    return postPresentation(getRequestBodyByReference(nonce, dcqlId));
   }
 
-  public String getRequestBodyByReference(String nonce, String issuerChain, String dcqlId) {
+  public String getRequestBodyByReference(String nonce, String dcqlId) {
     return String.format(
         """
             {
@@ -97,20 +99,18 @@ public class VerifierBackendClient {
                 "nonce": "%s",
                 "vp_token_type": "sd-jwt",
                 "type": "vp_token",
-                "jar_mode": "by_reference",
-                "issuer_chain": "%s"
+                "jar_mode": "by_reference"
             }
             """,
-        dcqlId, dcqlId, nonce, issuerChain);
+        dcqlId, dcqlId, nonce);
   }
 
-  public Response validateSdJwtVc(String sdJwtVc, String nonce, String issuerChain) {
+  public Response validateSdJwtVc(String sdJwtVc, String nonce) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.URLENC)
         .formParam("sd_jwt_vc", sdJwtVc)
         .formParam("nonce", nonce)
-        .formParam("issuer_chain", issuerChain)
         .when()
         .post("utilities/validations/sdJwtVc")
         .then()

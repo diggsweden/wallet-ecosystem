@@ -34,12 +34,11 @@ public class EndToEndTest {
   @Test
   void getCredential() throws Exception {
     // 1. Initialize transaction
-    String issuerChain = issuanceHelper.getIssuerChain();
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
 
     VerifierPresentationResponse transaction =
-        verifierBackend.createPresentationRequestByReference(nonce, issuerChain, dcqlId);
+        verifierBackend.createPresentationRequestByReference(nonce, dcqlId);
     String transactionId = transaction.transaction_id();
     String requestUri = transaction.request_uri();
 
@@ -90,7 +89,8 @@ public class EndToEndTest {
 
     String issuerSignedJwtString = returnedVpToken.split("~")[0];
     SignedJWT issuerSignedJwt = SignedJWT.parse(issuerSignedJwtString);
-    assertThat(issuerSignedJwt.getJWTClaimsSet().getIssuer(), is("https://localhost/pid-issuer"));
+    assertThat(issuerSignedJwt.getJWTClaimsSet().getIssuer(),
+        is(ServiceIdentifier.PID_ISSUER.toString()));
 
     Map<String, String> disclosedClaims =
         Arrays.stream(returnedVpToken.split("~"))

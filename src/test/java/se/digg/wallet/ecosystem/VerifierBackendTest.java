@@ -85,11 +85,11 @@ class VerifierBackendTest {
 
     // 3. Validate SD-JWT VC using the utility endpoint
     verifierBackendClient
-        .validateSdJwtVc(vpToken, nonce, issuanceHelper.getIssuerChain())
+        .validateSdJwtVc(vpToken, nonce)
         .then()
         .assertThat().statusCode(200)
         .and().body("vct", is("urn:eudi:pid:1"))
-        .and().body("iss", is("https://localhost/pid-issuer"))
+        .and().body("iss", is(ServiceIdentifier.PID_ISSUER.toString()))
         .and().body("family_name", is("Neal"))
         .and().body("issuing_authority", is("SE Administrative authority"));
   }
