@@ -76,9 +76,9 @@ public class IssuanceHelper {
                 "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
                 "role", "user"));
 
-    String walletAttestation = walletProvider.getWalletUnitAttestation(bindingKey);
     String nonce = pidIssuer.getNonce(accessToken, userJwk);
-    String proof = createProof(bindingKey, walletAttestation, nonce);
+    String walletAttestation = walletProvider.getWalletUnitAttestation(bindingKey, nonce);
+    String proof = createProof(bindingKey, walletAttestation,nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =
         pidIssuer
@@ -93,7 +93,7 @@ public class IssuanceHelper {
     JWSHeader header =
         new JWSHeader.Builder(JWSAlgorithm.ES256)
             .type(new JOSEObjectType("openid4vci-proof+jwt"))
-            .jwk(jwk.toPublicJWK())
+            .customParam("key_attestation", wua)
             .build();
 
     JWTClaimsSet claims =
@@ -102,7 +102,6 @@ public class IssuanceHelper {
             .audience(ServiceIdentifier.PID_ISSUER.toString())
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
-            .claim("wua", wua)
             .build();
 
     SignedJWT jwt = new SignedJWT(header, claims);

@@ -27,7 +27,8 @@ public class WalletProviderTest {
   @Test
   void createsWalletUnitAttestation() throws Exception {
     String wua = walletProvider.getWalletUnitAttestation(
-        new ECKeyGenerator(Curve.P_256).generate());
+        new ECKeyGenerator(Curve.P_256).generate(),
+      "nonce");
 
     assertThat(wua, matchesPattern(
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
