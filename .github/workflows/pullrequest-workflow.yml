@@ -31,7 +31,3 @@ jobs:
       linters.commitlint: false
       linters.licenselint: false
       linters.publiccodelint: false
-      # Disable build and test - this is an orchestration project
-      # Integration tests require docker-compose services running
-      build.enabled: false
-      test.enabled: false
