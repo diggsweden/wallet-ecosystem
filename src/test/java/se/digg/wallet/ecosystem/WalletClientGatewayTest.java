@@ -158,7 +158,6 @@ public class WalletClientGatewayTest {
     var keycloakLoginPage = given()
         .filter(cookies)
         .redirects().follow(true)
-        .log().all()
         .urlEncodingEnabled(false)
         .get(redirectToKeycloakLogin.getHeader("Location"));
 
@@ -169,16 +168,12 @@ public class WalletClientGatewayTest {
         .redirects().follow(false)
         .formParam("username", "test1")
         .formParam("password", "test1")
-        .log()
-        .all()
         .post(loginAction);
 
     var applicationResponse = given()
         .filter(cookies)
         .redirects().follow(false)
         .urlEncodingEnabled(false)
-        .log()
-        .all()
         .get(loginResponse.getHeader("Location"));
 
     return applicationResponse.cookie("SESSION");
