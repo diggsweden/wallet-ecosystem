@@ -20,7 +20,11 @@ SPDX-License-Identifier: CC0-1.0
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
+    <!-- Plugin versions -->
     <formatter-maven-plugin.version>2.29.0</formatter-maven-plugin.version>
+    <spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
+    <checkstyle-maven-plugin.version>3.6.0</checkstyle-maven-plugin.version>
+    <pmd-maven-plugin.version>3.27.0</pmd-maven-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -107,6 +111,48 @@ SPDX-License-Identifier: CC0-1.0
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <!-- SpotBugs -->
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs-maven-plugin.version}</version>
+        <configuration>
+          <effort>Max</effort>
+          <threshold>Medium</threshold>
+          <xmlOutput>true</xmlOutput>
+          <failOnError>false</failOnError>
+          <includeTests>true</includeTests>
+        </configuration>
+      </plugin>
+
+      <!-- Checkstyle -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle-maven-plugin.version}</version>
+        <configuration>
+          <configLocation>${project.basedir}/development/lint/google_checks.xml</configLocation>
+          <consoleOutput>true</consoleOutput>
+          <failsOnError>true</failsOnError>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+        </configuration>
+      </plugin>
+
+      <!-- PMD -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>${pmd-maven-plugin.version}</version>
+        <configuration>
+          <rulesets>
+            <ruleset>${project.basedir}/development/sast/pmd_default_java.xml</ruleset>
+          </rulesets>
+          <failOnViolation>true</failOnViolation>
+          <printFailingErrors>true</printFailingErrors>
+          <includeTests>true</includeTests>
+        </configuration>
       </plugin>
     </plugins>
   </build>

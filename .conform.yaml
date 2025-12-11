@@ -19,10 +19,12 @@ policies:
       conventional:
         types:
           [
-            "chore",
             "build",
-            "docs",
+            "chore",
             "ci",
+            "docs",
+            "feat",
+            "fix",
             "perf",
             "refactor",
             "style",
