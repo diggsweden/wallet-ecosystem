@@ -24,16 +24,20 @@ public class WalletProviderClient {
         .get(base.resolve("actuator/health"));
   }
 
-  public String getWalletUnitAttestation(ECKey jwk) throws JsonProcessingException {
+  public String getWalletUnitAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
     return given()
         .when()
         .contentType(ContentType.JSON)
         .body(
             String.format("""
-                { "walletId": "%s", "jwk": %s }""",
+                {
+                  "walletId": "%s",
+                  "jwk": %s,
+                  "nonce": "%s"
+                }""",
                 UUID.randomUUID(),
-                new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString())))
-        .post(base.resolve("wallet-unit-attestation"))
+                new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()), nonce))
+        .post(base.resolve("wallet-unit-attestation/v2"))
         .then()
         .assertThat()
         .statusCode(200)
