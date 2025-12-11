@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>diggsweden/.github//renovate-base.json"
+  ],
+  "packageRules": [
+    {
+      "description": "Group EU Digital Identity Wallet docker images",
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^ghcr.io/eu-digital-identity-wallet/"],
+      "groupName": "EU Digital Identity Wallet images"
+    },
+    {
+      "description": "Group Digg wallet docker images",
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^ghcr.io/diggsweden/wallet-"],
+      "groupName": "Digg wallet images"
+    },
+    {
+      "description": "Group infrastructure docker images",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["postgres", "traefik", "valkey/valkey", "quay.io/keycloak/keycloak"],
+      "groupName": "Infrastructure images"
+    }
+  ]
+}
