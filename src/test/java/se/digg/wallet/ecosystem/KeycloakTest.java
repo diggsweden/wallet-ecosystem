@@ -36,24 +36,15 @@ public class KeycloakTest {
         .body("status", equalTo("UP"));
   }
 
-  @Test
-  void servesPidIssuerRealm() {
-    keycloak.tryGetRealm("pid-issuer-realm")
+  @ParameterizedTest
+  @ValueSource(strings = {"pid-issuer-realm", "wallet"})
+  void servesRealm(String name) {
+    keycloak.tryGetRealm(name)
         .then()
         .assertThat()
         .statusCode(200)
         .and()
-        .body("realm", equalTo("pid-issuer-realm"));
-  }
-
-  @Test
-  void servesWalletRealm() {
-    keycloak.tryGetRealm("wallet")
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("realm", equalTo("wallet"));
+        .body("realm", equalTo(name));
   }
 
   @Test
