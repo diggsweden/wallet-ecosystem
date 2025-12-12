@@ -47,6 +47,16 @@ public class KeycloakTest {
   }
 
   @Test
+  void servesWalletRealm() {
+    keycloak.tryGetRealm("wallet")
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .body("realm", equalTo("wallet"));
+  }
+
+  @Test
   void canGetDpopAccessTokenForClientCredentials() throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
