@@ -24,6 +24,7 @@ SPDX-License-Identifier: CC0-1.0
     <formatter-maven-plugin.version>2.29.0</formatter-maven-plugin.version>
     <spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
     <checkstyle-maven-plugin.version>3.6.0</checkstyle-maven-plugin.version>
+    <checkstyle.version>12.2.0</checkstyle.version>
     <pmd-maven-plugin.version>3.27.0</pmd-maven-plugin.version>
   </properties>
   <dependencyManagement>
@@ -142,7 +143,7 @@ SPDX-License-Identifier: CC0-1.0
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.21.0</version>
+            <version>${checkstyle.version}</version>
           </dependency>
         </dependencies>
       </plugin>
