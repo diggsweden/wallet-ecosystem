@@ -158,6 +158,10 @@ lint-java-pmd:
 lint-java-fmt:
     @{{java_lint}}/format.sh check
 
+# Lint container files (Dockerfile/Containerfile)
+[group('lint')]
+lint-container:
+
 # ==================================================================================== #
 # LINT-FIX - Auto-fix code issues
 # ==================================================================================== #
