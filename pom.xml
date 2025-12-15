@@ -138,6 +138,13 @@ SPDX-License-Identifier: CC0-1.0
           <failsOnError>true</failsOnError>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>10.21.0</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <!-- PMD -->
