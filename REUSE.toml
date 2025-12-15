@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
+#
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+
+[[annotations]]
+path = [
+  "README.md",
+  "DEVELOPMENT.md",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 The Wallet Ecosystem Authors"
+SPDX-License-Identifier = "CC0-1.0"
