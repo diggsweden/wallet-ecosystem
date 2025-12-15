@@ -8,6 +8,7 @@ version = 1
 path = [
   "README.md",
   "DEVELOPMENT.md",
+  "renovate.json",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 The Wallet Ecosystem Authors"
