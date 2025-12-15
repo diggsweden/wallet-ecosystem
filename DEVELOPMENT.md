@@ -259,7 +259,6 @@ just lint-markdown-fix  # Fix markdown formatting
 just lint-java-fmt-fix  # Fix Java formatting
 ```
 
-
 ### Pull Request Workflow
 
 1. Make your changes

@@ -27,16 +27,19 @@ After this, the local environment can be started by:
 
 > docker compose up
 
-
 **Note:** When running the `set-host` script and running behind a corporate proxy, you might need
 to add that IP to docker's noProxy config. An example:
+
 ```shell
 echo $HOST_IP
 ```
+
 could yield `172.17.0.1`. In that case, you would edit your docker config and restart docker which would result in something like this:
+
 ```shell
 cat ~/.docker/config.json 
 ```
+
 ```json
 {
   "proxies": {
@@ -71,7 +74,7 @@ cat ~/.docker/config.json
   our service to manage user's attribute attestations
 * [Traefik](http://localhost:8080),
   used for TLS
-  
+
 ---
 
 ## Building Images
@@ -84,7 +87,7 @@ The following prerequisites are needed for running the scrips:
 
 ### Hosts File
 
-- Edit your computer's hosts-file to contain mappings from `127.0.0.1`
+* Edit your computer's hosts-file to contain mappings from `127.0.0.1`
   to local services at `*.wallet.local`
 
 ```text
