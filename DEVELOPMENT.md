@@ -5,7 +5,8 @@ This guide outlines core essentials for developing in this project.
 ## Table of Contents
 
 - [Setup and Configuration](#setup-and-configuration)
-  - [Prerequisites](#prerequisites)
+  - [Prerequisites](#prerequisites---linux)
+  - [Prerequisites](#prerequisites---macos)
   - [IDE Setup](#ide-setup)
 - [Development Workflow](#development-workflow)
   - [Docker Compose Services](#docker-compose-services)
