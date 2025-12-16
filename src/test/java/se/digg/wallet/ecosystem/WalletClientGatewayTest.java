@@ -140,7 +140,7 @@ public class WalletClientGatewayTest {
     var redirectToKeycloak = given()
         .filter(cookies)
         .when().contentType(ContentType.JSON).body("bogusbody")
-        .post("https://localhost/wallet-client-gateway/oidc/accounts/v1")
+        .post(ServiceIdentifier.WALLET_CLIENT_GATEWAY.getResourceRoot().resolve("oidc/accounts/v1"))
         .then()
         .assertThat()
         .statusCode(302).and()
