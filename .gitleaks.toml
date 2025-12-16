@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+title = "Wallet Ecosystem Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+targetRules = ["generic-api-key", "private-key"]
+description = "We accept 'secrets' in our local docker configuration and our tests"
+paths = [
+    '^config/',
+    '^docker-compose.yaml$',
+    '^src/test/java/',
+
+    # This path was used in the first commits, but is no longer used.
+    # We still need to allow this path to avoid linting errors.
+    '^eudi-srv-pid-issuer/docker-compose/',
+]
