@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   pr-checks:
-    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@e29145e720cef0b86ef147c72c2d001b5ac6c8b9 # v2.4.2
+    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@e1e1387d5b0399bb5edb00e40485746772344176 # v2.6.0
     permissions:
       contents: read
       packages: read
@@ -24,8 +24,8 @@ jobs:
     secrets: inherit
     with:
       project-type: meta
-      # Use just+mise linting (replaces megalint, commitlint, licenselint)
-      linters.justmiselint: true
+      # Use devbase-check linting (replaces megalint, commitlint, licenselint)
+      linters.devbasecheck: true
       linters.megalint: false
       linters.commitlint: false
       linters.licenselint: false
