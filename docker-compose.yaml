@@ -47,7 +47,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: ghcr.io/diggsweden/wallet-provider:main
+    image: wp-local
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
@@ -141,6 +141,7 @@ services:
       - ISSUER_PID_SD_JWT_VC_ENABLED=true
       - ISSUER_PID_SD_JWT_VC_NOTUSEBEFORE=PT20S
       - ISSUER_PID_SD_JWT_VC_NOTIFICATIONS_ENABLED=true
+      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_REQUIRED=true
       - ISSUER_PID_ISSUINGCOUNTRY=SE
       - ISSUER_PID_ISSUINGJURISDICTION=SE-Y # Västernorrland
       - ISSUER_EHIC_ISSUINGCOUNTRY=SE
