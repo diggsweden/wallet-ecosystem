@@ -304,7 +304,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.3.0
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.3.1
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -318,8 +318,8 @@ services:
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
       SERVER_PORT: "8080"
       PROPERTIES_APISECRET: "apikey"
-      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
-      PROPERTIES_WALLETPROVIDER_WUAPATH: "/wallet-unit-attestation"
+      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080"
+      PROPERTIES_WALLETPROVIDER_WUAPATH: "/wallet-provider/wallet-unit-attestation"
       PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
       PROPERTIES_AUTHORIZATION_SERVER_PRIVATE_JWT_AUDIENCE: "https://localhost/idp/realms/wallet/protocol/openid-connect/token"
@@ -328,11 +328,9 @@ services:
       ENVIRONMENT_OAUTH2_CLIENT_ID: "wallet-test"
       ENVIRONMENT_OAUTH2_PRIVATE_JWT_KEY_FILE: file:/opt/keystore-wallet-app-bff-local.p12
       ENVIRONMENT_OAUTH2_PRIVATE_JWT_KEY_FILE_PASSWORD: changeit
-      ENVIRONMENT_OAUTH2_PRIVATE_JWT_FILE_TYPE: PKCS12
-      ENVIRONMENT_OAUTH2_JKS_STORE_REFERENCE: private-jwt-keys
-      ENVIRONMENT_OAUTH2_JKS_NAME: Private JWT - KeyPair
-      ENVIRONMENT_OAUTH2_JKS_KEY_ALIAS: wallet-app-bff-local
-      ENVIRONMENT_OAUTH2_JKS_KEY_PASSWORD: changeit
+      ENVIRONMENT_OAUTH2_PRIVATE_JWT_KEY_FILE_TYPE: PKCS12
+      ENVIRONMENT_OAUTH2_PRIVATE_JWT_KEY_ALIAS: wallet-app-bff-local
+      ENVIRONMENT_OAUTH2_PRIVATE_JWT_KEY_PASSWORD: changeit
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_IAM_REDIRECT-URI: "https://localhost/wallet-client-gateway/login/oauth2/code/iam"
