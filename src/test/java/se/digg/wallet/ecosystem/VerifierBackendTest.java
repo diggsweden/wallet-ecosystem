@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
@@ -33,6 +34,9 @@ class VerifierBackendTest {
   }
 
   @Test
+  @DisabledIfEnvironmentVariable(
+      named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH",
+      matches = "true")
   void isHealthy() {
     verifierBackendClient
         .tryGetHealth()

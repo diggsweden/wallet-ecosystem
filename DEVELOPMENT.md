@@ -217,6 +217,12 @@ In order to avoid test failures in those situations, you can skip those tests li
 env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH=true just test
 ```
 
+Similarly, you can skip the verifier backend tests like so:
+
+```shell
+env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH=true just test
+```
+
 ### Quality Checks
 
 This project uses `just` + `mise` for local quality checks.
