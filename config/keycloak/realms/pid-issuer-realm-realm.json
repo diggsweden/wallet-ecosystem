@@ -699,7 +699,8 @@
         "urn:ietf:wg:oauth:2.0:oob",
         "eudi-openid4ci://authorize",
         "eudi-issuance://authorization",
-        "eu.europa.ec.euidi://authorization"
+        "eu.europa.ec.euidi://authorization",
+        "wallet-app://authorize"
       ],
       "webOrigins": [
         "/*"
@@ -1013,7 +1014,8 @@
         "urn:ietf:wg:oauth:2.0:oob",
         "eudi-openid4ci://authorize",
         "eudi-issuance://authorization",
-        "eu.europa.ec.euidi://authorization"
+        "eu.europa.ec.euidi://authorization",
+        "wallet-app://authorize"
       ],
       "webOrigins": [
         "/*"

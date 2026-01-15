@@ -168,6 +168,8 @@ services:
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_ENABLED=true
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_BATCHSIZE=10
       - ISSUER_CNONCE_EXPIRATION=PT5M
+      - ISSUER_METADATA_DISPLAY_0_LOGO_URI=https://wallet.sandbox.digg.se/images/digg_logo.jpeg
+      - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
     volumes:
       - ./config/issuer/issuer_cert.p12:/opt/common/issuer_cert.p12:ro
     labels:
