@@ -162,6 +162,26 @@ lint-java-fmt:
 [group('lint')]
 lint-container:
 
+# Detect unversioned changes
+[group('lint')]
+lint-version-control:
+    #!/usr/bin/env bash
+    source "{{colors}}"
+    print_header "VERSION CONTROL"
+    if test -z "$(git status --porcelain | awk '{$1=$1};1')"; then
+      just_success "All changes are under version control"
+    else
+      just_error "Some changes are not under version control!
+
+      This can happen if
+
+        1. You forgot to version control your changes
+        2. A linter automatically fixed a problem or reformatted the code.
+
+      Please accept or discard any outstanding changes and try again."
+      return 1
+    fi
+
 # ==================================================================================== #
 # LINT-FIX - Auto-fix code issues
 # ==================================================================================== #
