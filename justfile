@@ -179,6 +179,7 @@ lint-version-control:
         2. A linter automatically fixed a problem or reformatted the code.
 
       Please accept or discard any outstanding changes and try again."
+      return 1
     fi
 
 # ==================================================================================== #
