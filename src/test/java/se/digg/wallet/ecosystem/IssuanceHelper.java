@@ -78,7 +78,7 @@ public class IssuanceHelper {
 
     String nonce = pidIssuer.getNonce(accessToken, userJwk);
     String walletAttestation = walletProvider.getWalletUnitAttestation(bindingKey, nonce);
-    String proof = createProof(bindingKey, walletAttestation,nonce);
+    String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =
         pidIssuer
