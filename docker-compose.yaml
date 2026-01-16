@@ -257,7 +257,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account:
-    image: ghcr.io/diggsweden/wallet-account:v0.0.2
+    image: ghcr.io/diggsweden/wallet-account:v0.0.4
     container_name: wallet-account
     hostname: wallet-account
     volumes:
