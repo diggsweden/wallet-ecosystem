@@ -162,6 +162,7 @@ lint-java-fmt:
 [group('lint')]
 lint-container:
 
+# Detect unversioned changes
 [group('lint')]
 lint-version-control:
     #!/usr/bin/env bash
