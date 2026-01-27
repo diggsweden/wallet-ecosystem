@@ -364,6 +364,177 @@ services:
       - "traefik.http.services.wallet-client-gateway.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
+
+  r2ps-rest-api:
+    profiles:
+        - r2ps
+    build:
+      context: .
+      dockerfile: ./r2ps-rest-api/Containerfile
+      # replace with image: ???
+    ports:
+      - "8088:8088"
+      - "9012:8000"
+    restart: on-failure
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+      SPRING_DATA_REDIS_HOST: "valkey"
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_USERNAME: "default"
+      SPRING_DATA_REDIS_PASSWORD: "secret"
+      SPRING_DATA_REDIS_DATABASE: 0
+      TZ: "Europe/Stockholm"
+    env_file: .env
+    networks:
+      - wallet-ecosystem-network
+
+  rust-r2ps-worker:
+    profiles:
+      - r2ps
+    build:
+      context: ./rust-r2ps-worker
+      dockerfile: Containerfile
+      # replace with image: ???
+    environment:
+      RUST_LOG: info
+      BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+      CLIENT_PUBLIC_KEY: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFMjMzWWFVbmlYcEV1TlkxNVp5Sm1xaSt0NFZ0SApFMEJzRnlNNmZNV3ZMNHh0ZGlEN3U4dTJlVFpsV3NLL1hyWVBDb2JFUlViUGFLVUo5VytsMTlDV1VBPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
+      SERVER_PUBLIC_KEY: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJVekNCKzZBREFnRUNBaFJzaUxSdEhYcFVSaWYwWGZ5SDZUU3hzTkQ3eFRBS0JnZ3Foa2pPUFFRREFqQVoKTVJjd0ZRWURWUVFEREE1SVUwMHRjMlZ5ZG1WeUxXdGxlVEFlRncweU5UQTNNVFV3T0RRNE16aGFGdzB6TlRBMwpNVFV3T0RRNE16aGFNQmt4RnpBVkJnTlZCQU1NRGtoVFRTMXpaWEoyWlhJdGEyVjVNRmt3RXdZSEtvWkl6ajBDCkFRWUlLb1pJemowREFRY0RRZ0FFcHpReHVYTGVpUHl6aXRNS1FiVVNWT0QzQXhiK2w5THFWanM1R25ZYW5BMWsKNEFtTVVUb1dwSVR3NVhYTTQ4TlBoYmdNaG9NMEZVcDRPUTI2ei92Q1FhTWhNQjh3SFFZRFZSME9CQllFRk5vKwppRFlNZW5ZSXZFanNpRDJuT3VDK1UvSHBNQW9HQ0NxR1NNNDlCQU1DQTBjQU1FUUNJRnFOOXRuRzlwNnd1S1RxCmhzNitJRFhVZHFTK0p4Y1ZTbVI0MXhOOGVwR3VBaUJIL0RqQngxSUl4ZlF1ajI0OGlqRytoa2dZcENJbmpLM0wKeWRLbkg2WVpuQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+      SERVER_PRIVATE_KEY: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZy9OSUlkUkdPK3FVMmJqeFQKdG5adUM0NWdBZzZ3WjBVR2U5bkNlTTd3YzB5aFJBTkNBQVNuTkRHNWN0NkkvTE9LMHdwQnRSSlU0UGNERnY2WAowdXBXT3prYWRocWNEV1RnQ1l4Uk9oYWtoUERsZGN6ancwK0Z1QXlHZ3pRVlNuZzVEYnJQKzhKQgotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0t
+      PKCS11_SLOT: 0
+      USER_PIN: 123456
+      SO_PIN: ""
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+    networks:
+      - wallet-ecosystem-network
+
+  x-kafka-common: &kafka-common
+    profiles:
+        - r2ps
+    image: apache/kafka-native:latest
+    environment: &kafka-env
+      KAFKA_CLUSTER_ID: NjM0OUVDRTItMTg2Ni00QU
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+
+  kafka-1:
+    profiles:
+      - r2ps
+    <<: *kafka-common
+    container_name: kafka-1
+    ports:
+      - "9092:9092"
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://:19092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:19092,EXTERNAL://localhost:9092
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 19092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - wallet-ecosystem-network
+
+  kafka-2:
+    profiles:
+      - r2ps
+    <<: *kafka-common
+    container_name: kafka-2
+    ports:
+      - "9093:9092"
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: 2
+      KAFKA_LISTENERS: PLAINTEXT://:19092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:19092,EXTERNAL://localhost:9093
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 19092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - wallet-ecosystem-network
+  kafka-3:
+    profiles:
+      - r2ps
+    <<: *kafka-common
+    container_name: kafka-3
+    ports:
+      - "9094:9092"
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: 3
+      KAFKA_LISTENERS: PLAINTEXT://:19092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:19092,EXTERNAL://localhost:9094
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 19092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - wallet-ecosystem-network
+
+  init-kafka:
+    profiles:
+      - r2ps
+    image: apache/kafka:latest
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-e", "/tmp/init-kafka-topics.sh"]
+    volumes:
+      - ./config/init-kafka-topics.sh:/tmp/init-kafka-topics.sh
+
+    networks:
+      - wallet-ecosystem-network
+
+  # Optional: Kafka UI for management
+  kafka-ui:
+    profiles:
+      - r2ps
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: wallet-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+    networks:
+      - wallet-ecosystem-network
+      
   keycloak:
     image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak

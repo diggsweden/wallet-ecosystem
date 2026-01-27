@@ -19,7 +19,10 @@ public enum ServiceIdentifier {
   VERIFIER_FRONTEND("https://localhost/custom-verifier",
       "DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI"),
   WALLET_CLIENT_GATEWAY("https://localhost/wallet-client-gateway",
-      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI");
+      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI"),
+  R2PS_REST_API("https://localhost/r2ps-rest-api",
+      "DIGG_WALLET_ECOSYSTEM_R2PS_REST_API_BASE_URI");
+
 
   private final String defaultUri;
   private final String environmentVariable;
