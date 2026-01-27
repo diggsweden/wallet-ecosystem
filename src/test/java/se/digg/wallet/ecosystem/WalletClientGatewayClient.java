@@ -23,6 +23,7 @@ public class WalletClientGatewayClient {
   public String createAccount(String postBody, String oidcSession) {
     return given()
         .when().contentType(ContentType.JSON).body(postBody)
+        .header("SESSION", oidcSession)
         .cookie("SESSION", oidcSession)
         .post(base.resolve("oidc/accounts/v1"))
         .then()
