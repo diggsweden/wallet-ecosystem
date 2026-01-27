@@ -47,7 +47,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: wp-local
+    image: ghcr.io/diggsweden/wallet-provider:main
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
