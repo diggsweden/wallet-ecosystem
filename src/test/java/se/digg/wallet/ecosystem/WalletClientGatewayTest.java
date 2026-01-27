@@ -58,7 +58,6 @@ public class WalletClientGatewayTest {
   void loginOidc() throws Exception {
     oidcSession = oidcLogin();
     assertNotNull(oidcSession);
-    System.out.println("OIDC Session: " + oidcSession);
   }
 
   @Test
@@ -74,7 +73,6 @@ public class WalletClientGatewayTest {
             """.formatted(ecKey.toPublicJWK().toJSONString()),
         oidcSession);
     assertNotNull(accountId);
-    System.out.println("Account id: " + accountId);
   }
 
   @Test
@@ -85,7 +83,6 @@ public class WalletClientGatewayTest {
     session = walletClientGateway.respondToChallenge(signedJwt);
 
     assertNotNull(session);
-    System.out.println("Challenge response session: " + session);
   }
 
 
