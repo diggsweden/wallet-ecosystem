@@ -94,4 +94,12 @@ public class WalletClientGatewayClient {
         .header("session", sessionId)
         .post(base.resolve("wua/v2"));
   }
+
+  public Response createWalletUnitAttestationV3(String sessionId) throws Exception {
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .header("session", sessionId)
+        .post(base.resolve("wua/v3"));
+  }
 }
