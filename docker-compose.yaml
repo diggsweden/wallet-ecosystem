@@ -71,7 +71,7 @@ services:
       - wallet-ecosystem-network
 
   custom-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.0.6
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.0.8
     container_name: custom-verifier
     hostname: custom-verifier
     environment:
