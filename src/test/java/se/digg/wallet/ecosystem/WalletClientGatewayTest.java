@@ -126,6 +126,14 @@ public class WalletClientGatewayTest {
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
   }
 
+  @Test
+  void createsWalletUnitAttestationV3() throws Exception {
+    walletClientGateway.createWalletUnitAttestationV3(session)
+        .then()
+        .assertThat().statusCode(201).and()
+        .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+  }
+
   private static ECKey generateKey() throws Exception {
     return new ECKeyGenerator(Curve.P_256)
         .keyID(KEY_ID)
