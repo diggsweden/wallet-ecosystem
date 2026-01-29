@@ -78,22 +78,23 @@ public class IssuanceHelper {
 
     String nonce = pidIssuer.getNonce(accessToken, userJwk);
     String walletAttestation = walletProvider.getWalletUnitAttestationV2(bindingKey, nonce);
-    String proof = createProof(bindingKey, walletAttestation, nonce);
+    String proof = createProof(bindingKey, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =
         pidIssuer
             .issueCredentials(
-                accessToken, userJwk, encryptionKey, proof, pidIssuerCredentialRequestEncryptionKey)
+                accessToken, userJwk, encryptionKey, proof, walletAttestation,
+                pidIssuerCredentialRequestEncryptionKey)
             .toJSONObject();
 
     return extractSdJwtVc(payloadJson);
   }
 
-  private String createProof(ECKey jwk, String wua, String nonce) throws JOSEException {
+  private String createProof(ECKey jwk, String nonce) throws JOSEException {
     JWSHeader header =
         new JWSHeader.Builder(JWSAlgorithm.ES256)
             .type(new JOSEObjectType("openid4vci-proof+jwt"))
-            .customParam("key_attestation", wua)
+            .jwk(jwk.toPublicJWK())
             .build();
 
     JWTClaimsSet claims =
