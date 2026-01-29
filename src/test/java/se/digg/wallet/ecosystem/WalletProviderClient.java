@@ -41,4 +41,27 @@ public class WalletProviderClient {
         .body()
         .asString();
   }
+
+  public String getWalletUnitAttestationV2(ECKey jwk, String nonce) throws JsonProcessingException {
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(
+            String.format("""
+                {
+                  "walletId": "%s",
+                  "jwk": %s,
+                  "nonce": "%s"
+                }""",
+                UUID.randomUUID(),
+                new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()),
+                nonce))
+        .post(base.resolve("wallet-unit-attestation/v2"))
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .extract()
+        .body()
+        .asString();
+  }
 }
