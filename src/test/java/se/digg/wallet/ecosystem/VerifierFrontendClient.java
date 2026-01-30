@@ -28,13 +28,21 @@ public class VerifierFrontendClient {
         .contentType(ContentType.JSON)
         .body("""
             {
-                  "dcql_query": {
-                      "credentials": [ {
-                      }]
-                  },
-                  "nonce": "nonce",
-                  "type": "vp_token"
-              }
+                "dcql_query": {
+                    "credentials": [ {
+                            "format": "dc+sd-jwt",
+                            "vct": "urn:eudi:pid:1",
+                            "id": "query_0",
+                            "meta": { "doctype_value": "eu.europa.ec.eudi.pid.1" }
+                    }],
+                    "credential_sets": [ {
+                            "purpose": "We need to verify your identity",
+                            "options": [["query_0"]]
+                    }]
+                },
+                "nonce": "nonce",
+                "type": "vp_token"
+            }
             """)
         .when()
         .post("api/verifier-request")
