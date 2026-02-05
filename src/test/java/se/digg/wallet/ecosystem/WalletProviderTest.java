@@ -24,6 +24,7 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
+  @Deprecated(forRemoval = true)
   @Test
   void createsWalletUnitAttestation() throws Exception {
     String wua = walletProvider.getWalletUnitAttestation(
@@ -38,6 +39,26 @@ public class WalletProviderTest {
     String wua = walletProvider.getWalletUnitAttestationV2(
         new ECKeyGenerator(Curve.P_256).generate(),
         "nonce");
+
+    assertThat(wua, matchesPattern(
+        "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+  }
+
+  @Test
+  void createsWalletUnitAttestationV2_withEmptyNonce() throws Exception {
+    String wua = walletProvider.getWalletUnitAttestationV2(
+        new ECKeyGenerator(Curve.P_256).generate(),
+        "");
+
+    assertThat(wua, matchesPattern(
+        "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+  }
+
+  @Test
+  void createsWalletUnitAttestationV2_withNullNonce() throws Exception {
+    String wua = walletProvider.getWalletUnitAttestationV2(
+        new ECKeyGenerator(Curve.P_256).generate(),
+        null);
 
     assertThat(wua, matchesPattern(
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
