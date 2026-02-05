@@ -47,7 +47,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: ghcr.io/diggsweden/wallet-provider:v0.0.3
+    image: ghcr.io/diggsweden/wallet-provider:v0.0.4
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
@@ -307,7 +307,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.4.0
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.4.2
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
