@@ -11,6 +11,9 @@ import static org.hamcrest.Matchers.matchesPattern;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class WalletProviderTest {
 
@@ -24,6 +27,7 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
+  @Deprecated(forRemoval = true)
   @Test
   void createsWalletUnitAttestation() throws Exception {
     String wua = walletProvider.getWalletUnitAttestation(
@@ -33,11 +37,13 @@ public class WalletProviderTest {
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
   }
 
-  @Test
-  void createsWalletUnitAttestationV2() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {"nonce", ""})
+  @NullSource
+  void createsWalletUnitAttestationV2(String nonce) throws Exception {
     String wua = walletProvider.getWalletUnitAttestationV2(
         new ECKeyGenerator(Curve.P_256).generate(),
-        "nonce");
+        nonce);
 
     assertThat(wua, matchesPattern(
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
