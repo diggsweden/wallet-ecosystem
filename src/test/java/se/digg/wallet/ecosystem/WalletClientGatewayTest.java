@@ -127,13 +127,21 @@ public class WalletClientGatewayTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"nonce", ""})
+  @ValueSource(strings = {"nonce"})
   @NullSource
   void createsWalletUnitAttestationV3(String nonce) throws Exception {
     walletClientGateway.createWalletUnitAttestationV3(session, nonce)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+  }
+
+  @Test
+  void createsWalletUnitAttestationV3_withEmptyNonce_shouldGiveBadRequest() throws Exception {
+    String emptyNonce = "";
+    walletClientGateway.createWalletUnitAttestationV3(session, emptyNonce)
+        .then()
+        .assertThat().statusCode(400);
   }
 
   private static ECKey generateKey() throws Exception {
