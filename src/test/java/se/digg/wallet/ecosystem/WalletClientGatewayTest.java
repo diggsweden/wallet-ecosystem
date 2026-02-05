@@ -29,6 +29,9 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
@@ -85,7 +88,6 @@ public class WalletClientGatewayTest {
     assertNotNull(session);
   }
 
-
   @Test
   void createsAndGetAttributeAttestation()
       throws Exception {
@@ -105,6 +107,7 @@ public class WalletClientGatewayTest {
         .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
   }
 
+  @Deprecated(forRemoval = true)
   @Test
   void createsWalletUnitAttestation() throws Exception {
     var postBody = """
@@ -123,9 +126,11 @@ public class WalletClientGatewayTest {
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
   }
 
-  @Test
-  void createsWalletUnitAttestationV3() throws Exception {
-    walletClientGateway.createWalletUnitAttestationV3(session)
+  @ParameterizedTest
+  @ValueSource(strings = {"nonce", ""})
+  @NullSource
+  void createsWalletUnitAttestationV3(String nonce) throws Exception {
+    walletClientGateway.createWalletUnitAttestationV3(session, nonce)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
