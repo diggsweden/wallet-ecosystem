@@ -7,6 +7,7 @@ package se.digg.wallet.ecosystem;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import io.restassured.http.ContentType;
+import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import java.net.URI;
 
@@ -48,8 +49,8 @@ public class WalletClientGatewayClient {
         .getString("nonce");
   }
 
-  public String respondToChallenge(String signedJwt, boolean getSessionIdFromHeader) {
-    var response = given()
+  public ExtractableResponse<Response> respondToChallenge(String signedJwt) {
+    return given()
         .when().contentType(ContentType.JSON).body("""
             {
               "signedJwt": "%s"
@@ -58,10 +59,6 @@ public class WalletClientGatewayClient {
         .then()
         .assertThat().statusCode(200).extract();
 
-    if (getSessionIdFromHeader) { // this is the old and deprecated way
-      return response.response().getHeaders().getValue("session");
-    }
-    return response.jsonPath().get("sessionId");
   }
 
 

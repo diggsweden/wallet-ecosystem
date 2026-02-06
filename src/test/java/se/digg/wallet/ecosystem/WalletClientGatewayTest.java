@@ -83,8 +83,8 @@ public class WalletClientGatewayTest {
   void loginChallengeResponse() throws Exception {
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
-    session = walletClientGateway.respondToChallenge(signedJwt, false);
-
+    var response = walletClientGateway.respondToChallenge(signedJwt);
+    session = response.jsonPath().get("sessionId");
     assertNotNull(session);
   }
 
@@ -92,8 +92,8 @@ public class WalletClientGatewayTest {
   void loginChallengeResponseWithDeprecatedApi() throws Exception {
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
-    session = walletClientGateway.respondToChallenge(signedJwt, true);
-
+    var response = walletClientGateway.respondToChallenge(signedJwt);
+    session = response.response().getHeaders().getValue("session");
     assertNotNull(session);
   }
 
