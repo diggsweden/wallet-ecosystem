@@ -7,6 +7,7 @@ package se.digg.wallet.ecosystem;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import io.restassured.http.ContentType;
+import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import java.net.URI;
 
@@ -48,7 +49,7 @@ public class WalletClientGatewayClient {
         .getString("nonce");
   }
 
-  public String respondToChallenge(String signedJwt) {
+  public ExtractableResponse<Response> respondToChallenge(String signedJwt) {
     return given()
         .when().contentType(ContentType.JSON).body("""
             {
@@ -56,14 +57,9 @@ public class WalletClientGatewayClient {
             }""".formatted(signedJwt))
         .post(base.resolve("public/auth/session/response"))
         .then()
-        .assertThat()
-        .statusCode(200)
-        .extract()
-        .response()
-        .getHeaders()
-        .getValue("session");
-  }
+        .assertThat().statusCode(200).extract();
 
+  }
 
 
   public String createAttributeAttestation(String sessionId, String postBody)
