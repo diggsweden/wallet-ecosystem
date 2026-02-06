@@ -35,8 +35,8 @@ public class WalletClientGatewayTest {
 
   private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
-  private static ECKey ecKey;
   private static String oidcSession;
+  private static ECKey ecKey;
   private static String accountId;
   private static String session;
 
@@ -80,11 +80,19 @@ public class WalletClientGatewayTest {
   void loginChallengeResponse() throws Exception {
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
-    session = walletClientGateway.respondToChallenge(signedJwt);
+    session = walletClientGateway.respondToChallenge(signedJwt, false);
 
     assertNotNull(session);
   }
 
+  @Test
+  void loginChallengeResponseWithDeprecatedApi() throws Exception {
+    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
+    var signedJwt = createSignedJwt(ecKey, nonce);
+    session = walletClientGateway.respondToChallenge(signedJwt, true);
+
+    assertNotNull(session);
+  }
 
   @Test
   void createsAndGetAttributeAttestation()

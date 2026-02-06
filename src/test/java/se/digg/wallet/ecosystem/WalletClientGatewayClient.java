@@ -48,22 +48,21 @@ public class WalletClientGatewayClient {
         .getString("nonce");
   }
 
-  public String respondToChallenge(String signedJwt) {
-    return given()
+  public String respondToChallenge(String signedJwt, boolean getSessionIdFromHeader) {
+    var response = given()
         .when().contentType(ContentType.JSON).body("""
             {
               "signedJwt": "%s"
             }""".formatted(signedJwt))
         .post(base.resolve("public/auth/session/response"))
         .then()
-        .assertThat()
-        .statusCode(200)
-        .extract()
-        .response()
-        .getHeaders()
-        .getValue("session");
-  }
+        .assertThat().statusCode(200).extract();
 
+    if (getSessionIdFromHeader) { // this is the old and deprecated way
+      return response.response().getHeaders().getValue("session");
+    }
+    return response.jsonPath().get("sessionId");
+  }
 
 
   public String createAttributeAttestation(String sessionId, String postBody)
