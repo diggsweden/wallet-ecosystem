@@ -60,8 +60,9 @@ public class WalletClientGatewayClient {
         .statusCode(200)
         .extract()
         .response()
-        .getHeaders()
-        .getValue("session");
+        .body()
+        .jsonPath()
+        .getString("sessionId");
   }
 
 
