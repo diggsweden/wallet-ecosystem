@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -75,6 +76,18 @@ public class PidIssuerTest {
             "authorization_servers",
             hasItem(ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve(
                 "realms/pid-issuer-realm").toString()));
+  }
+
+  @Test
+  void servesMetadataWithLogo() {
+    var uri =
+        pidIssuer.tryGetOpenIdCredentialIssuerMetadata(MetadataLocationStrategy.OID4VCI_COMPLIANT)
+            .then()
+            .assertThat().statusCode(200)
+            .and().body("display", hasSize(1))
+            .extract().jsonPath().getString("display[0].logo.uri");
+
+    given().get(uri).then().statusCode(200);
   }
 
   @ParameterizedTest
