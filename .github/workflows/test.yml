@@ -38,6 +38,7 @@ jobs:
           MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true
           GITHUB_ACTOR: ${{ github.actor }}
           PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS: true
         run: |
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
