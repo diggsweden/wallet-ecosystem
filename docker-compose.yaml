@@ -14,16 +14,16 @@ services:
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
-      - ./config/verifier/refimpl-verifier-backend-keystore-new.p12:/opt/common/refimpl-verifier-backend-keystore-new.p12:ro
+      - ./config/verifier/refimpl-verifier-backend-keystore.p12:/opt/common/refimpl-verifier-backend-keystore.p12:ro
       - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:ro
     environment:
       VERIFIER_PUBLICURL: "https://localhost/refimpl-verifier-backend"
-      VERIFIER_ORIGINALCLIENTID: "refimpl-verifier-backend.wallet.local"
+      VERIFIER_ORIGINALCLIENTID: "walletlocal"
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       VERIFIER_JAR_SIGNING_ALGORITHM: "ES256"
       VERIFIER_JAR_SIGNING_KEY: "LoadFromKeystore"
-      SPRING_PROFILES_ACTIVE: "dev,insecure"
-      VERIFIER_JAR_SIGNING_KEY_KEYSTORE: "file:///opt/common/refimpl-verifier-backend-keystore-new.p12"
+      SPRING_PROFILES_ACTIVE: "dev"
+      VERIFIER_JAR_SIGNING_KEY_KEYSTORE: "file:///opt/common/refimpl-verifier-backend-keystore.p12"
       VERIFIER_JAR_SIGNING_KEY_KEYSTORE_TYPE: "PKCS12"
       VERIFIER_JAR_SIGNING_KEY_KEYSTORE_PASSWORD: "pass1234"
       VERIFIER_JAR_SIGNING_KEY_ALIAS: "verifier"
