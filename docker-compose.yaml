@@ -10,39 +10,46 @@ networks:
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt:v0.6.4
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.8.0
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
-      - ./config/verifier/refimpl-verifier-backend-keystore.jks:/opt/common/refimpl-verifier-backend-keystore.jks:ro
+      - ./config/verifier/refimpl-verifier-backend-keystore-new.p12:/opt/common/refimpl-verifier-backend-keystore-new.p12:ro
       - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:ro
     environment:
-      SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "https://localhost/refimpl-verifier-backend"
       VERIFIER_ORIGINALCLIENTID: "refimpl-verifier-backend.wallet.local"
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       VERIFIER_JAR_SIGNING_ALGORITHM: "ES256"
       VERIFIER_JAR_SIGNING_KEY: "LoadFromKeystore"
-      SPRING_PROFILES_ACTIVE: "dev"
-      VERIFIER_JAR_SIGNING_KEY_KEYSTORE: "file:///opt/common/refimpl-verifier-backend-keystore.jks"
-      VERIFIER_JAR_SIGNING_KEY_KEYSTORE_TYPE: "jks"
-      VERIFIER_JAR_SIGNING_KEY_KEYSTORE_PASSWORD: "vpjhIaUd04ucNz6I"
+      SPRING_PROFILES_ACTIVE: "dev,insecure"
+      VERIFIER_JAR_SIGNING_KEY_KEYSTORE: "file:///opt/common/refimpl-verifier-backend-keystore-new.p12"
+      VERIFIER_JAR_SIGNING_KEY_KEYSTORE_TYPE: "PKCS12"
+      VERIFIER_JAR_SIGNING_KEY_KEYSTORE_PASSWORD: "pass1234"
       VERIFIER_JAR_SIGNING_KEY_ALIAS: "verifier"
-      VERIFIER_JAR_SIGNING_KEY_PASSWORD: "vpjhIaUd04ucNz6I"
+      VERIFIER_JAR_SIGNING_KEY_PASSWORD: "pass1234"
       VERIFIER_VALIDATION_SDJWTVC_STATUSCHECK_ENABLED: "false"
       VERIFIER_TRUSTSOURCES_0_PATTERN: "urn:eudi:pid:.*"
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_PATH: "file:///opt/common/verifier_cert.p12"
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_TYPE: "PKCS12"
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
+      VERIFIER_VALIDATION_WUA_TRUSTSOURCES_0_KEYSTORE_PATH: "file:///opt/common/verifier_cert.p12"
+      VERIFIER_VALIDATION_WUA_TRUSTSOURCES_0_KEYSTORE_TYPE: "PKCS12"
+      VERIFIER_VALIDATION_WUA_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
+      JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.refimpl-verifier-backend.rule=PathPrefix(`/refimpl-verifier-backend`)"
       - "traefik.http.routers.refimpl-verifier-backend.entrypoints=websecure"
       - "traefik.http.routers.refimpl-verifier-backend.tls=true"
       - "traefik.http.routers.refimpl-verifier-backend.service=refimpl-verifier-backend"
+      - "traefik.http.routers.refimpl-verifier-backend.middlewares=verifier-strip-prefix"
+      - "traefik.http.middlewares.verifier-strip-prefix.stripprefix.prefixes=/refimpl-verifier-backend"
       - "traefik.http.services.refimpl-verifier-backend.loadbalancer.server.port=8080"
+    ports:
+      - "8085:8080"
     networks:
       - wallet-ecosystem-network
 
@@ -75,7 +82,7 @@ services:
     container_name: custom-verifier
     hostname: custom-verifier
     environment:
-      HOST_API: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend"
+      HOST_API: "http://refimpl-verifier-backend:8080"
       PORT: "3002"
       NITRO_PORT: "3002"
       NUXT_PUBLIC_BASE_URL: "https://localhost/custom-verifier"
@@ -94,7 +101,7 @@ services:
       - wallet-ecosystem-network
 
   refimpl-verifier:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-web-verifier:v0.9.1
+    image: ghcr.io/eu-digital-identity-wallet/eudi-web-verifier:v0.10.0
     container_name: refimpl-verifier
     healthcheck:
       test: curl -f http://refimpl-verifier:4300/home || exit 1
@@ -115,7 +122,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.7.0
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.7.4
     container_name: pid-issuer
     depends_on:
       keycloak:
@@ -141,7 +148,10 @@ services:
       - ISSUER_PID_SD_JWT_VC_ENABLED=true
       - ISSUER_PID_SD_JWT_VC_NOTUSEBEFORE=PT20S
       - ISSUER_PID_SD_JWT_VC_NOTIFICATIONS_ENABLED=true
-      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_REQUIRED=true
+      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATION_REQUIRED=true
+      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATION_TRUST_SOURCES_0_KEYSTORE_PATH=file:///opt/common/verifier_cert.p12
+      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATION_TRUST_SOURCES_0_KEYSTORE_TYPE=PKCS12
+      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATION_TRUST_SOURCES_0_KEYSTORE_PASSWORD=pass1234
       - ISSUER_PID_ISSUINGCOUNTRY=SE
       - ISSUER_PID_ISSUINGJURISDICTION=SE-Y # Västernorrland
       - ISSUER_EHIC_ISSUINGCOUNTRY=SE
@@ -173,6 +183,7 @@ services:
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
     volumes:
       - ./config/issuer/issuer_cert.p12:/opt/common/issuer_cert.p12:ro
+      - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
