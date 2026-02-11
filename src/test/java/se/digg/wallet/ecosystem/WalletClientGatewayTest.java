@@ -23,6 +23,7 @@ import com.nimbusds.jwt.SignedJWT;
 import io.restassured.filter.cookie.CookieFilter;
 import io.restassured.http.ContentType;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -30,12 +31,14 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.FieldSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
+  public static final List<String> WUA_PATH = List.of("wua", "wua/v3");
   private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
   private static ECKey ecKey;
@@ -116,20 +119,10 @@ public class WalletClientGatewayTest {
         .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
   }
 
-  @Deprecated(forRemoval = true)
-  @Test
-  void createsWalletUnitAttestation() throws Exception {
-    var postBody = """
-        {
-          "walletId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          "jwk": {
-            "kty": "EC",
-            "crv": "P-256",
-            "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
-            "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
-          }
-        }""";
-    walletClientGateway.createWalletUnitAttestation(session, postBody)
+  @ParameterizedTest
+  @FieldSource("WUA_PATH")
+  void createsWalletUnitAttestation(String path) throws Exception {
+    walletClientGateway.createWalletUnitAttestation(session, null, path)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -138,17 +131,19 @@ public class WalletClientGatewayTest {
   @ParameterizedTest
   @ValueSource(strings = {"nonce"})
   @NullSource
-  void createsWalletUnitAttestationV3(String nonce) throws Exception {
-    walletClientGateway.createWalletUnitAttestationV3(session, nonce)
+  void createsWalletUnitAttestationWithAndWithoutNonce(String nonce) throws Exception {
+    walletClientGateway.createWalletUnitAttestation(session, nonce, "wua")
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
   }
 
-  @Test
-  void createsWalletUnitAttestationV3_withEmptyNonce_shouldGiveBadRequest() throws Exception {
+  @ParameterizedTest
+  @FieldSource("WUA_PATH")
+  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest(String path)
+      throws Exception {
     String emptyNonce = "";
-    walletClientGateway.createWalletUnitAttestationV3(session, emptyNonce)
+    walletClientGateway.createWalletUnitAttestation(session, emptyNonce, path)
         .then()
         .assertThat().statusCode(400);
   }
