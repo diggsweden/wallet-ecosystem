@@ -82,18 +82,9 @@ public class WalletClientGatewayClient {
         .get(base.resolve("attribute-attestations/%s".formatted(id)));
   }
 
-  @Deprecated(forRemoval = true)
-  public Response createWalletUnitAttestation(String sessionId, String postBody) throws Exception {
-    return given()
-        .when()
-        .contentType(ContentType.JSON)
-        .body(postBody)
-        .header("session", sessionId)
-        .post(base.resolve("wua/v2"));
-  }
-
-  public Response createWalletUnitAttestationV3(String sessionId, String nonce) throws Exception {
-    String wuaUrl = "wua/v3"
+  public Response createWalletUnitAttestation(String sessionId, String nonce, String path)
+      throws Exception {
+    String wuaUrl = path
         + (nonce != null ? "?nonce=" + nonce : "");
 
     return given()
