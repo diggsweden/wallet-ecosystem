@@ -36,7 +36,7 @@ services:
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
-
+      JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.refimpl-verifier-backend.rule=PathPrefix(`/refimpl-verifier-backend`)"
@@ -44,8 +44,6 @@ services:
       - "traefik.http.routers.refimpl-verifier-backend.tls=true"
       - "traefik.http.routers.refimpl-verifier-backend.service=refimpl-verifier-backend"
       - "traefik.http.services.refimpl-verifier-backend.loadbalancer.server.port=8080"
-    ports:
-      - "8085:8080"
     networks:
       - wallet-ecosystem-network
 
@@ -176,7 +174,7 @@ services:
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
     volumes:
       - ./config/issuer/issuer_cert.p12:/opt/common/issuer_cert.p12:ro
-      - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:ro
+      - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:roconfig/ver
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
