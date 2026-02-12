@@ -174,7 +174,6 @@ services:
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
     volumes:
       - ./config/issuer/issuer_cert.p12:/opt/common/issuer_cert.p12:ro
-      - ./config/verifier/verifier_cert.p12:/opt/common/verifier_cert.p12:roconfig/ver
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
