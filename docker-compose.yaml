@@ -34,12 +34,9 @@ services:
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_PATH: "file:///opt/common/verifier_cert.p12"
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_TYPE: "PKCS12"
       VERIFIER_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
-      VERIFIER_VALIDATION_WUA_TRUSTSOURCES_0_KEYSTORE_PATH: "file:///opt/common/verifier_cert.p12"
-      VERIFIER_VALIDATION_WUA_TRUSTSOURCES_0_KEYSTORE_TYPE: "PKCS12"
-      VERIFIER_VALIDATION_WUA_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
-      JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.refimpl-verifier-backend.rule=PathPrefix(`/refimpl-verifier-backend`)"
