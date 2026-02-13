@@ -135,6 +135,14 @@ or
 just
 ```
 
+### Documentation
+
+Generate documentation to `target/documentation`.
+
+```shell
+just document
+```
+
 ### Docker Compose Services
 
 Start all ecosystem services:
