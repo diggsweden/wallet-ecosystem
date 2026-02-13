@@ -16,6 +16,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+      - name: Setup mise
+        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3.5.1
+        with:
+          install: true
+          cache: true
+      - name: Install mise tools
+        run: |
+          mise install
+          mise list
       - name: Generate documentation
         run: just document
       - name: Archive artifacts
