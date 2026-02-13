@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Push to Main
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  generate-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Generate documentation
+        run: just document
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Documentation
+          path: target/documentation
