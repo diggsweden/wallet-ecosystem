@@ -96,6 +96,8 @@ services:
   refimpl-verifier:
     image: ghcr.io/eu-digital-identity-wallet/eudi-web-verifier:v0.9.1
     container_name: refimpl-verifier
+    depends_on:
+      - refimpl-verifier-backend
     healthcheck:
       test: curl -f http://refimpl-verifier:4300/home || exit 1
       start_period: 15s
