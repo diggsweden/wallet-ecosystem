@@ -76,6 +76,35 @@ npm-install:
     npm ci
 
 # ==================================================================================== #
+# DOCUMENTATION
+# ==================================================================================== #
+
+# Generate architecure diagrams from the Docker compose file
+[group('document')]
+document:
+    mkdir -p target/documentation
+    docker run \
+        --rm \
+        -v "$PWD":/data derlin/docker-compose-viz-mermaid \
+        /data/docker-compose.yaml \
+        --no-ports \
+        --no-volumes \
+        --no-networks \
+        --no-ilinks \
+        -f svg \
+        --out=/data/target/documentation/wallet-ecosystem-minimal.svg
+    docker run \
+        --rm \
+        -v "$PWD":/data derlin/docker-compose-viz-mermaid \
+        /data/docker-compose.yaml \
+        --ports \
+        --volumes \
+        --networks \
+        --ilinks \
+        -f svg \
+        --out=/data/target/documentation/wallet-ecosystem-detailed.svg
+
+# ==================================================================================== #
 # VERIFY - Quality assurance
 # ==================================================================================== #
 
