@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Push to Main
+on:
+  push:
+    branches:
+      - main
+      - feat/generate-documentation-on-push-to-main
+permissions:
+  contents: read
+jobs:
+  generate-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup mise
+        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3.5.1
+        with:
+          install: true
+          cache: true
+      - name: Install mise tools
+        run: |
+          mise install
+          mise list
+      - name: Generate documentation
+        run: just document
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Documentation
+          path: target/documentation
