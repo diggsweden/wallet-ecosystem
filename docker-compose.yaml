@@ -19,7 +19,7 @@ services:
     environment:
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "https://localhost/refimpl-verifier-backend"
-      VERIFIER_ORIGINALCLIENTID: "refimpl-verifier-backend.wallet.local"
+      VERIFIER_ORIGINALCLIENTID: "localhost"
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       VERIFIER_JAR_SIGNING_ALGORITHM: "ES256"
       VERIFIER_JAR_SIGNING_KEY: "LoadFromKeystore"
