@@ -30,3 +30,11 @@ jobs:
       linters.commitlint: false
       linters.licenselint: false
       linters.publiccodelint: false
+
+  test:
+    needs: [pr-checks]
+    if: always() # Run tests even if linting fails (get complete feedback)
+    permissions:
+      contents: read # Access test resources and source code
+      packages: read # Fetch test dependencies from GitHub Packages
+    uses: ./.github/workflows/test.yml
