@@ -35,7 +35,7 @@ public class WalletProviderTest {
   @Deprecated
   /* This is a temporary test until we have migrated all clients to the versionless endpoint */
   void createsWalletUnitAttestationOnSpecificPath(String path) throws Exception {
-    String wua = new WalletProviderClient(path).getWalletUnitAttestationV2(
+    String wua = new WalletProviderClient(path).getWalletUnitAttestation(
         new ECKeyGenerator(Curve.P_256).generate(),
         "nonce");
 
@@ -46,8 +46,8 @@ public class WalletProviderTest {
   @ParameterizedTest
   @ValueSource(strings = {"nonce", ""})
   @NullSource
-  void createsWalletUnitAttestationV2(String nonce) throws Exception {
-    String wua = walletProvider.getWalletUnitAttestationV2(
+  void createsWalletUnitAttestation(String nonce) throws Exception {
+    String wua = walletProvider.getWalletUnitAttestation(
         new ECKeyGenerator(Curve.P_256).generate(),
         nonce);
 

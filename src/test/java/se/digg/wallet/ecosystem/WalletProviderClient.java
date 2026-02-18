@@ -36,7 +36,7 @@ public class WalletProviderClient {
         .get(base.resolve("actuator/health"));
   }
 
-  public String getWalletUnitAttestationV2(ECKey jwk, String nonce) throws JsonProcessingException {
+  public String getWalletUnitAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
     return given()
         .when()
         .contentType(ContentType.JSON)
