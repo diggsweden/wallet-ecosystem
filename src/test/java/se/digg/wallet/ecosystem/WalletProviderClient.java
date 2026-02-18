@@ -20,6 +20,16 @@ public class WalletProviderClient {
 
   private static final String WUA_V2_URL = "wallet-unit-attestation/v2";
 
+  private final String path;
+
+  public WalletProviderClient() {
+    this(WUA_V2_URL);
+  }
+
+  public WalletProviderClient(String path) {
+    this.path = path;
+  }
+
   public Response tryGetHealth() {
     return given()
         .when()
@@ -40,7 +50,7 @@ public class WalletProviderClient {
                 UUID.randomUUID(),
                 new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()),
                 nonce))
-        .post(base.resolve(WUA_V2_URL))
+        .post(base.resolve(path))
         .then()
         .assertThat()
         .statusCode(200)
