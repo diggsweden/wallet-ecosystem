@@ -27,16 +27,6 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
-  @Deprecated(forRemoval = true)
-  @Test
-  void createsWalletUnitAttestation() throws Exception {
-    String wua = walletProvider.getWalletUnitAttestation(
-        new ECKeyGenerator(Curve.P_256).generate());
-
-    assertThat(wua, matchesPattern(
-        "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
-  }
-
   @ParameterizedTest
   @ValueSource(strings = {"nonce", ""})
   @NullSource
