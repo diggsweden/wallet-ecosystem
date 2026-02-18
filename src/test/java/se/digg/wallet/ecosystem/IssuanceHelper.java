@@ -27,8 +27,16 @@ import java.util.Map;
 public class IssuanceHelper {
 
   private final KeycloakClient keycloak = new KeycloakClient();
-  private final WalletProviderClient walletProvider = new WalletProviderClient();
+  private final WalletProviderClient walletProvider;
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
+
+  public IssuanceHelper() {
+    this(new WalletProviderClient());
+  }
+
+  public IssuanceHelper(WalletProviderClient walletProvider) {
+    this.walletProvider = walletProvider;
+  }
 
   public String createVpToken(String sdJwtVc, ECKey bindingKey, String nonce, String audience)
       throws Exception {
