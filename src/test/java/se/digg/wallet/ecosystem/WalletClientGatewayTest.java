@@ -6,6 +6,9 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
@@ -92,6 +95,7 @@ public class WalletClientGatewayTest {
   }
 
   @Test
+  @Order(4)
   void loginChallengeResponseWithDeprecatedApi() throws Exception {
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
@@ -146,6 +150,77 @@ public class WalletClientGatewayTest {
     walletClientGateway.createWalletUnitAttestation(session, emptyNonce, path)
         .then()
         .assertThat().statusCode(400);
+  }
+
+  @Test
+  void createSession_usingApiKey_shouldReturnSessionId() throws Exception {
+    var ecKey = generateKey();
+    // step one, create Account
+    var accountId = given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body("""
+            {
+              "personalIdentityNumber": "197001011234",
+              "emailAdress": "test@hej.se",
+              "telephoneNumber": "070123123123",
+              "publicKey": %s
+            }""".formatted(ecKey.toPublicJWK().toJSONString()))
+        .header("X-API-KEY", "apikey")
+        .post("https://localhost/wallet-client-gateway/accounts/v1")
+        .then()
+        .assertThat()
+        .statusCode(201)
+        .and()
+        .extract()
+        .body()
+        .jsonPath()
+        .getString("accountId");
+
+    // step two, create challenge
+    var nonce = given()
+        .when()
+        .get(
+            "https://localhost/wallet-client-gateway/public/auth/session/challenge?accountId=%s&keyId=%s"
+                .formatted(accountId, "123"))
+        .then()
+        .assertThat().statusCode(200)
+        .and()
+        .extract()
+        .body()
+        .jsonPath()
+        .getString("nonce");
+    // use nonce to created signedJwt
+    var signedJwt = createSignedJwt(ecKey, nonce);
+
+    // step three, post response and expect a session in the header
+    var sessionResponse = given()
+        .when()
+        .contentType(ContentType.JSON).body("""
+            {"signedJwt": "%s"}
+            """.formatted(signedJwt))
+        .post("https://localhost/wallet-client-gateway/public/auth/session/response")
+        .then()
+        .assertThat().statusCode(200)
+        .and()
+        .extract()
+        .response();
+
+    var actualBodySessionId = sessionResponse
+        .body()
+        .jsonPath()
+        .getString("sessionId");
+
+    var actualHeaderSessionId = sessionResponse
+        .getHeaders()
+        .getValue("Session");
+
+    assertAll(
+        () -> assertNotNull(actualBodySessionId),
+        () -> assertFalse(actualBodySessionId.isEmpty()),
+        () -> assertNotNull(actualHeaderSessionId),
+        () -> assertFalse(actualHeaderSessionId.isEmpty()),
+        () -> assertEquals(actualBodySessionId, actualHeaderSessionId));
   }
 
   private static ECKey generateKey() throws Exception {
@@ -214,5 +289,4 @@ public class WalletClientGatewayTest {
 
     return signedJwt.serialize();
   }
-
 }
