@@ -40,9 +40,7 @@ public class PidIssuerTest {
         "Credential Issuer Metadata",
         "Authorization Server Metadata",
         "SD-JWT VC Issuer Metadata",
-        "PID SD-JWT VC Type Metadata",
-        "Learning Credential SD-JWT VC Type Metadata",
-        "Protected Resource Metadata"));
+        "PID SD-JWT VC Type Metadata"));
   }
 
   public static Stream<Arguments> usefulLinks() {
