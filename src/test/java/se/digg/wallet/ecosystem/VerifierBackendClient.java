@@ -16,7 +16,7 @@ public class VerifierBackendClient {
 
   public static final String VERIFIER_AUDIENCE =
       Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_VERIFIER_AUDIENCE"))
-          .orElse("x509_san_dns:localhost");
+          .orElse("x509_san_dns:refimpl-verifier-backend.wallet.local");
 
   private final URI base;
 
