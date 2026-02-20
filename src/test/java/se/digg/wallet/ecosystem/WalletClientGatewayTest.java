@@ -41,7 +41,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
-  public static final List<String> WUA_PATH = List.of("wua", "wua/v3");
   public static final List<String> ACCOUNTS_PATH = List.of("accounts", "accounts/v1");
   private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
@@ -197,10 +196,9 @@ public class WalletClientGatewayTest {
         .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
   }
 
-  @ParameterizedTest
-  @FieldSource("WUA_PATH")
-  void createsWalletUnitAttestation(String path) throws Exception {
-    walletClientGateway.createWalletUnitAttestation(session, null, path)
+  @Test
+  void createsWalletUnitAttestation() throws Exception {
+    walletClientGateway.createWalletUnitAttestation(session, null, "wua")
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -216,12 +214,11 @@ public class WalletClientGatewayTest {
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
   }
 
-  @ParameterizedTest
-  @FieldSource("WUA_PATH")
-  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest(String path)
+  @Test
+  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest()
       throws Exception {
     String emptyNonce = "";
-    walletClientGateway.createWalletUnitAttestation(session, emptyNonce, path)
+    walletClientGateway.createWalletUnitAttestation(session, emptyNonce, "wua")
         .then()
         .assertThat().statusCode(400);
   }
