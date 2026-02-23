@@ -27,8 +27,16 @@ import java.util.Map;
 public class IssuanceHelper {
 
   private final KeycloakClient keycloak = new KeycloakClient();
-  private final WalletProviderClient walletProvider = new WalletProviderClient();
+  private final WalletProviderClient walletProvider;
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
+
+  public IssuanceHelper() {
+    this(new WalletProviderClient());
+  }
+
+  public IssuanceHelper(WalletProviderClient walletProvider) {
+    this.walletProvider = walletProvider;
+  }
 
   public String createVpToken(String sdJwtVc, ECKey bindingKey, String nonce, String audience)
       throws Exception {
@@ -77,7 +85,7 @@ public class IssuanceHelper {
                 "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, userJwk);
-    String walletAttestation = walletProvider.getWalletUnitAttestationV2(bindingKey, nonce);
+    String walletAttestation = walletProvider.getWalletUnitAttestation(bindingKey, nonce);
     String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =

@@ -18,8 +18,17 @@ public class WalletProviderClient {
 
   private final URI base = ServiceIdentifier.WALLET_PROVIDER.getResourceRoot();
 
-  private static final String WUA_URL = "wallet-unit-attestation";
   private static final String WUA_V2_URL = "wallet-unit-attestation/v2";
+
+  private final String path;
+
+  public WalletProviderClient() {
+    this(WUA_V2_URL);
+  }
+
+  public WalletProviderClient(String path) {
+    this.path = path;
+  }
 
   public Response tryGetHealth() {
     return given()
@@ -27,26 +36,7 @@ public class WalletProviderClient {
         .get(base.resolve("actuator/health"));
   }
 
-  @Deprecated(forRemoval = true)
-  public String getWalletUnitAttestation(ECKey jwk) throws JsonProcessingException {
-    return given()
-        .when()
-        .contentType(ContentType.JSON)
-        .body(
-            String.format("""
-                { "walletId": "%s", "jwk": %s }""",
-                UUID.randomUUID(),
-                new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString())))
-        .post(base.resolve(WUA_URL))
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .extract()
-        .body()
-        .asString();
-  }
-
-  public String getWalletUnitAttestationV2(ECKey jwk, String nonce) throws JsonProcessingException {
+  public String getWalletUnitAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
     return given()
         .when()
         .contentType(ContentType.JSON)
@@ -60,7 +50,7 @@ public class WalletProviderClient {
                 UUID.randomUUID(),
                 new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()),
                 nonce))
-        .post(base.resolve(WUA_V2_URL))
+        .post(base.resolve(path))
         .then()
         .assertThat()
         .statusCode(200)

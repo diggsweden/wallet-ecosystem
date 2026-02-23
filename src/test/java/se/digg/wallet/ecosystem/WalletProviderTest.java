@@ -27,11 +27,17 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
-  @Deprecated(forRemoval = true)
-  @Test
-  void createsWalletUnitAttestation() throws Exception {
-    String wua = walletProvider.getWalletUnitAttestation(
-        new ECKeyGenerator(Curve.P_256).generate());
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "wallet-unit-attestation",
+      "wallet-unit-attestation/v2"
+  })
+  @Deprecated
+  /* This is a temporary test until we have migrated all clients to the versionless endpoint */
+  void createsWalletUnitAttestationOnSpecificPath(String path) throws Exception {
+    String wua = new WalletProviderClient(path).getWalletUnitAttestation(
+        new ECKeyGenerator(Curve.P_256).generate(),
+        "nonce");
 
     assertThat(wua, matchesPattern(
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -40,8 +46,8 @@ public class WalletProviderTest {
   @ParameterizedTest
   @ValueSource(strings = {"nonce", ""})
   @NullSource
-  void createsWalletUnitAttestationV2(String nonce) throws Exception {
-    String wua = walletProvider.getWalletUnitAttestationV2(
+  void createsWalletUnitAttestation(String nonce) throws Exception {
+    String wua = walletProvider.getWalletUnitAttestation(
         new ECKeyGenerator(Curve.P_256).generate(),
         nonce);
 
