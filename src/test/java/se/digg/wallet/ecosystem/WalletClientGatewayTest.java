@@ -198,7 +198,7 @@ public class WalletClientGatewayTest {
 
   @Test
   void createsWalletUnitAttestation() throws Exception {
-    walletClientGateway.createWalletUnitAttestation(session, null, "wua")
+    walletClientGateway.createWalletUnitAttestation(session, null)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -208,7 +208,7 @@ public class WalletClientGatewayTest {
   @ValueSource(strings = {"nonce"})
   @NullSource
   void createsWalletUnitAttestationWithAndWithoutNonce(String nonce) throws Exception {
-    walletClientGateway.createWalletUnitAttestation(session, nonce, "wua")
+    walletClientGateway.createWalletUnitAttestation(session, nonce)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -218,7 +218,7 @@ public class WalletClientGatewayTest {
   void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest()
       throws Exception {
     String emptyNonce = "";
-    walletClientGateway.createWalletUnitAttestation(session, emptyNonce, "wua")
+    walletClientGateway.createWalletUnitAttestation(session, emptyNonce)
         .then()
         .assertThat().statusCode(400);
   }
