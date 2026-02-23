@@ -14,8 +14,8 @@ services:
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
-      - ./config/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
-      - ./config/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
+      - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
+      - ./config/certificates/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
     environment:
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "https://localhost/refimpl-verifier-backend"
@@ -52,7 +52,7 @@ services:
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
-      - ./config/wallet-provider/wallet_provider.p12:/opt/common/wallet_provider.p12
+      - ./config/certificates/wallet-provider/wallet_provider.p12:/opt/common/wallet_provider.p12
     environment:
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-provider"
       SPRING_PROFILES_ACTIVE: "prod"
@@ -175,7 +175,7 @@ services:
       - ISSUER_METADATA_DISPLAY_0_LOGO_URI=https://dela.digg.se/img/sr-logo-color.png
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
     volumes:
-      - ./config/issuer/pid_issuer.p12:/opt/common/pid_issuer.p12:ro
+      - ./config/certificates/issuer/pid_issuer.p12:/opt/common/pid_issuer.p12:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
@@ -315,7 +315,7 @@ services:
     hostname: wallet-client-gateway
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
-      - ./config/wallet-client-gateway/keystore-wallet-app-bff-local.p12:/opt/keystore-wallet-app-bff-local.p12:ro
+      - ./config/certificates/wallet-client-gateway/keystore-wallet-app-bff-local.p12:/opt/keystore-wallet-app-bff-local.p12:ro
     environment:
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
