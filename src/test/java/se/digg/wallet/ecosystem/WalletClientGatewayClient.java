@@ -21,7 +21,7 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
-  public String createAccount(String postBody, String oidcSession) {
+  public String createAccountByOidc(String postBody, String oidcSession) {
     return given()
         .when().contentType(ContentType.JSON).body(postBody)
         .header("SESSION", oidcSession)
@@ -30,10 +30,19 @@ public class WalletClientGatewayClient {
         .then()
         .assertThat()
         .statusCode(201).and()
-        .extract()
-        .body()
-        .jsonPath()
-        .getString("accountId");
+        .extract().body().jsonPath().getString("accountId");
+  }
+
+  public String createAccountByApiKey(String postBody, String apiKey, String path) {
+    return given()
+        .when()
+        .contentType(ContentType.JSON).body(postBody)
+        .header("X-API-KEY", apiKey)
+        .post(base.resolve(path))
+        .then()
+        .assertThat()
+        .statusCode(201).and()
+        .extract().body().jsonPath().getString("accountId");
   }
 
   public String initChallenge(String accountId, String keyId) {
@@ -58,9 +67,7 @@ public class WalletClientGatewayClient {
         .post(base.resolve("public/auth/session/response"))
         .then()
         .assertThat().statusCode(200).extract();
-
   }
-
 
   public String createAttributeAttestation(String sessionId, String postBody)
       throws Exception {
