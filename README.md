@@ -31,7 +31,7 @@ echo $HOST_IP
 could yield `172.17.0.1`. In that case, you would edit your docker config and restart docker which would result in something like this:
 
 ```shell
-cat ~/.docker/config.json 
+cat ~/.docker/config.json
 ```
 
 ```json
@@ -132,5 +132,5 @@ Generate a certificate and key pair:
 ```sh
 source set-host.sh
 mkdir -p config/traefik/certs
-mkcert --cert-file ./config/traefik/certs/wallet-cert.pem --key-file ./config/traefik/certs/wallet-key.pem "*.wallet.local" localhost 127.0.0.1 ::1
+mkcert --cert-file ./config/traefik/certs/wallet-cert.pem --key-file ./config/traefik/certs/wallet-key.pem "*.wallet.local" localhost 127.0.0.1 ::1 10.0.2.2
 ```
