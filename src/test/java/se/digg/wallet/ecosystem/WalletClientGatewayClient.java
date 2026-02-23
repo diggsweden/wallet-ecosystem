@@ -9,6 +9,8 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+
 import java.net.URI;
 
 public class WalletClientGatewayClient {
@@ -89,15 +91,16 @@ public class WalletClientGatewayClient {
         .get(base.resolve("attribute-attestations/%s".formatted(id)));
   }
 
-  public Response createWalletUnitAttestation(String sessionId, String nonce, String path)
-      throws Exception {
-    String wuaUrl = path
-        + (nonce != null ? "?nonce=" + nonce : "");
-
-    return given()
+  public Response createWalletUnitAttestation(String sessionId, String nonce) {
+    RequestSpecification request = given()
         .when()
         .contentType(ContentType.JSON)
-        .header("session", sessionId)
-        .post(base.resolve(wuaUrl));
+        .header("session", sessionId);
+
+    if (nonce != null) {
+      request.queryParam("nonce", nonce);
+    }
+
+    return request.post(base.resolve("wua"));
   }
 }
