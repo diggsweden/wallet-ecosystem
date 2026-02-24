@@ -94,29 +94,6 @@ services:
     networks:
       - wallet-ecosystem-network
 
-  refimpl-verifier:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-web-verifier:v0.10.0
-    container_name: refimpl-verifier
-    depends_on:
-      - refimpl-verifier-backend
-    healthcheck:
-      test: curl -f http://refimpl-verifier:4300/home || exit 1
-      start_period: 15s
-      interval: 30s
-      retries: 3
-    environment:
-      DOMAIN_NAME: "refimpl-verifier.wallet.local"
-      HOST_API: "https://localhost/refimpl-verifier-backend"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.refimpl-verifier.rule=Host(`refimpl-verifier.wallet.local`)"
-      - "traefik.http.routers.refimpl-verifier.entrypoints=websecure"
-      - "traefik.http.routers.refimpl-verifier.tls=true"
-      - "traefik.http.routers.refimpl-verifier.service=refimpl-verifier"
-      - "traefik.http.services.refimpl-verifier.loadbalancer.server.port=4300"
-    networks:
-      - wallet-ecosystem-network
-
   pid-issuer:
     image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.7.4
     container_name: pid-issuer

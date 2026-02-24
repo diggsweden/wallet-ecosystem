@@ -52,7 +52,6 @@ cat ~/.docker/config.json
 
 * [Demo verifier](https://localhost/demo-verifier),
   our verifier demo services
-* [EUs reference implementation of a verifier](https://refimpl-verifier.wallet.local)
 * [EUs reference implementation of a verifier backend](https://localhost/refimpl-verifier-backend),
   used by both above
 * [EUs reference implementation of a PID issuer](https://localhost/pid-issuer)
@@ -77,25 +76,7 @@ If you need to add a new application to the Docker compose script its image need
 
 ## Prerequisites
 
-The following prerequisites are needed for running the scrips:
-
-### Hosts File
-
-* Edit your computer's hosts-file to contain mappings from `127.0.0.1`
-  to local services at `*.wallet.local`
-
-```text
-#
-# Host Database
-#
-127.0.0.1       localhost
-255.255.255.255 broadcasthost
-::1             localhost
-
-# Digg Wallet Ecosystem
-#
-127.0.0.1       refimpl-verifier.wallet.local
-```
+The following prerequisites are needed for running the scripts:
 
 ## Certificates and Keystores
 
@@ -153,5 +134,5 @@ Generate a certificate and key pair:
 ```sh
 source set-host.sh
 mkdir -p config/traefik/certs
-mkcert --cert-file ./config/traefik/certs/wallet-cert.pem --key-file ./config/traefik/certs/wallet-key.pem "*.wallet.local" localhost 127.0.0.1 ::1
+mkcert --cert-file ./config/traefik/certs/wallet-cert.pem --key-file ./config/traefik/certs/wallet-key.pem localhost 127.0.0.1 ::1
 ```
