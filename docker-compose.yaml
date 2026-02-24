@@ -71,25 +71,25 @@ services:
     networks:
       - wallet-ecosystem-network
 
-  custom-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.0.8
-    container_name: custom-verifier
-    hostname: custom-verifier
+  demo-verifier:
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.0.10
+    container_name: demo-verifier
+    hostname: demo-verifier
     environment:
       HOST_API: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend"
       PORT: "3002"
       NITRO_PORT: "3002"
-      NUXT_PUBLIC_BASE_URL: "https://localhost/custom-verifier"
-      NUXT_APP_BASE_URL: "/custom-verifier"
+      NUXT_PUBLIC_BASE_URL: "https://localhost/demo-verifier"
+      NUXT_APP_BASE_URL: "/demo-verifier"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
     depends_on:
       - refimpl-verifier-backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.custom-verifier.rule=PathPrefix(`/custom-verifier`)"
-      - "traefik.http.routers.custom-verifier.entrypoints=websecure"
-      - "traefik.http.routers.custom-verifier.tls=true"
-      - "traefik.http.services.custom-verifier.loadbalancer.server.port=3002"
+      - "traefik.http.routers.demo-verifier.rule=PathPrefix(`/demo-verifier`)"
+      - "traefik.http.routers.demo-verifier.entrypoints=websecure"
+      - "traefik.http.routers.demo-verifier.tls=true"
+      - "traefik.http.services.demo-verifier.loadbalancer.server.port=3002"
     restart: on-failure
     networks:
       - wallet-ecosystem-network
@@ -390,7 +390,6 @@ services:
       interval: 5s
       timeout: 10s
       retries: 12
-      start_interval: 30s
       start_period: 30s
     volumes:
       - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh

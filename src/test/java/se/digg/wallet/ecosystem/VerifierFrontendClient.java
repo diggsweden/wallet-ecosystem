@@ -33,7 +33,13 @@ public class VerifierFrontendClient {
                   "format": "dc+sd-jwt",
                   "vct": "urn:eudi:pid:1",
                   "id": "query_0",
-                  "meta": {"doctype_value": "eu.europa.ec.eudi.pid.1"}
+                  "meta": {"doctype_value": "eu.europa.ec.eudi.pid.1"},
+                  "claims": [{
+                      "path": [
+                        "eu.europa.ec.eudi.pid.1",
+                        "family_name"
+                      ]
+                  }]
                 }],
                 "credential_sets": [{
                   "purpose": "We need to verify your identity",
@@ -45,7 +51,7 @@ public class VerifierFrontendClient {
             }
             """)
         .when()
-        .post("api/verifier-request")
+        .post("api/vaccincentralen-request")
         .then()
         .statusCode(200)
         .extract()
