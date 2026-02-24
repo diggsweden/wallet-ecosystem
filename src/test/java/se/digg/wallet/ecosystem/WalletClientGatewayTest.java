@@ -27,6 +27,7 @@ import io.restassured.filter.cookie.CookieFilter;
 import io.restassured.http.ContentType;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -42,6 +43,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class WalletClientGatewayTest {
 
   public static final List<String> ACCOUNTS_PATH = List.of("accounts", "accounts/v1");
+  public static final String API_KEY = Optional.ofNullable(System.getenv(
+      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
   private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
   private static ECKey ecKey;
@@ -102,8 +105,8 @@ public class WalletClientGatewayTest {
           "telephoneNumber": "070123123123",
           "publicKey": %s
         }""".formatted(ecKey.toPublicJWK().toJSONString());
-    var apiKey = "apikey";
-    var accountId = walletClientGateway.createAccountByApiKey(accountRequestBody, apiKey, path);
+    var accountId = walletClientGateway.createAccountByApiKey(
+        accountRequestBody, API_KEY, path);
 
     assertAll(
         () -> assertNotNull(accountId),
@@ -147,9 +150,8 @@ public class WalletClientGatewayTest {
           "telephoneNumber": "070123123123",
           "publicKey": %s
         }""".formatted(ecKey.toPublicJWK().toJSONString());
-    var apiKey = "apikey";
-    var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, apiKey, "accounts");
+    var accountId = walletClientGateway.createAccountByApiKey(
+        accountRequestBody, API_KEY, "accounts");
 
     // step two, create challenge
     // use nonce to created signedJwt
