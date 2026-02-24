@@ -9,15 +9,15 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import org.junit.jupiter.api.Test;
 
-public class CustomVerifierTest {
+public class DemoVerifierTest {
 
   @Test
   void isHealthy() {
     given()
         .when()
-        .get("https://localhost/custom-verifier")
+        .get("https://localhost/demo-verifier")
         .then()
         .assertThat().statusCode(200)
-        .and().body(containsString("Strumpsorteringscentralen"));
+        .and().body(containsString("demoapplikationer"));
   }
 }

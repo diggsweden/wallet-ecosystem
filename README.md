@@ -31,7 +31,7 @@ echo $HOST_IP
 could yield `172.17.0.1`. In that case, you would edit your docker config and restart docker which would result in something like this:
 
 ```shell
-cat ~/.docker/config.json 
+cat ~/.docker/config.json
 ```
 
 ```json
@@ -50,8 +50,8 @@ cat ~/.docker/config.json
 
 ## Services
 
-* [Strumpsorteringscentralen](https://localhost/custom-verifier),
-  our custom verifier
+* [Demo verifier](https://localhost/demo-verifier),
+  our verifier demo services
 * [EUs reference implementation of a verifier](https://refimpl-verifier.wallet.local)
 * [EUs reference implementation of a verifier backend](https://localhost/refimpl-verifier-backend),
   used by both above
