@@ -33,6 +33,14 @@ jobs:
       - name: Copy env file
         run: cp .env.example .env
 
+      - name: Generate TLS certificates for Traefik
+        run: |
+          mkdir -p config/traefik/certs
+          openssl req -x509 -newkey rsa:2048 \
+            -keyout config/traefik/certs/wallet-key.pem \
+            -out config/traefik/certs/wallet-cert.pem \
+            -days 1 -nodes -subj "/CN=localhost"
+
       - name: Up with docker compose
         run: docker compose up -d
 
