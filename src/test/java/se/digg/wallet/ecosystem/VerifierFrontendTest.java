@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,18 +15,26 @@ import org.junit.jupiter.api.Test;
 
 class VerifierFrontendTest {
 
-  private final VerifierFrontendClient verifierFrontendClient = new VerifierFrontendClient();
+  private final VerifierFrontendClient verifierFrontend = new VerifierFrontendClient();
+
+  @Test
+  void isHealthy() {
+    verifierFrontend.tryGetHome()
+        .then()
+        .assertThat().statusCode(200)
+        .and().body(containsString("demoapplikationer"));
+  }
 
   @Test
   void returnsVerifierStatus() {
-    Response response = verifierFrontendClient.getVerifierStatus();
+    Response response = verifierFrontend.getVerifierStatus();
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.jsonPath().getString("status"), is("online"));
   }
 
   @Test
   void createsVerificationRequest() {
-    VerifierPresentationResponse response = verifierFrontendClient.createPresentationRequest();
+    VerifierPresentationResponse response = verifierFrontend.createPresentationRequest();
     assertNotNull(response);
     assertThat(response.transaction_id(), notNullValue());
     assertThat(response.request_uri(), notNullValue());
@@ -35,10 +44,10 @@ class VerifierFrontendTest {
   @Test
   void returnsVerificationStatusForValidTransaction() {
     VerifierPresentationResponse presentationResponse =
-        verifierFrontendClient.createPresentationRequest();
+        verifierFrontend.createPresentationRequest();
     String transactionId = presentationResponse.transaction_id();
 
-    Response response = verifierFrontendClient.getPresentationStatus(transactionId);
+    Response response = verifierFrontend.getPresentationStatus(transactionId);
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.getBody().jsonPath().get("status"), is("pending"));
   }
