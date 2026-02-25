@@ -1,8 +1,12 @@
 # SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
 #
 # SPDX-License-Identifier: CC0-1.0
-
 tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/traefik/certs/wallet-cert.pem
+        keyFile: /etc/traefik/certs/wallet-key.pem
   certificates:
     - certFile: /etc/traefik/certs/wallet-cert.pem
       keyFile: /etc/traefik/certs/wallet-key.pem

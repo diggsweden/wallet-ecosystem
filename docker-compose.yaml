@@ -18,7 +18,7 @@ services:
       - ./config/certificates/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
     environment:
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
-      VERIFIER_PUBLICURL: "https://localhost/refimpl-verifier-backend"
+      VERIFIER_PUBLICURL: "${BASE_URL}/refimpl-verifier-backend"
       VERIFIER_ORIGINALCLIENTID: "localhost"
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       VERIFIER_JAR_SIGNING_ALGORITHM: "ES256"
@@ -79,7 +79,7 @@ services:
       HOST_API: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend"
       PORT: "3002"
       NITRO_PORT: "3002"
-      NUXT_PUBLIC_BASE_URL: "https://localhost/demo-verifier"
+      NUXT_PUBLIC_BASE_URL: "${BASE_URL}/demo-verifier"
       NUXT_APP_BASE_URL: "/demo-verifier"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
     depends_on:
@@ -107,8 +107,8 @@ services:
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_ID=pid-issuer-srv
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_SECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
       - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
-      - ISSUER_PUBLICURL=https://localhost/pid-issuer
-      - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=https://localhost/idp/realms/pid-issuer-realm
+      - ISSUER_PUBLICURL=${BASE_URL}/pid-issuer
+      - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=${BASE_URL}/idp/realms/pid-issuer-realm
       - ISSUER_AUTHORIZATIONSERVER_METADATA=http://keycloak:8080/idp/realms/pid-issuer-realm/.well-known/openid-configuration
       - ISSUER_AUTHORIZATIONSERVER_INTROSPECTION=http://keycloak:8080/idp/realms/pid-issuer-realm/protocol/openid-connect/token/introspect
       - ISSUER_CREDENTIALRESPONSEENCRYPTION_SUPPORTED=true
@@ -304,7 +304,7 @@ services:
       PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
       PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
-      PROPERTIES_AUTHORIZATION_SERVER_PRIVATE_JWT_AUDIENCE: "https://localhost/idp/realms/wallet/protocol/openid-connect/token"
+      PROPERTIES_AUTHORIZATION_SERVER_PRIVATE_JWT_AUDIENCE: "${BASE_URL}/idp/realms/wallet/protocol/openid-connect/token"
       PROPERTIES_OIDC_CLAIMS_PERSONAL_IDENTITY_NUMBER: personalIdentityNumberClaim
       ENVIRONMENT_OAUTH2_AUTHORIZATION_SERVER_BASE_URL: "http://keycloak:8080/idp/realms/wallet/protocol/openid-connect"
       ENVIRONMENT_OAUTH2_CLIENT_ID: "wallet-test"
@@ -315,8 +315,8 @@ services:
       ENVIRONMENT_OAUTH2_PRIVATE_JWT_KEY_PASSWORD: changeit
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_IAM_REDIRECT-URI: "https://localhost/wallet-client-gateway/login/oauth2/code/iam"
-      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_IAM_AUTHORIZATION-URI: "https://localhost/idp/realms/wallet/protocol/openid-connect/auth"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_IAM_REDIRECT-URI: "${BASE_URL}/wallet-client-gateway/login/oauth2/code/iam"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_IAM_AUTHORIZATION-URI: "${BASE_URL}/idp/realms/wallet/protocol/openid-connect/auth"
       SERVER_FORWARD_HEADERS_STRATEGY: "framework"
     ports:
       - "8082:8080"
@@ -345,6 +345,7 @@ services:
       - "traefik.http.services.wallet-client-gateway.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak
@@ -357,11 +358,10 @@ services:
       - KC_HTTP_ENABLED=true
       - KC_HTTP_RELATIVE_PATH=/idp
       - KC_HEALTH_ENABLED=true
-      - KC_HOSTNAME=https://localhost/idp
+      - KC_HOSTNAME=${BASE_URL}/idp
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
-
     healthcheck:
       test: "bash /opt/keycloak/health-check.sh"
       interval: 5s

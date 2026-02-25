@@ -30,6 +30,17 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
+      - name: Copy env file
+        run: cp .env.example .env
+
+      - name: Generate TLS certificates for Traefik
+        run: |
+          mkdir -p config/traefik/certs
+          openssl req -x509 -newkey rsa:2048 \
+            -keyout config/traefik/certs/wallet-key.pem \
+            -out config/traefik/certs/wallet-cert.pem \
+            -days 1 -nodes -subj "/CN=localhost"
+
       - name: Up with docker compose
         run: docker compose up -d
 
@@ -38,7 +49,6 @@ jobs:
           MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true
           GITHUB_ACTOR: ${{ github.actor }}
           PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS: true
         run: |
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
