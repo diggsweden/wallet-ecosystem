@@ -135,7 +135,6 @@ docker compose up
 | Service | URL | Description |
 |---|---|---|
 | Demo verifier | <https://localhost/demo-verifier> | Our verifier demo service |
-| EU reference verifier | <https://refimpl-verifier.wallet.local> | EU's reference implementation of a verifier |
 | EU reference verifier backend | <https://localhost/refimpl-verifier-backend> | Backend used by both verifier implementations |
 | EU reference PID issuer | <https://localhost/pid-issuer> | EU's reference implementation of a PID issuer |
 | Keycloak | <https://localhost/idp> | Identity provider for the PID issuer |
