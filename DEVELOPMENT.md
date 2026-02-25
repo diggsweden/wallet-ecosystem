@@ -216,6 +216,15 @@ env DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI=https://wallet-provider.examp
     just test
 ```
 
+When your host is configured with a specific API key you can configure the test
+suite like so:
+
+```shell
+env DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI=https://api.example.com \
+    DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY=my_api_key \
+    just test
+```
+
 #### Skipping Keycloak health tests
 
 Under some configurations the Keycloak health endpoints are not exposed.
