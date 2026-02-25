@@ -14,18 +14,18 @@ import org.junit.jupiter.api.Test;
 
 class VerifierFrontendTest {
 
-  private final VerifierFrontendClient verifierFrontendClient = new VerifierFrontendClient();
+  private final VerifierFrontendClient verifierFrontend = new VerifierFrontendClient();
 
   @Test
   void returnsVerifierStatus() {
-    Response response = verifierFrontendClient.getVerifierStatus();
+    Response response = verifierFrontend.getVerifierStatus();
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.jsonPath().getString("status"), is("online"));
   }
 
   @Test
   void createsVerificationRequest() {
-    VerifierPresentationResponse response = verifierFrontendClient.createPresentationRequest();
+    VerifierPresentationResponse response = verifierFrontend.createPresentationRequest();
     assertNotNull(response);
     assertThat(response.transaction_id(), notNullValue());
     assertThat(response.request_uri(), notNullValue());
@@ -35,10 +35,10 @@ class VerifierFrontendTest {
   @Test
   void returnsVerificationStatusForValidTransaction() {
     VerifierPresentationResponse presentationResponse =
-        verifierFrontendClient.createPresentationRequest();
+        verifierFrontend.createPresentationRequest();
     String transactionId = presentationResponse.transaction_id();
 
-    Response response = verifierFrontendClient.getPresentationStatus(transactionId);
+    Response response = verifierFrontend.getPresentationStatus(transactionId);
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.getBody().jsonPath().get("status"), is("pending"));
   }
