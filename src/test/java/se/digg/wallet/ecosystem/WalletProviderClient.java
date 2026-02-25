@@ -12,7 +12,6 @@ import com.nimbusds.jose.jwk.ECKey;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
-import java.util.UUID;
 
 public class WalletProviderClient {
 
@@ -43,11 +42,9 @@ public class WalletProviderClient {
         .body(
             String.format("""
                 {
-                  "walletId": "%s",
                   "jwk": %s,
                   "nonce": "%s"
                 }""",
-                UUID.randomUUID(),
                 new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()),
                 nonce))
         .post(base.resolve(path))
