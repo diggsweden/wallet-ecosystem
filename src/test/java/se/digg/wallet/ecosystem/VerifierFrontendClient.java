@@ -22,6 +22,10 @@ public class VerifierFrontendClient {
     this.base = base;
   }
 
+  public Response tryGetHome() {
+    return given().when().get(base.toString());
+  }
+
   public VerifierPresentationResponse createPresentationRequest() {
     return given()
         .baseUri(base.toString())

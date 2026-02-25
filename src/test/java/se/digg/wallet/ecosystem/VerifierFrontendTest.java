@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,6 +16,14 @@ import org.junit.jupiter.api.Test;
 class VerifierFrontendTest {
 
   private final VerifierFrontendClient verifierFrontend = new VerifierFrontendClient();
+
+  @Test
+  void isHealthy() {
+    verifierFrontend.tryGetHome()
+        .then()
+        .assertThat().statusCode(200)
+        .and().body(containsString("demoapplikationer"));
+  }
 
   @Test
   void returnsVerifierStatus() {
