@@ -226,6 +226,17 @@ Similarly, you can skip the verifier backend tests like so:
 env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH=true just test
 ```
 
+#### Excluding entire test cases
+
+To exclude one or more test cases you can run the tests with Maven like so:
+
+```shell
+mvn test -Dtest.excludes='TraefikTest,WalletAccountTest,WalletAttributeAttestationTest'
+```
+
+The command above will run all test cases except
+TraefikTest, WalletAccountTest and WalletAttributeAttestationTest.
+
 ### Quality Checks
 
 This project uses `just` + `mise` for local quality checks.
