@@ -17,9 +17,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import io.restassured.response.Response;
-import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,18 +104,11 @@ class VerifierBackendTest {
       named = "DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER",
       matches = "true")
   void rejectsUntrustedPidIssuer() throws Exception {
-    Optional<String> untrustedPidIssuerBaseUri =
-        Optional.of(System.getenv("DIGG_WALLET_ECOSYSTEM_UNTRUSTED_PID_ISSUER_BASE_URI"));
     IssuanceHelper untrustedIssuer = new IssuanceHelper(
-        new KeycloakClient(
-            Optional.of(System.getenv("DIGG_WALLET_ECOSYSTEM_UNTRUSTED_KEYCLOAK_BASE_URI"))
-                .map(s -> s + "/").map(URI::create).get()),
-        new WalletProviderClient(
-            Optional.of(System.getenv("DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI"))
-                .map(s -> s + "/").map(URI::create).get()),
-        new PidIssuerClient(untrustedPidIssuerBaseUri
-            .map(s -> s + "/").map(URI::create).get()),
-        untrustedPidIssuerBaseUri.get());
+        new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
+        new WalletProviderClient(ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot()),
+        new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
+        ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
 
     ECKey bindingKey =
         new ECKeyGenerator(Curve.P_256)
