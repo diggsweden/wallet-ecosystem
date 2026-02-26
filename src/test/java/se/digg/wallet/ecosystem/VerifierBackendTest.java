@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
@@ -26,13 +27,19 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
+  private final String nonce = UUID.randomUUID().toString();
   private VerifierBackendClient verifierBackend;
   private IssuanceAgent issuer;
+  private ECKey bindingKey;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws JOSEException {
     verifierBackend = new VerifierBackendClient();
     issuer = new IssuanceAgent();
+    bindingKey = new ECKeyGenerator(Curve.P_256)
+        .algorithm(JWSAlgorithm.ES256)
+        .keyUse(KeyUse.SIGNATURE)
+        .generate();
   }
 
   @Test
@@ -74,19 +81,11 @@ class VerifierBackendTest {
 
   @Test
   void acceptsValidSdJwtVcCredential() throws Exception {
-    ECKey bindingKey =
-        new ECKeyGenerator(Curve.P_256)
-            .algorithm(JWSAlgorithm.ES256)
-            .keyUse(KeyUse.SIGNATURE)
-            .generate();
-
     // 1. Get credential
     String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
-    String nonce = UUID.randomUUID().toString();
 
     // 2. Create Key Binding JWT
-    String vpToken =
-        VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
+    String vpToken = VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
 
     // 3. Validate SD-JWT VC using the utility endpoint
     verifierBackend
@@ -106,19 +105,11 @@ class VerifierBackendTest {
   void rejectsUntrustedPidIssuer() throws Exception {
     IssuanceAgent untrustedIssuer = IssuanceAgent.untrusted();
 
-    ECKey bindingKey =
-        new ECKeyGenerator(Curve.P_256)
-            .algorithm(JWSAlgorithm.ES256)
-            .keyUse(KeyUse.SIGNATURE)
-            .generate();
-
     // 1. Get credential
     String sdJwtVc = untrustedIssuer.issuePidCredential(bindingKey, "tneal", "password");
 
     // 2. Create Key Binding JWT
-    String nonce = UUID.randomUUID().toString();
-    String vpToken =
-        VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
+    String vpToken = VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
 
     // 3. Validate SD-JWT VC using the utility endpoint
     verifierBackend.validateSdJwtVc(vpToken, nonce)
