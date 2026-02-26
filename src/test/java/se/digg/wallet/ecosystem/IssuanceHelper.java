@@ -22,17 +22,31 @@ import java.util.List;
 import java.util.Map;
 
 public class IssuanceHelper {
-
-  private final KeycloakClient keycloak = new KeycloakClient();
+  private final KeycloakClient keycloak;
   private final WalletProviderClient walletProvider;
-  private final PidIssuerClient pidIssuer = new PidIssuerClient();
+
+  private final PidIssuerClient pidIssuer;
+  private final String audience;
 
   public IssuanceHelper() {
     this(new WalletProviderClient());
   }
 
   public IssuanceHelper(WalletProviderClient walletProvider) {
+    this(new KeycloakClient(), walletProvider, new PidIssuerClient(),
+        ServiceIdentifier.PID_ISSUER.toString());
+  }
+
+  public IssuanceHelper(
+      KeycloakClient keycloak,
+      WalletProviderClient walletProvider,
+      PidIssuerClient pidIssuer,
+      String audience) {
+
+    this.keycloak = keycloak;
     this.walletProvider = walletProvider;
+    this.pidIssuer = pidIssuer;
+    this.audience = audience;
   }
 
   public String issuePidCredential(ECKey bindingKey, String username, String password)
@@ -79,7 +93,7 @@ public class IssuanceHelper {
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
             .issuer(jwk.toPublicJWK().toString())
-            .audience(ServiceIdentifier.PID_ISSUER.toString())
+            .audience(audience)
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
             .build();

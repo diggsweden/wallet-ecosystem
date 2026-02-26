@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.nimbusds.jose.JWSAlgorithm;
@@ -16,11 +17,14 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import io.restassured.response.Response;
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
@@ -95,5 +99,46 @@ class VerifierBackendTest {
         .and().body("iss", is(ServiceIdentifier.PID_ISSUER.toString()))
         .and().body("family_name", is("Neal"))
         .and().body("issuing_authority", is("SE Administrative authority"));
+  }
+
+  @Test
+  @EnabledIfEnvironmentVariable(
+      named = "DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER",
+      matches = "true")
+  void rejectsUntrustedPidIssuer() throws Exception {
+    Optional<String> untrustedPidIssuerBaseUri =
+        Optional.of(System.getenv("DIGG_WALLET_ECOSYSTEM_UNTRUSTED_PID_ISSUER_BASE_URI"));
+    IssuanceHelper untrustedIssuer = new IssuanceHelper(
+        new KeycloakClient(
+            Optional.of(System.getenv("DIGG_WALLET_ECOSYSTEM_UNTRUSTED_KEYCLOAK_BASE_URI"))
+                .map(s -> s + "/").map(URI::create).get()),
+        new WalletProviderClient(
+            Optional.of(System.getenv("DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI"))
+                .map(s -> s + "/").map(URI::create).get()),
+        new PidIssuerClient(untrustedPidIssuerBaseUri
+            .map(s -> s + "/").map(URI::create).get()),
+        untrustedPidIssuerBaseUri.get());
+
+    ECKey bindingKey =
+        new ECKeyGenerator(Curve.P_256)
+            .algorithm(JWSAlgorithm.ES256)
+            .keyUse(KeyUse.SIGNATURE)
+            .generate();
+
+    // 1. Get credential
+    String sdJwtVc = untrustedIssuer.issuePidCredential(bindingKey, "tneal", "password");
+
+    // 2. Create Key Binding JWT
+    String nonce = UUID.randomUUID().toString();
+    String vpToken =
+        VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
+
+    // 3. Validate SD-JWT VC using the utility endpoint
+    verifierBackendClient.validateSdJwtVc(vpToken, nonce)
+        .then()
+        .assertThat().statusCode(400)
+        .and().body(".", hasSize(1))
+        .and().body("[0].error", is("IssuerCertificateIsNotTrusted"))
+        .and().body("[0].description", is("sd-jwt vc issuer certificate is not trusted"));
   }
 }

@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class WalletProviderClient {
 
-  private final URI base = ServiceIdentifier.WALLET_PROVIDER.getResourceRoot();
+  private final URI base;
 
   private static final String WUA_V2_URL = "wallet-unit-attestation/v2";
 
@@ -26,7 +26,16 @@ public class WalletProviderClient {
     this(WUA_V2_URL);
   }
 
+  public WalletProviderClient(URI base) {
+    this(base, WUA_V2_URL);
+  }
+
   public WalletProviderClient(String path) {
+    this(ServiceIdentifier.WALLET_PROVIDER.getResourceRoot(), path);
+  }
+
+  public WalletProviderClient(URI base, String path) {
+    this.base = base;
     this.path = path;
   }
 
