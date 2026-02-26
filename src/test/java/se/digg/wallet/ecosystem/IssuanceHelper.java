@@ -22,6 +22,15 @@ import java.util.List;
 import java.util.Map;
 
 public class IssuanceHelper {
+
+  static IssuanceHelper untrusted() {
+    return new IssuanceHelper(
+        new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
+        new WalletProviderClient(ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot()),
+        new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
+        ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
+  }
+
   private final KeycloakClient keycloak;
   private final WalletProviderClient walletProvider;
   private final PidIssuerClient pidIssuer;

@@ -104,11 +104,7 @@ class VerifierBackendTest {
       named = "DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER",
       matches = "true")
   void rejectsUntrustedPidIssuer() throws Exception {
-    IssuanceHelper untrustedIssuer = new IssuanceHelper(
-        new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
-        new WalletProviderClient(ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot()),
-        new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
-        ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
+    IssuanceHelper untrustedIssuer = IssuanceHelper.untrusted();
 
     ECKey bindingKey =
         new ECKeyGenerator(Curve.P_256)
