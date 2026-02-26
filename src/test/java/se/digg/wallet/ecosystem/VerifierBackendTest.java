@@ -84,8 +84,7 @@ class VerifierBackendTest {
 
     // 2. Create Key Binding JWT
     String vpToken =
-        issuanceHelper.createVpToken(
-            sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
+        VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
 
     // 3. Validate SD-JWT VC using the utility endpoint
     verifierBackendClient

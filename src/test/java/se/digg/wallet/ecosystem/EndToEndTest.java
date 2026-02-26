@@ -66,8 +66,7 @@ public class EndToEndTest {
 
     // 4. Create vp_token
     String vpToken =
-        issuanceHelper.createVpToken(
-            sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
+        VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
 
     // 5. Post wallet response
     String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
