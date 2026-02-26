@@ -21,10 +21,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class IssuanceHelper {
+public class IssuanceAgent {
 
-  static IssuanceHelper untrusted() {
-    return new IssuanceHelper(
+  static IssuanceAgent untrusted() {
+    return new IssuanceAgent(
         new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
         new WalletProviderClient(ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot()),
         new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
@@ -36,16 +36,16 @@ public class IssuanceHelper {
   private final PidIssuerClient pidIssuer;
   private final String audience;
 
-  public IssuanceHelper() {
+  public IssuanceAgent() {
     this(new WalletProviderClient());
   }
 
-  public IssuanceHelper(WalletProviderClient walletProvider) {
+  public IssuanceAgent(WalletProviderClient walletProvider) {
     this(new KeycloakClient(), walletProvider, new PidIssuerClient(),
         ServiceIdentifier.PID_ISSUER.toString());
   }
 
-  public IssuanceHelper(
+  public IssuanceAgent(
       KeycloakClient keycloak,
       WalletProviderClient walletProvider,
       PidIssuerClient pidIssuer,

@@ -27,12 +27,12 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
   private VerifierBackendClient verifierBackend;
-  private IssuanceHelper issuanceHelper;
+  private IssuanceAgent issuer;
 
   @BeforeEach
   void setUp() {
     verifierBackend = new VerifierBackendClient();
-    issuanceHelper = new IssuanceHelper();
+    issuer = new IssuanceAgent();
   }
 
   @Test
@@ -81,7 +81,7 @@ class VerifierBackendTest {
             .generate();
 
     // 1. Get credential
-    String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, "tneal", "password");
+    String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
     String nonce = UUID.randomUUID().toString();
 
     // 2. Create Key Binding JWT
@@ -104,7 +104,7 @@ class VerifierBackendTest {
       named = "DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER",
       matches = "true")
   void rejectsUntrustedPidIssuer() throws Exception {
-    IssuanceHelper untrustedIssuer = IssuanceHelper.untrusted();
+    IssuanceAgent untrustedIssuer = IssuanceAgent.untrusted();
 
     ECKey bindingKey =
         new ECKeyGenerator(Curve.P_256)
