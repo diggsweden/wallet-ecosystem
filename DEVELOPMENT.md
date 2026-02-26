@@ -237,6 +237,62 @@ mvn test -Dtest.excludes='TraefikTest,WalletAccountTest,WalletAttributeAttestati
 The command above will run all test cases except
 TraefikTest, WalletAccountTest and WalletAttributeAttestationTest.
 
+#### Checking that the verifier rejects untrusted issuers
+
+In `VerifierBackendTest` we have a way to check that
+the local verifier rejects credentials issued by an untrusted party.
+Specifically, that the verifier reject credentials issued by
+a party not in the configured list of trust sources. There are two tests related
+to this:
+
+1. `rejectsUntrustedPidIssuer`
+2. `rejectsCredentialFromUntrustedSource`
+
+The first one requires a live, but untrusted, environment
+and the second one uses pre-generated credentials known to be untrusted.
+Since the first test requires a live environment it is disabled by default.
+
+You can run it like so:
+
+```shell
+env \
+	DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER=true \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI=https://example.com/untrusted-wallet-provider \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_PID_ISSUER_BASE_URI=https://example.com/untrusted-pid-issuer \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_KEYCLOAK_BASE_URI=https://example.com/untrusted-idp \
+	mvn test -Dtest=VerifierBackendTest#rejectsUntrustedPidIssuer
+```
+
+The live test can be used to generate data for the second test.
+In order to do so, we can manipulate the certificates
+so that they are not trusted by the verifier.
+
+```shell
+# Remove the root CA so that a new one is generated
+rm config/certificates/rootca/*
+
+# Generate new keystores for all services
+config/certificates/generate_keystores.sh
+
+# Use the existing trusted issuers instead of the newly generated ones
+git checkout config/certificates/verifier/trusted_issuers.p12
+
+# Restart environment
+docker compose restart
+
+# Run test
+env \
+	DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER=true \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI=https://localhost/wallet-provider \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_PID_ISSUER_BASE_URI=https://localhost/pid-issuer \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_KEYCLOAK_BASE_URI=https://localhost/idp \
+	mvn test -Dtest=VerifierBackendTest#rejectsUntrustedPidIssuer
+```
+
+The test will print the credentials and signing key to standard out
+and this data can be copied into the corresponding variable values
+of the `rejectsCredentialFromUntrustedSource` test method.
+
 ### Quality Checks
 
 This project uses `just` + `mise` for local quality checks.
