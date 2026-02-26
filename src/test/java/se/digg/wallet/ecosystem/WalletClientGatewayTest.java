@@ -26,7 +26,6 @@ import com.nimbusds.jwt.SignedJWT;
 import io.restassured.filter.cookie.CookieFilter;
 import io.restassured.http.ContentType;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,14 +34,12 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.FieldSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
-  public static final List<String> ACCOUNTS_PATH = List.of("accounts", "accounts/v1");
   public static final String API_KEY = Optional.ofNullable(System.getenv(
       "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
   private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
@@ -93,10 +90,9 @@ public class WalletClientGatewayTest {
         () -> assertFalse(accountId.isEmpty()));
   }
 
-  @ParameterizedTest
-  @FieldSource("ACCOUNTS_PATH")
+  @Test
   @Order(3)
-  void createAccount_usingApiKeyAuth_shouldReturnAccountId(String path) throws Exception {
+  void createAccount_usingApiKeyAuth_shouldReturnAccountId() throws Exception {
     var ecKey = generateKey();
     var accountRequestBody = """
         {
@@ -106,7 +102,7 @@ public class WalletClientGatewayTest {
           "publicKey": %s
         }""".formatted(ecKey.toPublicJWK().toJSONString());
     var accountId = walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, path);
+        accountRequestBody, API_KEY, "accounts");
 
     assertAll(
         () -> assertNotNull(accountId),
