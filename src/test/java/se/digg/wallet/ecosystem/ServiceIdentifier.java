@@ -40,6 +40,10 @@ public enum ServiceIdentifier {
         .orElse(defaultUri);
   }
 
+  String getEnvironmentVariableName() {
+    return environmentVariable;
+  }
+
   @Override
   public String toString() {
     return getValue();
