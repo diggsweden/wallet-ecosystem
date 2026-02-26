@@ -26,12 +26,12 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
-  private VerifierBackendClient verifierBackendClient;
+  private VerifierBackendClient verifierBackend;
   private IssuanceHelper issuanceHelper;
 
   @BeforeEach
   void setUp() {
-    verifierBackendClient = new VerifierBackendClient();
+    verifierBackend = new VerifierBackendClient();
     issuanceHelper = new IssuanceHelper();
   }
 
@@ -40,7 +40,7 @@ class VerifierBackendTest {
       named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH",
       matches = "true")
   void isHealthy() {
-    verifierBackendClient
+    verifierBackend
         .tryGetHealth()
         .then()
         .assertThat()
@@ -52,7 +52,7 @@ class VerifierBackendTest {
   @Test
   void createsPresentationRequest() {
     VerifierPresentationResponse presentationResponse =
-        verifierBackendClient.createPresentationRequestByValue(dcqlId);
+        verifierBackend.createPresentationRequestByValue(dcqlId);
 
     assertNotNull(presentationResponse);
     assertThat(presentationResponse.transaction_id(), notNullValue());
@@ -63,9 +63,9 @@ class VerifierBackendTest {
   @Test
   void returnsPresentationEvents() {
     VerifierPresentationResponse presentationResponse =
-        verifierBackendClient.createPresentationRequestByValue(dcqlId);
+        verifierBackend.createPresentationRequestByValue(dcqlId);
     String transactionId = presentationResponse.transaction_id();
-    Response response = verifierBackendClient.getPresentationEvents(transactionId);
+    Response response = verifierBackend.getPresentationEvents(transactionId);
 
     assertThat(response.getStatusCode(), is(200));
     List<String> events = response.jsonPath().getList("events.event");
@@ -89,7 +89,7 @@ class VerifierBackendTest {
         VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
 
     // 3. Validate SD-JWT VC using the utility endpoint
-    verifierBackendClient
+    verifierBackend
         .validateSdJwtVc(vpToken, nonce)
         .then()
         .assertThat().statusCode(200)
@@ -121,7 +121,7 @@ class VerifierBackendTest {
         VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
 
     // 3. Validate SD-JWT VC using the utility endpoint
-    verifierBackendClient.validateSdJwtVc(vpToken, nonce)
+    verifierBackend.validateSdJwtVc(vpToken, nonce)
         .then()
         .assertThat().statusCode(400)
         .and().body(".", hasSize(1))
