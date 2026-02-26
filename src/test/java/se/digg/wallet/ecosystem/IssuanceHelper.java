@@ -24,7 +24,6 @@ import java.util.Map;
 public class IssuanceHelper {
   private final KeycloakClient keycloak;
   private final WalletProviderClient walletProvider;
-
   private final PidIssuerClient pidIssuer;
   private final String audience;
 
