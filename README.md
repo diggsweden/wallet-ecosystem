@@ -157,7 +157,7 @@ If you need to add a new application to the Docker Compose setup, its image must
 * **option 1**: Podman desktop <https://podman-desktop.io/>
 * **option 2**: Headless: <https://github.com/containers/podman-compose>
 
-Trick traefik to use the rootless podman.sock *`( XDG_RUNTIME_DIR = /run/user/${UID} )`* by mounting it
+"Trick" traefik to use the rootless podman.sock *`( XDG_RUNTIME_DIR = /run/user/${UID} )`* by mounting it
 to docker.sock in the container (ro= read-only mode)
 
 ```yaml
