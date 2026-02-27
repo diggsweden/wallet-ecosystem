@@ -124,6 +124,7 @@ services:
       - ISSUER_PID_ISSUINGJURISDICTION=SE-Y # Västernorrland
       - ISSUER_EHIC_ENABLED=false
       - ISSUER_MDL_ENABLED=false
+      - ISSUER_LEARNINGCREDENTIAL_ENABLED=false
       - ISSUER_CREDENTIALOFFER_URI=openid-credential-offer://
       - ISSUER_SIGNING_KEY=LoadFromKeystore
       - ISSUER_SIGNING_KEY_KEYSTORE=file:///opt/common/pid_issuer.p12
