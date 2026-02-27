@@ -123,9 +123,7 @@ services:
       - ISSUER_PID_ISSUINGCOUNTRY=SE
       - ISSUER_PID_ISSUINGJURISDICTION=SE-Y # Västernorrland
       - ISSUER_EHIC_ISSUINGCOUNTRY=SE
-      - ISSUER_MDL_ENABLED=true
-      - ISSUER_MDL_MSO_MDOC_ENCODER_DURATION=P5D
-      - ISSUER_MDL_NOTIFICATIONS_ENABLED=true
+      - ISSUER_MDL_ENABLED=false
       - ISSUER_CREDENTIALOFFER_URI=openid-credential-offer://
       - ISSUER_SIGNING_KEY=LoadFromKeystore
       - ISSUER_SIGNING_KEY_KEYSTORE=file:///opt/common/pid_issuer.p12
