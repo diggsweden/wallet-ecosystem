@@ -149,3 +149,42 @@ docker compose up
 ## Building Images
 
 If you need to add a new application to the Docker Compose setup, its image must be published before it can be pulled and used locally.
+
+## Using Podman
+
+**Prerequisites** Podman with podman compose:
+
+* **option 1**: Podman desktop <https://podman-desktop.io/>
+* **option 2**: Headless: <https://github.com/containers/podman-compose>
+
+Trick traefik to use the rootless podman.sock *`( XDG_RUNTIME_DIR = /run/user/${UID} )`* by mounting it
+to docker.sock in the container (ro= read-only mode)
+
+```yaml
+traefik:
+    ...
+    volumes:
+      - /${XDG_RUNTIME_DIR}/podman/podman.sock:/var/run/docker.sock:ro
+
+      ...
+```
+
+Allow port 80+ for none root users since podman runs rootless
+
+```sh
+sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
+```
+
+[assuming the prereq steps has been completed](#1-install-mkcert),
+try running:
+
+```sh
+# run the compose file with podman
+podman compose up -d; sleep 1s
+
+# Run the tests
+mvn test
+
+# Teardown compose
+podman compose down
+```
