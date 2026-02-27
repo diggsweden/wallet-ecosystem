@@ -37,7 +37,7 @@ public class EndToEndTest {
       "wallet-unit-attestation/v2"
   })
   void getCredential(String wuaPath) throws Exception {
-    IssuanceHelper issuanceHelper = new IssuanceHelper(new WalletProviderClient(wuaPath));
+    IssuanceAgent issuer = new IssuanceAgent(new WalletProviderClient(wuaPath));
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
@@ -62,12 +62,11 @@ public class EndToEndTest {
             .keyUse(KeyUse.SIGNATURE)
             .generate();
 
-    String sdJwtVc = issuanceHelper.issuePidCredential(bindingKey, "tneal", "password");
+    String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
 
     // 4. Create vp_token
     String vpToken =
-        issuanceHelper.createVpToken(
-            sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
+        VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
 
     // 5. Post wallet response
     String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);

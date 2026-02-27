@@ -8,30 +8,29 @@ import java.net.URI;
 import java.util.Optional;
 
 public enum ServiceIdentifier {
-  KEYCLOAK("https://localhost/idp",
-      "DIGG_WALLET_ECOSYSTEM_KEYCLOAK_BASE_URI"),
-  PID_ISSUER("https://localhost/pid-issuer",
-      "DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI"),
-  WALLET_PROVIDER("https://localhost/wallet-provider",
-      "DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI"),
-  VERIFIER_BACKEND("https://localhost/refimpl-verifier-backend",
-      "DIGG_WALLET_ECOSYSTEM_VERIFIER_BACKEND_BASE_URI"),
-  VERIFIER_FRONTEND("https://localhost/demo-verifier",
-      "DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI"),
-  WALLET_CLIENT_GATEWAY("https://localhost/wallet-client-gateway",
-      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI");
+  KEYCLOAK("https://localhost/idp"),
+  UNTRUSTED_KEYCLOAK("https://localhost/untrusted-idp"),
+  PID_ISSUER("https://localhost/pid-issuer"),
+  UNTRUSTED_PID_ISSUER("https://localhost/untrusted-pid-issuer"),
+  WALLET_PROVIDER("https://localhost/wallet-provider"),
+  UNTRUSTED_WALLET_PROVIDER("https://localhost/untrusted-wallet-provider"),
+  VERIFIER_BACKEND("https://localhost/refimpl-verifier-backend"),
+  VERIFIER_FRONTEND("https://localhost/demo-verifier"),
+  WALLET_CLIENT_GATEWAY("https://localhost/wallet-client-gateway");
 
   private final String defaultUri;
-  private final String environmentVariable;
 
-  ServiceIdentifier(String defaultUri, String environmentVariable) {
+  ServiceIdentifier(String defaultUri) {
     this.defaultUri = defaultUri;
-    this.environmentVariable = environmentVariable;
   }
 
   private String getValue() {
-    return Optional.ofNullable(System.getenv(environmentVariable))
+    return Optional.ofNullable(System.getenv(getEnvironmentVariableName()))
         .orElse(defaultUri);
+  }
+
+  String getEnvironmentVariableName() {
+    return String.format("DIGG_WALLET_ECOSYSTEM_%s_BASE_URI", name());
   }
 
   @Override

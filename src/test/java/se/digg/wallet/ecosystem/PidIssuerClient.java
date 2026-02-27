@@ -38,7 +38,11 @@ public class PidIssuerClient {
   private final URI base;
 
   public PidIssuerClient() {
-    base = ServiceIdentifier.PID_ISSUER.getResourceRoot();
+    this(ServiceIdentifier.PID_ISSUER.getResourceRoot());
+  }
+
+  public PidIssuerClient(URI base) {
+    this.base = base;
   }
 
   public Response tryGetOpenIdCredentialIssuerMetadata(MetadataLocationStrategy strategy) {

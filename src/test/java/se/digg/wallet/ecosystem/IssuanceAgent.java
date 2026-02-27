@@ -16,51 +16,45 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class IssuanceHelper {
+public class IssuanceAgent {
 
-  private final KeycloakClient keycloak = new KeycloakClient();
+  static IssuanceAgent untrusted() {
+    return new IssuanceAgent(
+        new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
+        new WalletProviderClient(ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot()),
+        new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
+        ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
+  }
+
+  private final KeycloakClient keycloak;
   private final WalletProviderClient walletProvider;
-  private final PidIssuerClient pidIssuer = new PidIssuerClient();
+  private final PidIssuerClient pidIssuer;
+  private final String audience;
 
-  public IssuanceHelper() {
+  public IssuanceAgent() {
     this(new WalletProviderClient());
   }
 
-  public IssuanceHelper(WalletProviderClient walletProvider) {
-    this.walletProvider = walletProvider;
+  public IssuanceAgent(WalletProviderClient walletProvider) {
+    this(new KeycloakClient(), walletProvider, new PidIssuerClient(),
+        ServiceIdentifier.PID_ISSUER.toString());
   }
 
-  public String createVpToken(String sdJwtVc, ECKey bindingKey, String nonce, String audience)
-      throws Exception {
-    MessageDigest digest = MessageDigest.getInstance("SHA-256");
-    byte[] hash = digest.digest(sdJwtVc.getBytes(StandardCharsets.UTF_8));
-    String sdHash = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+  public IssuanceAgent(
+      KeycloakClient keycloak,
+      WalletProviderClient walletProvider,
+      PidIssuerClient pidIssuer,
+      String audience) {
 
-    JWTClaimsSet kbJwtClaims =
-        new JWTClaimsSet.Builder()
-            .audience(audience)
-            .issueTime(Date.from(Instant.now()))
-            .claim("nonce", nonce)
-            .claim("sd_hash", sdHash)
-            .build();
-    SignedJWT kbJwt =
-        new SignedJWT(
-            new JWSHeader.Builder(JWSAlgorithm.ES256)
-                .jwk(bindingKey.toPublicJWK())
-                .type(new JOSEObjectType("kb+jwt"))
-                .build(),
-            kbJwtClaims);
-    kbJwt.sign(new ECDSASigner(bindingKey));
-    String kbJwtSerialized = kbJwt.serialize();
-    return sdJwtVc + kbJwtSerialized;
+    this.keycloak = keycloak;
+    this.walletProvider = walletProvider;
+    this.pidIssuer = pidIssuer;
+    this.audience = audience;
   }
 
   public String issuePidCredential(ECKey bindingKey, String username, String password)
@@ -107,7 +101,7 @@ public class IssuanceHelper {
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
             .issuer(jwk.toPublicJWK().toString())
-            .audience(ServiceIdentifier.PID_ISSUER.toString())
+            .audience(audience)
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
             .build();
