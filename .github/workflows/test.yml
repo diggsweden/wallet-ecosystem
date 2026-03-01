@@ -41,6 +41,13 @@ jobs:
             -out config/traefik/certs/wallet-cert.pem \
             -days 1 -nodes -subj "/CN=localhost"
 
+      - name: Install Podman
+        run: |
+          sudo apt update
+          sudo apt install -y podman podman-compose
+          podman --version
+
+
       - name: Up with docker compose
         run: podman compose up -d
 
