@@ -43,12 +43,19 @@ jobs:
 
       - name: Install Podman
         run: |
-          sudo apt update
-          sudo apt install -y podman podman-compose
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Install podman-compose
+        run: |
+          sudo apt-get -y install podman-compose
+
+      - name: Verify install
+        run: |
           podman --version
+          podman-compose --version
 
-
-      - name: Up with docker compose
+      - name: Up with podman compose
         run: podman compose up -d
 
       - name: Run tests
@@ -60,5 +67,5 @@ jobs:
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
 
-      - name: Down with docker compose
+      - name: Down with podman compose
         run: podman compose down

@@ -279,7 +279,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "6379:6379"
+      - "6378:6379"
     networks:
       - wallet-ecosystem-network
 
