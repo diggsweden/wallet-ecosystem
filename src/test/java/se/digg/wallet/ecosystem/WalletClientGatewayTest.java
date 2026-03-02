@@ -52,14 +52,6 @@ public class WalletClientGatewayTest {
     ecKey = generateKey();
   }
 
-  @Test
-  void appActuatorHealth_status_shouldReturnUP() {
-    walletClientGateway.tryGetHealth()
-        .then()
-        .assertThat().statusCode(200)
-        .and().body("status", equalTo("UP"));
-  }
-
   @BeforeEach
   void createSession() throws Exception {
     var accountId = createAccountByApiKey(ecKey);
@@ -82,6 +74,14 @@ public class WalletClientGatewayTest {
     assertAll(
         () -> assertNotNull(sessionFromDeprecatedHeader),
         () -> assertFalse(sessionFromDeprecatedHeader.isEmpty()));
+  }
+
+  @Test
+  void appActuatorHealth_status_shouldReturnUP() {
+    walletClientGateway.tryGetHealth()
+        .then()
+        .assertThat().statusCode(200)
+        .and().body("status", equalTo("UP"));
   }
 
   @Test
