@@ -50,8 +50,8 @@ jobs:
           sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
           echo "PODMAN_SOCK=$XDG_RUNTIME_DIR/podman/podman.sock" >> "$GITHUB_ENV"
 
-      - name: Up with docker compose
-        run: podman compose up -d
+      - name: Up with podman compose
+        run: podman compose up -d; sleep 2s
 
       - name: Run tests
         env:
@@ -62,5 +62,5 @@ jobs:
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
 
-      - name: Down with docker compose
+      - name: Down with podman compose
         run: podman compose down
