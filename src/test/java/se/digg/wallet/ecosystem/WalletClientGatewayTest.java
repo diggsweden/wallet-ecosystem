@@ -29,8 +29,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,8 +45,6 @@ public class WalletClientGatewayTest {
   private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
   private static ECKey ecKey;
-  private static String oidcSession;
-  private static String accountId;
   private static String session;
 
   @BeforeAll
@@ -62,20 +60,15 @@ public class WalletClientGatewayTest {
         .and().body("status", equalTo("UP"));
   }
 
-  @Test
-  @Order(1)
-  void login_usingOidcAuth_shouldReturnSession() throws Exception {
-    oidcSession = oidcLogin();
+  @BeforeEach
+  void createSession() throws Exception {
+    var oidcSession = oidcLogin();
 
     assertAll(
         () -> assertNotNull(oidcSession),
         () -> assertFalse(oidcSession.isEmpty()));
-  }
 
-  @Test
-  @Order(2)
-  void createAccount_usingOidcAuth_shouldReturnAccountId() throws Exception {
-    accountId = walletClientGateway.createAccountByOidc(
+    var accountId = walletClientGateway.createAccountByOidc(
         """
                 {
                   "emailAdress": "test@hej.se",
@@ -88,10 +81,24 @@ public class WalletClientGatewayTest {
     assertAll(
         () -> assertNotNull(accountId),
         () -> assertFalse(accountId.isEmpty()));
+
+    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
+    var signedJwt = createSignedJwt(ecKey, nonce);
+    var response = walletClientGateway.respondToChallenge(signedJwt);
+    session = response.jsonPath().get("sessionId");
+
+    assertAll(
+        () -> assertNotNull(session),
+        () -> assertFalse(session.isEmpty()));
+
+    var sessionFromDeprecatedHeader = response.response().getHeaders().getValue("session");
+
+    assertAll(
+        () -> assertNotNull(sessionFromDeprecatedHeader),
+        () -> assertFalse(sessionFromDeprecatedHeader.isEmpty()));
   }
 
   @Test
-  @Order(3)
   void createAccount_usingApiKeyAuth_shouldReturnAccountId() throws Exception {
     var ecKey = generateKey();
     var accountRequestBody = """
@@ -107,32 +114,6 @@ public class WalletClientGatewayTest {
     assertAll(
         () -> assertNotNull(accountId),
         () -> assertFalse(accountId.isEmpty()));
-  }
-
-  @Test
-  @Order(4)
-  void loginChallenge_signedJwt_shouldReturnSessionInBody() throws Exception {
-    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
-    var signedJwt = createSignedJwt(ecKey, nonce);
-    var response = walletClientGateway.respondToChallenge(signedJwt);
-    session = response.jsonPath().get("sessionId");
-
-    assertAll(
-        () -> assertNotNull(session),
-        () -> assertFalse(session.isEmpty()));
-  }
-
-  @Test
-  @Order(5)
-  void loginChallenge_signedJwt_shouldReturnSessionInHeader_deprecated() throws Exception {
-    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
-    var signedJwt = createSignedJwt(ecKey, nonce);
-    var response = walletClientGateway.respondToChallenge(signedJwt);
-    session = response.response().getHeaders().getValue("session");
-
-    assertAll(
-        () -> assertNotNull(session),
-        () -> assertFalse(session.isEmpty()));
   }
 
   @Test
