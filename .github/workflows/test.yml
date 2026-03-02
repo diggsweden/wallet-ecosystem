@@ -41,22 +41,8 @@ jobs:
             -out config/traefik/certs/wallet-cert.pem \
             -days 1 -nodes -subj "/CN=localhost"
 
-      - name: Install Podman
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install podman
-
-      - name: Install podman-compose
-        run: |
-          sudo apt-get -y install podman-compose
-
-      - name: Verify install
-        run: |
-          podman --version
-          podman-compose --version
-
-      - name: Up with podman compose
-        run: podman compose up -d
+      - name: Up with docker compose
+        run: docker compose up -d
 
       - name: Run tests
         env:
@@ -67,5 +53,5 @@ jobs:
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
 
-      - name: Down with podman compose
-        run: podman compose down
+      - name: Down with docker compose
+        run: docker compose down

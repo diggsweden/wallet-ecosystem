@@ -158,18 +158,31 @@ If you need to add a new application to the Docker Compose setup, its image must
 * **option 2**: Headless: <https://github.com/containers/podman-compose>
 
 "Trick" traefik to use the rootless podman.sock *`( XDG_RUNTIME_DIR = /run/user/${UID} )`* by mounting it
-to docker.sock in the container (ro= read-only mode)
+to docker.sock in the container (ro= read-only mode).
+
+Set `PODMAN_SOCK` to point to the rootless socket before running compose:
+
+```env
+PODMAN_SOCK=/run/user/1000/podman/podman.sock
+```
+
+Or export it inline:
+
+```sh
+export PODMAN_SOCK=${XDG_RUNTIME_DIR}/podman/podman.sock
+```
+
+The compose file uses this variable with a fallback to the default Docker socket (used on CI/GH runners):
 
 ```yaml
 traefik:
-    ...
-    volumes:
-      - /${XDG_RUNTIME_DIR}/podman/podman.sock:/var/run/docker.sock:ro
-
-      ...
+  ...
+  volumes:
+    - ${PODMAN_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+  ...
 ```
 
-Allow port 80+ for none root users since podman runs rootless
+Allow port 80+ for non-root users since podman runs rootless:
 
 ```sh
 sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
@@ -181,10 +194,8 @@ try running:
 ```sh
 # run the compose file with podman
 podman compose up -d; sleep 1s
-
 # Run the tests
 mvn test
-
 # Teardown compose
 podman compose down
 ```
