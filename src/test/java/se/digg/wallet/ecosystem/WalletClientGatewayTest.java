@@ -62,21 +62,7 @@ public class WalletClientGatewayTest {
 
   @BeforeEach
   void createSession() throws Exception {
-    var oidcSession = oidcLogin();
-
-    assertAll(
-        () -> assertNotNull(oidcSession),
-        () -> assertFalse(oidcSession.isEmpty()));
-
-    var accountId = walletClientGateway.createAccountByOidc(
-        """
-                {
-                  "emailAdress": "test@hej.se",
-                  "telephoneNumber": "070123123123",
-                  "publicKey": %s
-                }
-            """.formatted(ecKey.toPublicJWK().toJSONString()),
-        oidcSession);
+    var accountId = createAccountByOidc(ecKey);
 
     assertAll(
         () -> assertNotNull(accountId),
@@ -100,16 +86,7 @@ public class WalletClientGatewayTest {
 
   @Test
   void createAccount_usingApiKeyAuth_shouldReturnAccountId() throws Exception {
-    var ecKey = generateKey();
-    var accountRequestBody = """
-        {
-          "personalIdentityNumber": "197001011234",
-          "emailAdress": "test@hej.se",
-          "telephoneNumber": "070123123123",
-          "publicKey": %s
-        }""".formatted(ecKey.toPublicJWK().toJSONString());
-    var accountId = walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, "accounts");
+    var accountId = createAccountByApiKey(generateKey());
 
     assertAll(
         () -> assertNotNull(accountId),
@@ -120,15 +97,7 @@ public class WalletClientGatewayTest {
   void createAccountAndLoginWithChallenge_usingApiKey_shouldReturnSessionId() throws Exception {
     var ecKey = generateKey();
     // step one, create Account
-    var accountRequestBody = """
-        {
-          "personalIdentityNumber": "197001011234",
-          "emailAdress": "test@hej.se",
-          "telephoneNumber": "070123123123",
-          "publicKey": %s
-        }""".formatted(ecKey.toPublicJWK().toJSONString());
-    var accountId = walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, "accounts");
+    var accountId = createAccountByApiKey(ecKey);
 
     // step two, create challenge
     // use nonce to created signedJwt
@@ -208,6 +177,35 @@ public class WalletClientGatewayTest {
         .algorithm(Algorithm.NONE)
         .keyUse(KeyUse.SIGNATURE)
         .generate();
+  }
+
+  private String createAccountByApiKey(ECKey ecKey) {
+    var accountRequestBody = """
+        {
+          "personalIdentityNumber": "197001011234",
+          "emailAdress": "test@hej.se",
+          "telephoneNumber": "070123123123",
+          "publicKey": %s
+        }""".formatted(ecKey.toPublicJWK().toJSONString());
+    return walletClientGateway.createAccountByApiKey(
+        accountRequestBody, API_KEY, "accounts");
+  }
+
+  @Deprecated
+  private String createAccountByOidc(ECKey key) {
+    var oidcSession = oidcLogin();
+
+    assertAll(
+        () -> assertNotNull(oidcSession),
+        () -> assertFalse(oidcSession.isEmpty()));
+
+    return walletClientGateway.createAccountByOidc("""
+            {
+              "emailAdress": "test@hej.se",
+              "telephoneNumber": "070123123123",
+              "publicKey": %s
+            }
+        """.formatted(key.toPublicJWK().toJSONString()), oidcSession);
   }
 
   private String oidcLogin() {
