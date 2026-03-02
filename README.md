@@ -162,15 +162,19 @@ You're right, sorry! Here's the corrected version:
 ## Using Docker (Not officially supported)
 
 Note this is not officially supported but it might be possible to: Override `PODMAN_SOCK` in your `.env` file to point to the Docker socket before running compose:
+
 ```env
 PODMAN_SOCK=/var/run/docker.sock
 ```
+
 Or export it inline:
+
 ```sh
 export PODMAN_SOCK=/var/run/docker.sock
 ```
 
 try running:
+
 ```sh
 # run the compose file with docker
 docker compose up -d; sleep 1s
