@@ -62,7 +62,7 @@ public class WalletClientGatewayTest {
 
   @BeforeEach
   void createSession() throws Exception {
-    var accountId = createAccountByOidc(ecKey);
+    var accountId = createAccountByApiKey(ecKey);
 
     assertAll(
         () -> assertNotNull(accountId),
@@ -85,8 +85,9 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void createAccount_usingApiKeyAuth_shouldReturnAccountId() throws Exception {
-    var accountId = createAccountByApiKey(generateKey());
+  @Deprecated
+  void createAccount_usingOidc_shouldReturnAccountId() throws Exception {
+    var accountId = createAccountByOidc(generateKey());
 
     assertAll(
         () -> assertNotNull(accountId),
@@ -94,10 +95,11 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void createAccountAndLoginWithChallenge_usingApiKey_shouldReturnSessionId() throws Exception {
+  @Deprecated
+  void createAccountAndLoginWithChallenge_usingOidc_shouldReturnSessionId() throws Exception {
     var ecKey = generateKey();
     // step one, create Account
-    var accountId = createAccountByApiKey(ecKey);
+    var accountId = createAccountByOidc(ecKey);
 
     // step two, create challenge
     // use nonce to created signedJwt
