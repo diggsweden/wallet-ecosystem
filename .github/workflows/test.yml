@@ -47,9 +47,10 @@ jobs:
           sudo apt-get install -y podman podman-compose
           systemctl --user start podman.socket
           ls "$XDG_RUNTIME_DIR/podman/podman.sock"
+          echo "PODMAN_SOCK=$XDG_RUNTIME_DIR/podman/podman.sock" >> "$GITHUB_ENV"
 
       - name: Up with docker compose
-        run: docker compose up -d
+        run: podman compose up -d
 
       - name: Run tests
         env:
@@ -61,4 +62,4 @@ jobs:
           mvn $MAVEN_CLI_OPTS test
 
       - name: Down with docker compose
-        run: docker compose down
+        run: podman compose down
