@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -42,18 +41,15 @@ public class WalletClientGatewayTest {
 
   public static final String API_KEY = Optional.ofNullable(System.getenv(
       "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
-  private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
+  private static final WalletClientGatewayClient walletClientGateway =
+      new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
-  private static ECKey ecKey;
   private static String session;
 
   @BeforeAll
   static void beforeAll() throws Exception {
-    ecKey = generateKey();
-  }
+    var ecKey = generateKey();
 
-  @BeforeEach
-  void createSession() throws Exception {
     var accountId = createAccountByApiKey(ecKey);
 
     assertAll(
@@ -181,7 +177,7 @@ public class WalletClientGatewayTest {
         .generate();
   }
 
-  private String createAccountByApiKey(ECKey ecKey) {
+  private static String createAccountByApiKey(ECKey ecKey) {
     var accountRequestBody = """
         {
           "personalIdentityNumber": "197001011234",
