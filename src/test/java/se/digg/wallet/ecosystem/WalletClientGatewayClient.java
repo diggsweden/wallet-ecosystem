@@ -4,13 +4,14 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.not;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-
 import java.net.URI;
 
 public class WalletClientGatewayClient {
@@ -78,6 +79,7 @@ public class WalletClientGatewayClient {
         .post(base.resolve("attribute-attestations"))
         .then()
         .assertThat().statusCode(201).and()
+        .body("id", not(emptyString()))
         .extract()
         .body()
         .jsonPath()

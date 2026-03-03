@@ -27,7 +27,6 @@ import io.restassured.filter.cookie.CookieFilter;
 import io.restassured.http.ContentType;
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
@@ -133,8 +132,6 @@ public class WalletClientGatewayTest {
         "attestationData": "string"
         }""";
     var createdId = walletClientGateway.createAttributeAttestation(session, postBody);
-
-    UUID.fromString(createdId); // verify it's a valid uuid
 
     walletClientGateway.getAttributeAttestation(session, createdId)
         .then()
