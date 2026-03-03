@@ -123,8 +123,7 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void createsAndGetAttributeAttestation()
-      throws Exception {
+  void createsAndGetAttributeAttestation() {
     var postBody = """
         {
         "hsmId": "cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49",
@@ -140,7 +139,7 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void createsWalletUnitAttestation() throws Exception {
+  void createsWalletUnitAttestation() {
     walletClientGateway.createWalletUnitAttestation(session, null)
         .then()
         .assertThat().statusCode(201).and()
@@ -150,7 +149,7 @@ public class WalletClientGatewayTest {
   @ParameterizedTest
   @ValueSource(strings = {"nonce"})
   @NullSource
-  void createsWalletUnitAttestationWithAndWithoutNonce(String nonce) throws Exception {
+  void createsWalletUnitAttestationWithAndWithoutNonce(String nonce) {
     walletClientGateway.createWalletUnitAttestation(session, nonce)
         .then()
         .assertThat().statusCode(201).and()
@@ -158,8 +157,7 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest()
-      throws Exception {
+  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest() {
     String emptyNonce = "";
     walletClientGateway.createWalletUnitAttestation(session, emptyNonce)
         .then()

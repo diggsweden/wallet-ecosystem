@@ -72,8 +72,7 @@ public class WalletClientGatewayClient {
         .assertThat().statusCode(200).extract();
   }
 
-  public String createAttributeAttestation(String sessionId, String postBody)
-      throws Exception {
+  public String createAttributeAttestation(String sessionId, String postBody) {
     return given().when().contentType(ContentType.JSON).body(postBody)
         .header("Session", sessionId)
         .post(base.resolve("attribute-attestations"))
