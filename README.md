@@ -157,7 +157,9 @@ podman compose up
 
 ---
 
-You're right, sorry! Here's the corrected version:
+## Building Images
+
+If you need to add a new application to the Docker Compose setup, its image must be published before it can be pulled and used locally.
 
 ## Using Docker (Not officially supported)
 
