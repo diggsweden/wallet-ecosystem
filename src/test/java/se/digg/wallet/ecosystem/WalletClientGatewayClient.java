@@ -54,7 +54,8 @@ public class WalletClientGatewayClient {
             base.resolve("public/auth/session/challenge?accountId=%s&keyId=%s"
                 .formatted(accountId, keyId)))
         .then()
-        .assertThat().statusCode(200).and()
+        .assertThat().statusCode(200)
+        .and().body("nonce", not(blankOrNullString()))
         .extract().body().jsonPath().getString("nonce");
   }
 
