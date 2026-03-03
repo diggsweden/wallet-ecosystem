@@ -94,18 +94,10 @@ public class WalletClientGatewayTest {
         .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
   }
 
-  @Test
-  void createsWalletUnitAttestation() {
-    walletClientGateway.tryCreateWalletUnitAttestation(session, null)
-        .then()
-        .assertThat().statusCode(201).and()
-        .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
-  }
-
   @ParameterizedTest
   @ValueSource(strings = {"nonce"})
   @NullSource
-  void createsWalletUnitAttestationWithAndWithoutNonce(String nonce) {
+  void createsWalletUnitAttestation(String nonce) {
     walletClientGateway.tryCreateWalletUnitAttestation(session, nonce)
         .then()
         .assertThat().statusCode(201).and()
