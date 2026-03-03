@@ -48,13 +48,7 @@ public class WalletClientGatewayTest {
   @BeforeAll
   static void beforeAll() throws Exception {
     var ecKey = generateKey();
-
     var accountId = createAccountByApiKey(ecKey);
-
-    assertAll(
-        () -> assertNotNull(accountId),
-        () -> assertFalse(accountId.isEmpty()));
-
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
     session = walletClientGateway.respondToChallenge(signedJwt);
@@ -70,12 +64,8 @@ public class WalletClientGatewayTest {
 
   @Test
   @Deprecated
-  void createAccount_usingOidc_shouldReturnAccountId() throws Exception {
-    var accountId = createAccountByOidc(generateKey());
-
-    assertAll(
-        () -> assertNotNull(accountId),
-        () -> assertFalse(accountId.isEmpty()));
+  void createAccount_usingOidc_shouldSucceed() {
+    assertDoesNotThrow(() -> createAccountByOidc(generateKey()));
   }
 
   @Test

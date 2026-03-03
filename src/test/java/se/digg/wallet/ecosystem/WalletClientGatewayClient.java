@@ -31,8 +31,8 @@ public class WalletClientGatewayClient {
         .cookie("SESSION", oidcSession)
         .post(base.resolve("oidc/accounts/v1"))
         .then()
-        .assertThat()
-        .statusCode(201).and()
+        .assertThat().statusCode(201)
+        .and().body("accountId", not(blankOrNullString()))
         .extract().body().jsonPath().getString("accountId");
   }
 
@@ -43,8 +43,8 @@ public class WalletClientGatewayClient {
         .header("X-API-KEY", apiKey)
         .post(base.resolve(path))
         .then()
-        .assertThat()
-        .statusCode(201).and()
+        .assertThat().statusCode(201)
+        .and().body("accountId", not(blankOrNullString()))
         .extract().body().jsonPath().getString("accountId");
   }
 
