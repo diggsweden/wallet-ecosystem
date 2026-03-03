@@ -38,7 +38,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
-  public static final String API_KEY = Optional.ofNullable(System.getenv(
+  private static final String API_KEY = Optional.ofNullable(System.getenv(
       "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
   private static final WalletClientGatewayClient walletClientGateway =
       new WalletClientGatewayClient();
