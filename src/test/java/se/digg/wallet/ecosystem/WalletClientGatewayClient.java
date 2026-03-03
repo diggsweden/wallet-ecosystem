@@ -56,10 +56,7 @@ public class WalletClientGatewayClient {
                 .formatted(accountId, keyId)))
         .then()
         .assertThat().statusCode(200).and()
-        .extract()
-        .body()
-        .jsonPath()
-        .getString("nonce");
+        .extract().body().jsonPath().getString("nonce");
   }
 
   public String respondToChallenge(String signedJwt) {
@@ -84,10 +81,7 @@ public class WalletClientGatewayClient {
         .then()
         .assertThat().statusCode(201).and()
         .body("id", not(emptyString()))
-        .extract()
-        .body()
-        .jsonPath()
-        .getString("id");
+        .extract().body().jsonPath().getString("id");
   }
 
   public Response getAttributeAttestation(String sessionId, String id) {
