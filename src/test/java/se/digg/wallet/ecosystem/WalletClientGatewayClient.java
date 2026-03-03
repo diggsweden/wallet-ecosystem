@@ -24,6 +24,7 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
+  @Deprecated
   public String createAccountByOidc(String postBody, String oidcSession) {
     return given()
         .when().contentType(ContentType.JSON).body(postBody)
