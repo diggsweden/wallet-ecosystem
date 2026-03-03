@@ -5,7 +5,6 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.Matchers.blankOrNullString;
-import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.not;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
@@ -79,8 +78,8 @@ public class WalletClientGatewayClient {
         .header("Session", sessionId)
         .post(base.resolve("attribute-attestations"))
         .then()
-        .assertThat().statusCode(201).and()
-        .body("id", not(emptyString()))
+        .assertThat().statusCode(201)
+        .and().body("id", not(blankOrNullString()))
         .extract().body().jsonPath().getString("id");
   }
 
