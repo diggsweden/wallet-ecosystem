@@ -84,14 +84,14 @@ public class WalletClientGatewayClient {
         .extract().body().jsonPath().getString("id");
   }
 
-  public Response getAttributeAttestation(String sessionId, String id) {
+  public Response tryGetAttributeAttestation(String sessionId, String id) {
     return given()
         .when()
         .header("Session", sessionId)
         .get(base.resolve("attribute-attestations/%s".formatted(id)));
   }
 
-  public Response createWalletUnitAttestation(String sessionId, String nonce) {
+  public Response tryCreateWalletUnitAttestation(String sessionId, String nonce) {
     RequestSpecification request = given()
         .when()
         .contentType(ContentType.JSON)

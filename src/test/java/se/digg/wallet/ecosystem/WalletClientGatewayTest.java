@@ -88,7 +88,7 @@ public class WalletClientGatewayTest {
         }""";
     var createdId = walletClientGateway.createAttributeAttestation(session, postBody);
 
-    walletClientGateway.getAttributeAttestation(session, createdId)
+    walletClientGateway.tryGetAttributeAttestation(session, createdId)
         .then()
         .assertThat().statusCode(200)
         .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
@@ -96,7 +96,7 @@ public class WalletClientGatewayTest {
 
   @Test
   void createsWalletUnitAttestation() {
-    walletClientGateway.createWalletUnitAttestation(session, null)
+    walletClientGateway.tryCreateWalletUnitAttestation(session, null)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -106,7 +106,7 @@ public class WalletClientGatewayTest {
   @ValueSource(strings = {"nonce"})
   @NullSource
   void createsWalletUnitAttestationWithAndWithoutNonce(String nonce) {
-    walletClientGateway.createWalletUnitAttestation(session, nonce)
+    walletClientGateway.tryCreateWalletUnitAttestation(session, nonce)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -115,7 +115,7 @@ public class WalletClientGatewayTest {
   @Test
   void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest() {
     String emptyNonce = "";
-    walletClientGateway.createWalletUnitAttestation(session, emptyNonce)
+    walletClientGateway.tryCreateWalletUnitAttestation(session, emptyNonce)
         .then()
         .assertThat().statusCode(400);
   }
