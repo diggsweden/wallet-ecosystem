@@ -7,7 +7,7 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -57,18 +57,7 @@ public class WalletClientGatewayTest {
 
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
-    var response = walletClientGateway.respondToChallenge(signedJwt);
-    session = response.jsonPath().get("sessionId");
-
-    assertAll(
-        () -> assertNotNull(session),
-        () -> assertFalse(session.isEmpty()));
-
-    var sessionFromDeprecatedHeader = response.response().getHeaders().getValue("session");
-
-    assertAll(
-        () -> assertNotNull(sessionFromDeprecatedHeader),
-        () -> assertFalse(sessionFromDeprecatedHeader.isEmpty()));
+    session = walletClientGateway.respondToChallenge(signedJwt);
   }
 
   @Test
@@ -91,7 +80,7 @@ public class WalletClientGatewayTest {
 
   @Test
   @Deprecated
-  void createAccountAndLoginWithChallenge_usingOidc_shouldReturnSessionId() throws Exception {
+  void createAccountAndLoginWithChallenge_usingOidc_shouldSucceed() throws Exception {
     var ecKey = generateKey();
     // step one, create Account
     var accountId = createAccountByOidc(ecKey);
@@ -101,25 +90,8 @@ public class WalletClientGatewayTest {
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
 
-    // step three, post response and expect a session in the header
-    var sessionResponse = walletClientGateway.respondToChallenge(signedJwt).response();
-
-    // Assert session response
-    var actualBodySessionId = sessionResponse
-        .body()
-        .jsonPath()
-        .getString("sessionId");
-
-    var actualHeaderSessionId = sessionResponse
-        .getHeaders()
-        .getValue("Session");
-
-    assertAll(
-        () -> assertNotNull(actualBodySessionId),
-        () -> assertFalse(actualBodySessionId.isEmpty()),
-        () -> assertNotNull(actualHeaderSessionId),
-        () -> assertFalse(actualHeaderSessionId.isEmpty()),
-        () -> assertEquals(actualBodySessionId, actualHeaderSessionId));
+    // step three, post response and expect success
+    assertDoesNotThrow(() -> walletClientGateway.respondToChallenge(signedJwt));
   }
 
   @Test

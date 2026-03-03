@@ -4,12 +4,12 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.not;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import io.restassured.http.ContentType;
-import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.net.URI;
@@ -61,7 +61,7 @@ public class WalletClientGatewayClient {
         .getString("nonce");
   }
 
-  public ExtractableResponse<Response> respondToChallenge(String signedJwt) {
+  public String respondToChallenge(String signedJwt) {
     return given()
         .when().contentType(ContentType.JSON).body("""
             {
@@ -69,7 +69,11 @@ public class WalletClientGatewayClient {
             }""".formatted(signedJwt))
         .post(base.resolve("public/auth/session/response"))
         .then()
-        .assertThat().statusCode(200).extract();
+        .assertThat().statusCode(200)
+        .and().body("sessionId", not(blankOrNullString()))
+        // Deprecated header
+        .and().and().header("session", not(blankOrNullString()))
+        .extract().body().jsonPath().get("sessionId");
   }
 
   public String createAttributeAttestation(String sessionId, String postBody) {
