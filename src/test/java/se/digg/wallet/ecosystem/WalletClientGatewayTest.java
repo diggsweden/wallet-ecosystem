@@ -64,12 +64,6 @@ public class WalletClientGatewayTest {
 
   @Test
   @Deprecated
-  void createAccount_usingOidc_shouldSucceed() {
-    assertDoesNotThrow(() -> createAccountByOidc(generateKey()));
-  }
-
-  @Test
-  @Deprecated
   void createAccountAndLoginWithChallenge_usingOidc_shouldSucceed() throws Exception {
     var ecKey = generateKey();
     // step one, create Account
