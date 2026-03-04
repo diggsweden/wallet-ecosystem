@@ -6,11 +6,10 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
@@ -23,8 +22,6 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import io.restassured.filter.cookie.CookieFilter;
-import io.restassured.http.ContentType;
 import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,19 +60,29 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  @Deprecated
-  void createAccountAndLoginWithChallenge_usingOidc_shouldSucceed() throws Exception {
+  void createAccount_usingApiKeyAuth_shouldReturnAccountId() throws Exception {
     var ecKey = generateKey();
-    // step one, create Account
-    var accountId = createAccountByOidc(ecKey);
+    var accountRequestBody = """
+        {
+          "personalIdentityNumber": "197001011234",
+          "emailAdress": "test@hej.se",
+          "telephoneNumber": "070123123123",
+          "publicKey": %s
+        }""".formatted(ecKey.toPublicJWK().toJSONString());
+    var accountId = walletClientGateway.createAccountByApiKey(
+        accountRequestBody, API_KEY, "accounts");
 
-    // step two, create challenge
-    // use nonce to created signedJwt
-    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
-    var signedJwt = createSignedJwt(ecKey, nonce);
+    assertAll(
+        () -> assertNotNull(accountId),
+        () -> assertFalse(accountId.isEmpty()));
+  }
 
-    // step three, post response and expect success
-    assertDoesNotThrow(() -> walletClientGateway.respondToChallenge(signedJwt));
+  @Test
+  void challengeResponse_signedJwt_shouldReturnSessionInBody() throws Exception {
+    // This test verifies that the session was properly initialized in @BeforeAll
+    // and follows the expected flow: create account -> get challenge -> respond with signed JWT ->
+    // get session
+    assertThat(session, not(blankOrNullString()));
   }
 
   @Test
@@ -130,68 +137,6 @@ public class WalletClientGatewayTest {
         }""".formatted(ecKey.toPublicJWK().toJSONString());
     return walletClientGateway.createAccountByApiKey(
         accountRequestBody, API_KEY, "accounts");
-  }
-
-  @Deprecated
-  private String createAccountByOidc(ECKey key) {
-    var oidcSession = oidcLogin();
-
-    assertAll(
-        () -> assertNotNull(oidcSession),
-        () -> assertFalse(oidcSession.isEmpty()));
-
-    return walletClientGateway.createAccountByOidc("""
-            {
-              "emailAdress": "test@hej.se",
-              "telephoneNumber": "070123123123",
-              "publicKey": %s
-            }
-        """.formatted(key.toPublicJWK().toJSONString()), oidcSession);
-  }
-
-  private String oidcLogin() {
-    CookieFilter cookies = new CookieFilter();
-
-    var redirectToKeycloak = given()
-        .filter(cookies)
-        .when().contentType(ContentType.JSON)
-        .post(ServiceIdentifier.WALLET_CLIENT_GATEWAY.getResourceRoot().resolve("oidc/accounts/v1"))
-        .then()
-        .assertThat()
-        .statusCode(302).and()
-        .extract()
-        .response();
-
-    var redirectToKeycloakLogin = given()
-        .filter(cookies)
-        .redirects().follow(false)
-        .get(redirectToKeycloak.getHeader("Location"))
-        .then()
-        .extract()
-        .response();
-
-    var keycloakLoginPage = given()
-        .filter(cookies)
-        .redirects().follow(true)
-        .urlEncodingEnabled(false)
-        .get(redirectToKeycloakLogin.getHeader("Location"));
-
-    var loginAction =
-        keycloakLoginPage.htmlPath().getString("**.find { it.@id=='kc-form-login' }.@action");
-    var loginResponse = given()
-        .filter(cookies)
-        .redirects().follow(false)
-        .formParam("username", "test1")
-        .formParam("password", "test1")
-        .post(loginAction);
-
-    var applicationResponse = given()
-        .filter(cookies)
-        .redirects().follow(false)
-        .urlEncodingEnabled(false)
-        .get(loginResponse.getHeader("Location"));
-
-    return applicationResponse.cookie("SESSION");
   }
 
   private static String createSignedJwt(ECKey ecJwk, String nonce)
