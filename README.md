@@ -1,6 +1,6 @@
 # Digg Wallet Local Development Environment
 
-Docker Compose scripts for starting the Digg Wallet environment services locally.
+Podman Compose scripts for starting the Digg Wallet environment services locally.
 
 ---
 
@@ -8,7 +8,20 @@ Docker Compose scripts for starting the Digg Wallet environment services locally
 
 Before running the local environment, ensure the following prerequisites are in place.
 
-### 1. Install mkcert
+### 1. Podman
+
+*Note:* For local development we recomend docker compose v2 as compose provider to podman. <https://docs.docker.com/compose/install/linux/> .
+
+* **option 1**: Podman desktop <https://podman-desktop.io/>
+* **option 2**: Headless: <https://github.com/containers/podman-compose>
+
+Allow port 80+ for non-root users since podman runs rootless:
+
+```sh
+sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
+```
+
+### 2. Install mkcert
 
 mkcert is required to generate trusted local TLS certificates for the Traefik reverse proxy.
 
@@ -25,7 +38,7 @@ brew install mkcert
 brew install nss  # Required for Firefox
 ```
 
-### 2. Trust the mkcert CA
+### 3. Trust the mkcert CA
 
 Install the local CA in the system trust store so that browsers and tools trust the generated certificates:
 
@@ -35,7 +48,7 @@ mkcert -install
 
 > **Note:** The local issuer CA certificate can be found with `cat "$(mkcert -CAROOT)/rootCA.pem"`
 
-### 3. Generate Traefik TLS Certificate
+### 4. Generate Traefik TLS Certificate
 
 Generate a certificate and key pair for Traefik to serve local HTTPS traffic:
 
@@ -47,7 +60,7 @@ mkcert \
   localhost 127.0.0.1 ::1 10.0.2.2
 ```
 
-### 4. Generate Internal Service Certificates and Keystores
+### 5. Generate Internal Service Certificates and Keystores
 
 The ecosystem uses a separate local Root CA to issue certificates for all internal services (PID Issuer, Verifier, Wallet Provider, etc.). These are distinct from the Traefik TLS certificate above and are managed via an automation script.
 
@@ -119,13 +132,13 @@ source set-host.sh
 ### 1. Pull the Latest Images
 
 ```sh
-docker compose pull
+podman compose pull
 ```
 
 ### 2. Start the Services
 
 ```sh
-docker compose up
+podman compose up
 ```
 
 ---
@@ -149,3 +162,28 @@ docker compose up
 ## Building Images
 
 If you need to add a new application to the Docker Compose setup, its image must be published before it can be pulled and used locally.
+
+## Using Docker (Not officially supported)
+
+Note this is not officially supported but it might be possible to: Override `PODMAN_SOCK` in your `.env` file to point to the Docker socket before running compose:
+
+```env
+PODMAN_SOCK=/var/run/docker.sock
+```
+
+Or export it inline:
+
+```sh
+export PODMAN_SOCK=/var/run/docker.sock
+```
+
+try running:
+
+```sh
+# run the compose file with docker
+docker compose up -d; sleep 1s
+# Run the tests
+mvn test
+# Teardown compose
+docker compose down
+```
