@@ -10,8 +10,11 @@ Before running the local environment, ensure the following prerequisites are in 
 
 ### 1. Podman
 
+*Note:* For local development we recomend docker compose v2  as compose provider to podman. https://docs.docker.com/compose/install/linux/ . 
+
 * **option 1**: Podman desktop <https://podman-desktop.io/>
 * **option 2**: Headless: <https://github.com/containers/podman-compose>
+
 
 Allow port 80+ for non-root users since podman runs rootless:
 
