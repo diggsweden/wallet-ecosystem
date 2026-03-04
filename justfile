@@ -263,7 +263,7 @@ restart service:
     podman compose restart {{service}}
 
 # ==================================================================================== #
-# TEST - Integration tests (requires podman-compose services)
+# TEST - Integration tests (requires podman compose services)
 # ==================================================================================== #
 
 # ▪ Run integration tests (requires services running)
