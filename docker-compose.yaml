@@ -284,7 +284,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.4.5
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.4.6
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
