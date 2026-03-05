@@ -1,8 +1,10 @@
-### Generate Internal Service Certificates and Keystores
+# Ecosystem Certificates
+
+## Generate Internal Service Certificates and Keystores
 
 The ecosystem uses a separate local Root CA to issue certificates for all internal services (PID Issuer, Verifier, Wallet Provider, etc.). These are distinct from the Traefik TLS certificate above and are managed via an automation script.
 
-#### Automated Generation
+### Automated Generation
 
 To (re)generate all ecosystem certificates, keystores, and REUSE-compliant license files, run:
 
