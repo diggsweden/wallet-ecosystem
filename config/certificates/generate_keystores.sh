@@ -105,7 +105,7 @@ EOF
 generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "DNS.1:localhost,DNS.2:pid-issuer"
 
 # 2. Verifier Backend
-generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "DNS.1:localhost,DNS.2:verifier-backend,DNS.3:refimpl-verifier-backend"
+generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "DNS.1:localhost,DNS.2:verifier-backend,DNS.3:refimpl-verifier-backend,DNS.4:10.0.2.2"
 
 # 3. Verifier Trust Store
 echo "Creating trusted_issuers.p12 for Verifier..."
