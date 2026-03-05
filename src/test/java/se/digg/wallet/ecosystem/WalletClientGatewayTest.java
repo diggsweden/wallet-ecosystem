@@ -7,7 +7,7 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -27,8 +27,10 @@ import io.restassured.filter.cookie.CookieFilter;
 import io.restassured.http.ContentType;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,20 +40,18 @@ import org.junit.jupiter.params.provider.ValueSource;
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
-  private static final String API_KEY = Optional.ofNullable(System.getenv(
+  public static final String API_KEY = Optional.ofNullable(System.getenv(
       "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
-  private static final WalletClientGatewayClient walletClientGateway =
-      new WalletClientGatewayClient();
+  private final WalletClientGatewayClient walletClientGateway = new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
+  private static ECKey ecKey;
+  private static String oidcSession;
+  private static String accountId;
   private static String session;
 
   @BeforeAll
   static void beforeAll() throws Exception {
-    var ecKey = generateKey();
-    var accountId = createAccountByApiKey(ecKey);
-    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
-    var signedJwt = createSignedJwt(ecKey, nonce);
-    session = walletClientGateway.respondToChallenge(signedJwt);
+    ecKey = generateKey();
   }
 
   @Test
@@ -63,23 +63,121 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  @Deprecated
-  void createAccountAndLoginWithChallenge_usingOidc_shouldSucceed() throws Exception {
+  @Order(1)
+  void login_usingOidcAuth_shouldReturnSession() throws Exception {
+    oidcSession = oidcLogin();
+
+    assertAll(
+        () -> assertNotNull(oidcSession),
+        () -> assertFalse(oidcSession.isEmpty()));
+  }
+
+  @Test
+  @Order(2)
+  void createAccount_usingOidcAuth_shouldReturnAccountId() throws Exception {
+    accountId = walletClientGateway.createAccountByOidc(
+        """
+                {
+                  "emailAdress": "test@hej.se",
+                  "telephoneNumber": "070123123123",
+                  "publicKey": %s
+                }
+            """.formatted(ecKey.toPublicJWK().toJSONString()),
+        oidcSession);
+
+    assertAll(
+        () -> assertNotNull(accountId),
+        () -> assertFalse(accountId.isEmpty()));
+  }
+
+  @Test
+  @Order(3)
+  void createAccount_usingApiKeyAuth_shouldReturnAccountId() throws Exception {
+    var ecKey = generateKey();
+    var accountRequestBody = """
+        {
+          "personalIdentityNumber": "197001011234",
+          "emailAdress": "test@hej.se",
+          "telephoneNumber": "070123123123",
+          "publicKey": %s
+        }""".formatted(ecKey.toPublicJWK().toJSONString());
+    var accountId = walletClientGateway.createAccountByApiKey(
+        accountRequestBody, API_KEY, "accounts");
+
+    assertAll(
+        () -> assertNotNull(accountId),
+        () -> assertFalse(accountId.isEmpty()));
+  }
+
+  @Test
+  @Order(4)
+  void loginChallenge_signedJwt_shouldReturnSessionInBody() throws Exception {
+    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
+    var signedJwt = createSignedJwt(ecKey, nonce);
+    var response = walletClientGateway.respondToChallenge(signedJwt);
+    session = response.jsonPath().get("sessionId");
+
+    assertAll(
+        () -> assertNotNull(session),
+        () -> assertFalse(session.isEmpty()));
+  }
+
+  @Test
+  @Order(5)
+  void loginChallenge_signedJwt_shouldReturnSessionInHeader_deprecated() throws Exception {
+    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
+    var signedJwt = createSignedJwt(ecKey, nonce);
+    var response = walletClientGateway.respondToChallenge(signedJwt);
+    session = response.response().getHeaders().getValue("session");
+
+    assertAll(
+        () -> assertNotNull(session),
+        () -> assertFalse(session.isEmpty()));
+  }
+
+  @Test
+  void createAccountAndLoginWithChallenge_usingApiKey_shouldReturnSessionId() throws Exception {
     var ecKey = generateKey();
     // step one, create Account
-    var accountId = createAccountByOidc(ecKey);
+    var accountRequestBody = """
+        {
+          "personalIdentityNumber": "197001011234",
+          "emailAdress": "test@hej.se",
+          "telephoneNumber": "070123123123",
+          "publicKey": %s
+        }""".formatted(ecKey.toPublicJWK().toJSONString());
+    var accountId = walletClientGateway.createAccountByApiKey(
+        accountRequestBody, API_KEY, "accounts");
 
     // step two, create challenge
     // use nonce to created signedJwt
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
 
-    // step three, post response and expect success
-    assertDoesNotThrow(() -> walletClientGateway.respondToChallenge(signedJwt));
+    // step three, post response and expect a session in the header
+    var sessionResponse = walletClientGateway.respondToChallenge(signedJwt).response();
+
+    // Assert session response
+    var actualBodySessionId = sessionResponse
+        .body()
+        .jsonPath()
+        .getString("sessionId");
+
+    var actualHeaderSessionId = sessionResponse
+        .getHeaders()
+        .getValue("Session");
+
+    assertAll(
+        () -> assertNotNull(actualBodySessionId),
+        () -> assertFalse(actualBodySessionId.isEmpty()),
+        () -> assertNotNull(actualHeaderSessionId),
+        () -> assertFalse(actualHeaderSessionId.isEmpty()),
+        () -> assertEquals(actualBodySessionId, actualHeaderSessionId));
   }
 
   @Test
-  void createsAndGetAttributeAttestation() {
+  void createsAndGetAttributeAttestation()
+      throws Exception {
     var postBody = """
         {
         "hsmId": "cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49",
@@ -88,26 +186,37 @@ public class WalletClientGatewayTest {
         }""";
     var createdId = walletClientGateway.createAttributeAttestation(session, postBody);
 
-    walletClientGateway.tryGetAttributeAttestation(session, createdId)
+    UUID.fromString(createdId); // verify it's a valid uuid
+
+    walletClientGateway.getAttributeAttestation(session, createdId)
         .then()
         .assertThat().statusCode(200)
         .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
   }
 
+  @Test
+  void createsWalletUnitAttestation() throws Exception {
+    walletClientGateway.createWalletUnitAttestation(session, null)
+        .then()
+        .assertThat().statusCode(201).and()
+        .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"nonce"})
   @NullSource
-  void createsWalletUnitAttestation(String nonce) {
-    walletClientGateway.tryCreateWalletUnitAttestation(session, nonce)
+  void createsWalletUnitAttestationWithAndWithoutNonce(String nonce) throws Exception {
+    walletClientGateway.createWalletUnitAttestation(session, nonce)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
   }
 
   @Test
-  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest() {
+  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest()
+      throws Exception {
     String emptyNonce = "";
-    walletClientGateway.tryCreateWalletUnitAttestation(session, emptyNonce)
+    walletClientGateway.createWalletUnitAttestation(session, emptyNonce)
         .then()
         .assertThat().statusCode(400);
   }
@@ -120,41 +229,12 @@ public class WalletClientGatewayTest {
         .generate();
   }
 
-  private static String createAccountByApiKey(ECKey ecKey) {
-    var accountRequestBody = """
-        {
-          "personalIdentityNumber": "197001011234",
-          "emailAdress": "test@hej.se",
-          "telephoneNumber": "070123123123",
-          "publicKey": %s
-        }""".formatted(ecKey.toPublicJWK().toJSONString());
-    return walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, "accounts");
-  }
-
-  @Deprecated
-  private String createAccountByOidc(ECKey key) {
-    var oidcSession = oidcLogin();
-
-    assertAll(
-        () -> assertNotNull(oidcSession),
-        () -> assertFalse(oidcSession.isEmpty()));
-
-    return walletClientGateway.createAccountByOidc("""
-            {
-              "emailAdress": "test@hej.se",
-              "telephoneNumber": "070123123123",
-              "publicKey": %s
-            }
-        """.formatted(key.toPublicJWK().toJSONString()), oidcSession);
-  }
-
   private String oidcLogin() {
     CookieFilter cookies = new CookieFilter();
 
     var redirectToKeycloak = given()
         .filter(cookies)
-        .when().contentType(ContentType.JSON)
+        .when().contentType(ContentType.JSON).body("bogusbody")
         .post(ServiceIdentifier.WALLET_CLIENT_GATEWAY.getResourceRoot().resolve("oidc/accounts/v1"))
         .then()
         .assertThat()
