@@ -9,6 +9,7 @@ path = [
   "README.md",
   "DEVELOPMENT.md",
   "renovate.json",
+  "config/certificates/README.md",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 The Wallet Ecosystem Authors"
