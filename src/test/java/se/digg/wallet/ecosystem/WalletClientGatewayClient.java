@@ -4,13 +4,13 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.not;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import io.restassured.http.ContentType;
-import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-
 import java.net.URI;
 
 public class WalletClientGatewayClient {
@@ -23,6 +23,7 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
+  @Deprecated
   public String createAccountByOidc(String postBody, String oidcSession) {
     return given()
         .when().contentType(ContentType.JSON).body(postBody)
@@ -30,8 +31,8 @@ public class WalletClientGatewayClient {
         .cookie("SESSION", oidcSession)
         .post(base.resolve("oidc/accounts/v1"))
         .then()
-        .assertThat()
-        .statusCode(201).and()
+        .assertThat().statusCode(201)
+        .and().body("accountId", not(blankOrNullString()))
         .extract().body().jsonPath().getString("accountId");
   }
 
@@ -42,8 +43,8 @@ public class WalletClientGatewayClient {
         .header("X-API-KEY", apiKey)
         .post(base.resolve(path))
         .then()
-        .assertThat()
-        .statusCode(201).and()
+        .assertThat().statusCode(201)
+        .and().body("accountId", not(blankOrNullString()))
         .extract().body().jsonPath().getString("accountId");
   }
 
@@ -53,14 +54,12 @@ public class WalletClientGatewayClient {
             base.resolve("public/auth/session/challenge?accountId=%s&keyId=%s"
                 .formatted(accountId, keyId)))
         .then()
-        .assertThat().statusCode(200).and()
-        .extract()
-        .body()
-        .jsonPath()
-        .getString("nonce");
+        .assertThat().statusCode(200)
+        .and().body("nonce", not(blankOrNullString()))
+        .extract().body().jsonPath().getString("nonce");
   }
 
-  public ExtractableResponse<Response> respondToChallenge(String signedJwt) {
+  public String respondToChallenge(String signedJwt) {
     return given()
         .when().contentType(ContentType.JSON).body("""
             {
@@ -68,30 +67,31 @@ public class WalletClientGatewayClient {
             }""".formatted(signedJwt))
         .post(base.resolve("public/auth/session/response"))
         .then()
-        .assertThat().statusCode(200).extract();
+        .assertThat().statusCode(200)
+        .and().body("sessionId", not(blankOrNullString()))
+        // Deprecated header
+        .and().and().header("session", not(blankOrNullString()))
+        .extract().body().jsonPath().get("sessionId");
   }
 
-  public String createAttributeAttestation(String sessionId, String postBody)
-      throws Exception {
+  public String createAttributeAttestation(String sessionId, String postBody) {
     return given().when().contentType(ContentType.JSON).body(postBody)
         .header("Session", sessionId)
         .post(base.resolve("attribute-attestations"))
         .then()
-        .assertThat().statusCode(201).and()
-        .extract()
-        .body()
-        .jsonPath()
-        .getString("id");
+        .assertThat().statusCode(201)
+        .and().body("id", not(blankOrNullString()))
+        .extract().body().jsonPath().getString("id");
   }
 
-  public Response getAttributeAttestation(String sessionId, String id) {
+  public Response tryGetAttributeAttestation(String sessionId, String id) {
     return given()
         .when()
         .header("Session", sessionId)
         .get(base.resolve("attribute-attestations/%s".formatted(id)));
   }
 
-  public Response createWalletUnitAttestation(String sessionId, String nonce) {
+  public Response tryCreateWalletUnitAttestation(String sessionId, String nonce) {
     RequestSpecification request = given()
         .when()
         .contentType(ContentType.JSON)
