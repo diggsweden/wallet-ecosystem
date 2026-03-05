@@ -70,7 +70,7 @@ public class WalletClientGatewayClient {
         .assertThat().statusCode(200)
         .and().body("sessionId", not(blankOrNullString()))
         // Deprecated header
-        .and().and().header("session", not(blankOrNullString()))
+        .and().header("session", not(blankOrNullString()))
         .extract().body().jsonPath().get("sessionId");
   }
 
