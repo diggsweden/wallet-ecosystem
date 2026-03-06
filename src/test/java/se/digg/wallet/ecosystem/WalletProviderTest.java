@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class WalletProviderTest {
 
   private final WalletProviderClient walletProvider = new WalletProviderClient();
+  private static final String PATH = "wallet-unit-attestation";
 
   @Test
   void isHealthy() {
@@ -27,15 +28,8 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {
-      "wallet-unit-attestation",
-      "wallet-unit-attestation/v2"
-  })
-  @Deprecated
-  /* This is a temporary test until we have migrated all clients to the versionless endpoint */
-  void createsWalletUnitAttestationOnSpecificPath(String path) throws Exception {
-    String wua = new WalletProviderClient(path).getWalletUnitAttestation(
+  @Test  void createsWalletUnitAttestationOnSpecificPath() throws Exception {
+    String wua = new WalletProviderClient(PATH).getWalletUnitAttestation(
         new ECKeyGenerator(Curve.P_256).generate(),
         "nonce");
 
