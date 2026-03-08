@@ -87,7 +87,7 @@ SPDX-License-Identifier: CC0-1.0
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.4</version>
+        <version>3.5.5</version>
         <configuration>
           <excludes>
             <exclude>${test.excludes}</exclude>
