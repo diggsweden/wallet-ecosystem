@@ -74,32 +74,17 @@ Review the variables in `.env` and update them as needed for your local setup. T
 
 > **Android emulator note:** Android emulators cannot reach `localhost` on the host machine. If you are developing for Android, set `BASE_URL=https://10.0.2.2` so the emulator can resolve requests to the running services.
 
-### 2. Set the Host IP
+### 2. Corporate Proxy Note
 
-Some services need to reach the host machine from inside Docker. `HOST_IP` must be set to the host's IP address as seen from inside a Docker container. Run:
-
-```sh
-source set-host.sh
-```
-
-> **Note:** It is necessary to run this with `source` so that the environment variable is exported to the current shell session, not just the script's subshell.
+ **Corporate proxy note:** If you are behind a corporate proxy, you may need to add the container network ranges to Podman's `noProxy` configuration to prevent proxy errors. Edit `~/.config/containers/containers.conf` and restart Podman:
 >
-> **Corporate proxy note:** If you are behind a corporate proxy, you may need to add the resolved `HOST_IP` to Docker's `noProxy` configuration to prevent proxy errors. For example, if `echo $HOST_IP` yields `172.17.0.1`, edit your Docker config and restart Docker:
->
-> ```sh
-> cat ~/.docker/config.json
-> ```
->
-> ```json
-> {
->   "proxies": {
->     "default": {
->       "httpProxy": "your-regular-proxy",
->       "httpsProxy": "your-regular-proxy",
->       "noProxy": "your-regular-no-proxy,172.0.0.0/8"
->     }
->   }
-> }
+> ```toml
+> [engine]
+> env = [
+>   "http_proxy=your-regular-proxy",
+>   "https_proxy=your-regular-proxy",
+>   "no_proxy=your-regular-no-proxy,172.0.0.0/8"
+> ]
 > ```
 
 ---
