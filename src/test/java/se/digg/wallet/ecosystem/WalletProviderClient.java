@@ -17,16 +17,16 @@ public class WalletProviderClient {
 
   private final URI base;
 
-  private static final String WUA_V2_URL = "wallet-unit-attestation/v2";
+  private static final String WUA_URL = "wallet-unit-attestation";
 
   private final String path;
 
   public WalletProviderClient() {
-    this(WUA_V2_URL);
+    this(WUA_URL);
   }
 
   public WalletProviderClient(URI base) {
-    this(base, WUA_V2_URL);
+    this(base, WUA_URL);
   }
 
   public WalletProviderClient(String path) {

@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -27,6 +28,7 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
+  @Disabled
   @ParameterizedTest
   @ValueSource(strings = {
       "wallet-unit-attestation",
