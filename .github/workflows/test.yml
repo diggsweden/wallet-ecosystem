@@ -41,8 +41,16 @@ jobs:
             -out config/traefik/certs/wallet-cert.pem \
             -days 1 -nodes -subj "/CN=localhost"
 
-      - name: Up with docker compose
-        run: docker compose up -d
+      - name: 'Install podman'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman podman-compose
+          systemctl --user start podman.socket
+          sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
+          echo "PODMAN_SOCK=$XDG_RUNTIME_DIR/podman/podman.sock" >> "$GITHUB_ENV"
+
+      - name: Up with podman compose
+        run: podman compose up -d; sleep 2s
 
       - name: Run tests
         env:
@@ -53,5 +61,5 @@ jobs:
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
 
-      - name: Down with docker compose
-        run: docker compose down
+      - name: Down with podman compose
+        run: podman compose down

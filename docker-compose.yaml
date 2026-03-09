@@ -280,7 +280,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "6379:6379"
+      - "6378:6379"
     networks:
       - wallet-ecosystem-network
 
@@ -403,7 +403,7 @@ services:
       - "80:80"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PODMAN_SOCK:-$XDG_RUNTIME_DIR/podman/podman.sock}:/var/run/docker.sock:ro
       - ./config/traefik:/etc/traefik
     command:
       - "--ping"

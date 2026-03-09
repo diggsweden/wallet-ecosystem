@@ -83,7 +83,7 @@ npm-install:
 [group('document')]
 document:
     mkdir -p target/documentation
-    docker run \
+    podman run \
         --rm \
         -v "$PWD":/data derlin/docker-compose-viz-mermaid \
         /data/docker-compose.yaml \
@@ -93,7 +93,7 @@ document:
         --no-ilinks \
         -f svg \
         --out=/data/target/documentation/wallet-ecosystem-minimal.svg
-    docker run \
+    podman run \
         --rm \
         -v "$PWD":/data derlin/docker-compose-viz-mermaid \
         /data/docker-compose.yaml \
@@ -108,7 +108,7 @@ document:
 # VERIFY - Quality assurance
 # ==================================================================================== #
 
-# ▪ Run all checks (linters only - tests require docker-compose)
+# ▪ Run all checks (linters only - tests require podman-compose)
 [group('verify')]
 verify: _ensure-devtools check-tools
     @{{devtools_dir}}/scripts/verify.sh
@@ -192,7 +192,7 @@ lint-java-pmd:
 lint-java-fmt:
     @{{java_lint}}/format.sh check
 
-# Lint container files (Dockerfile/Containerfile)
+# Lint container files (Containerfile)
 [group('lint')]
 lint-container:
 
@@ -228,47 +228,41 @@ lint-java-fmt-fix:
     @{{java_lint}}/format.sh fix
 
 # ==================================================================================== #
-# DOCKER COMPOSE - Service orchestration
+# PODMAN COMPOSE - Service orchestration
 # ==================================================================================== #
 
 # Start all ecosystem services
-[group('docker')]
+[group('podman')]
 up:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if [[ -z "${HOST_IP:-}" ]]; then
-        echo "Setting HOST_IP..."
-        source set-host.sh
-    fi
-    docker compose up -d
+    podman compose up -d
 
 # Stop all ecosystem services
-[group('docker')]
+[group('podman')]
 down:
-    docker compose down
+    podman compose down
 
 # Pull latest images
-[group('docker')]
+[group('podman')]
 pull:
-    docker compose pull
+    podman compose pull
 
 # View service logs (optionally specify service name)
-[group('docker')]
+[group('podman')]
 logs service="":
-    docker compose logs -f {{service}}
+    podman compose logs -f {{service}}
 
 # Show service status
-[group('docker')]
+[group('podman')]
 status:
-    docker compose ps
+    podman compose ps
 
 # Restart a specific service
-[group('docker')]
+[group('podman')]
 restart service:
-    docker compose restart {{service}}
+    podman compose restart {{service}}
 
 # ==================================================================================== #
-# TEST - Integration tests (requires docker-compose services)
+# TEST - Integration tests (requires podman compose services)
 # ==================================================================================== #
 
 # ▪ Run integration tests (requires services running)
