@@ -95,7 +95,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.7.4
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.8.0
     container_name: pid-issuer
     depends_on:
       keycloak:
@@ -126,12 +126,12 @@ services:
       - ISSUER_MDL_ENABLED=false
       - ISSUER_LEARNINGCREDENTIAL_ENABLED=false
       - ISSUER_CREDENTIALOFFER_URI=openid-credential-offer://
-      - ISSUER_SIGNING_KEY=LoadFromKeystore
-      - ISSUER_SIGNING_KEY_KEYSTORE=file:///opt/common/pid_issuer.p12
-      - ISSUER_SIGNING_KEY_KEYSTORE_TYPE=PKCS12
-      - ISSUER_SIGNING_KEY_KEYSTORE_PASSWORD=pass1234
-      - ISSUER_SIGNING_KEY_ALIAS=pid_issuer
-      - ISSUER_SIGNING_KEY_PASSWORD=pass1234
+      - ISSUER_KEYSTORE_FILE=file:///opt/common/pid_issuer.p12
+      - ISSUER_KEYSTORE_TYPE=PKCS12
+      - ISSUER_KEYSTORE_PASSWORD=pass1234
+      - ISSUER_PID_SD_JWT_VC_SIGNING_KEY=LoadFromKeystore
+      - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_ALIAS=pid_issuer
+      - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_PASSWORD=pass1234
       - ISSUER_METADATA_SIGNED_METADATA_ENABLED=false
       - ISSUER_KEYCLOAK_SERVER_URL=http://keycloak:8080/idp
       - ISSUER_KEYCLOAK_AUTHENTICATION_REALM=master
@@ -146,6 +146,7 @@ services:
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_ENABLED=true
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_BATCHSIZE=10
       - ISSUER_CNONCE_EXPIRATION=PT5M
+      - ISSUER_ACCESS_TOKEN_TYPE=BearerAndDPoPIfAvailable
       - ISSUER_METADATA_DISPLAY_0_LOGO_URI=https://dela.digg.se/img/sr-logo-color.png
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
     volumes:
