@@ -149,6 +149,7 @@ services:
       - ISSUER_ACCESS_TOKEN_TYPE=BearerAndDPoPIfAvailable
       - ISSUER_METADATA_DISPLAY_0_LOGO_URI=https://dela.digg.se/img/sr-logo-color.png
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
+      - JAVA_OPTS="-XX:MaxDirectMemorySize=128M"
     volumes:
       - ./config/certificates/issuer/pid_issuer.p12:/opt/common/pid_issuer.p12:ro
     labels:
