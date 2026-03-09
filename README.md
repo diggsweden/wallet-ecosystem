@@ -76,7 +76,7 @@ Review the variables in `.env` and update them as needed for your local setup. T
 
 ### 2. Corporate Proxy Note
 
- **Corporate proxy note:** If you are behind a corporate proxy, you may need to add the container network ranges to Podman's `noProxy` configuration to prevent proxy errors. Edit `~/.config/containers/containers.conf` and restart Podman:
+ **Corporate proxy note:** If you are behind a corporate proxy, you may need to add the container network ranges to Podman's configuration to prevent proxy errors. Edit `~/.config/containers/containers.conf` and restart Podman (Also possible through podman UI):
 >
 > ```toml
 > [engine]
