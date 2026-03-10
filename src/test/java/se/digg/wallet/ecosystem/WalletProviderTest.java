@@ -18,7 +18,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class WalletProviderTest {
 
   private final WalletProviderClient walletProvider = new WalletProviderClient();
-  private static final String PATH = "wallet-unit-attestation";
 
   @Test
   void isHealthy() {

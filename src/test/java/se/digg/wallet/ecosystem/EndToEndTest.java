@@ -31,7 +31,6 @@ public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
   private final ObjectMapper objectMapper = new ObjectMapper();
-  private static final String WUA_PATH = "wallet-unit-attestation";
   private final IssuanceAgent issuer = new IssuanceAgent();
 
   @Test
