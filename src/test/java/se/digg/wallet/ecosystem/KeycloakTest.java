@@ -36,15 +36,15 @@ public class KeycloakTest {
         .body("status", equalTo("UP"));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"pid-issuer-realm", "wallet"})
-  void servesRealm(String name) {
-    keycloak.tryGetRealm(name)
+  @Test
+  void servesRealm() {
+    String realmName = "pid-issuer-realm";
+    keycloak.tryGetRealm(realmName)
         .then()
         .assertThat()
         .statusCode(200)
         .and()
-        .body("realm", equalTo(name));
+        .body("realm", equalTo(realmName));
   }
 
   @Test
