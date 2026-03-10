@@ -19,7 +19,7 @@ import java.util.List;
 
 class VerifierFrontendTest {
 
-  private static final List<String> SITENAMES = List.of("vaccincentralen", "matcentralen");
+  static final List<String> SITE_NAMES = List.of("vaccincentralen", "matcentralen");
   private final VerifierFrontendClient verifierFrontend = new VerifierFrontendClient();
 
   @Test
@@ -38,7 +38,7 @@ class VerifierFrontendTest {
   }
 
   @ParameterizedTest
-  @FieldSource("SITENAMES")
+  @FieldSource("SITE_NAMES")
   void createsVerificationRequest(String siteName) {
     VerifierPresentationResponse response = verifierFrontend.createPresentationRequest(siteName);
     assertNotNull(response);
@@ -48,7 +48,7 @@ class VerifierFrontendTest {
   }
 
   @ParameterizedTest
-  @FieldSource("SITENAMES")
+  @FieldSource("SITE_NAMES")
   void returnsVerificationStatusForValidTransaction(String siteName) {
     VerifierPresentationResponse presentationResponse =
         verifierFrontend.createPresentationRequest(siteName);
