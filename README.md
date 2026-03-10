@@ -1,6 +1,6 @@
 # Digg Wallet Local Development Environment
 
-Docker Compose scripts for starting the Digg Wallet environment services locally.
+Podman Compose scripts for starting the Digg Wallet environment services locally.
 
 ---
 
@@ -8,7 +8,20 @@ Docker Compose scripts for starting the Digg Wallet environment services locally
 
 Before running the local environment, ensure the following prerequisites are in place.
 
-### 1. Install mkcert
+### 1. Podman
+
+*Note:* For local development we recomend docker compose v2 as compose provider to podman. <https://docs.docker.com/compose/install/linux/> .
+
+* **option 1**: Podman desktop <https://podman-desktop.io/>
+* **option 2**: Headless: <https://github.com/containers/podman-compose>
+
+Allow port 80+ for non-root users since podman runs rootless:
+
+```sh
+sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
+```
+
+### 2. Install mkcert
 
 mkcert is required to generate trusted local TLS certificates for the Traefik reverse proxy.
 
@@ -25,7 +38,7 @@ brew install mkcert
 brew install nss  # Required for Firefox
 ```
 
-### 2. Trust the mkcert CA
+### 3. Trust the mkcert CA
 
 Install the local CA in the system trust store so that browsers and tools trust the generated certificates:
 
@@ -35,7 +48,7 @@ mkcert -install
 
 > **Note:** The local issuer CA certificate can be found with `cat "$(mkcert -CAROOT)/rootCA.pem"`
 
-### 3. Generate Traefik TLS Certificate
+### 4. Generate Traefik TLS Certificate
 
 Generate a certificate and key pair for Traefik to serve local HTTPS traffic:
 
@@ -61,32 +74,17 @@ Review the variables in `.env` and update them as needed for your local setup. T
 
 > **Android emulator note:** Android emulators cannot reach `localhost` on the host machine. If you are developing for Android, set `BASE_URL=https://10.0.2.2` so the emulator can resolve requests to the running services.
 
-### 2. Set the Host IP
+### 2. Corporate Proxy Note
 
-Some services need to reach the host machine from inside Docker. `HOST_IP` must be set to the host's IP address as seen from inside a Docker container. Run:
-
-```sh
-source set-host.sh
-```
-
-> **Note:** It is necessary to run this with `source` so that the environment variable is exported to the current shell session, not just the script's subshell.
+ **Corporate proxy note:** If you are behind a corporate proxy, you may need to add the container network ranges to Podman's configuration to prevent proxy errors. Edit `~/.config/containers/containers.conf` and restart Podman (Also possible through podman UI):
 >
-> **Corporate proxy note:** If you are behind a corporate proxy, you may need to add the resolved `HOST_IP` to Docker's `noProxy` configuration to prevent proxy errors. For example, if `echo $HOST_IP` yields `172.17.0.1`, edit your Docker config and restart Docker:
->
-> ```sh
-> cat ~/.docker/config.json
-> ```
->
-> ```json
-> {
->   "proxies": {
->     "default": {
->       "httpProxy": "your-regular-proxy",
->       "httpsProxy": "your-regular-proxy",
->       "noProxy": "your-regular-no-proxy,172.0.0.0/8"
->     }
->   }
-> }
+> ```toml
+> [engine]
+> env = [
+>   "http_proxy=your-regular-proxy",
+>   "https_proxy=your-regular-proxy",
+>   "no_proxy=your-regular-no-proxy,172.0.0.0/8"
+> ]
 > ```
 
 ---
@@ -96,13 +94,13 @@ source set-host.sh
 ### 1. Pull the Latest Images
 
 ```sh
-docker compose pull
+podman compose pull
 ```
 
 ### 2. Start the Services
 
 ```sh
-docker compose up
+podman compose up
 ```
 
 ---
@@ -126,3 +124,28 @@ docker compose up
 ## Building Images
 
 If you need to add a new application to the Docker Compose setup, its image must be published before it can be pulled and used locally.
+
+## Using Docker (Not officially supported)
+
+Note this is not officially supported but it might be possible to: Override `PODMAN_SOCK` in your `.env` file to point to the Docker socket before running compose:
+
+```env
+PODMAN_SOCK=/var/run/docker.sock
+```
+
+Or export it inline:
+
+```sh
+export PODMAN_SOCK=/var/run/docker.sock
+```
+
+try running:
+
+```sh
+# run the compose file with docker
+docker compose up -d; sleep 1s
+# Run the tests
+mvn test
+# Teardown compose
+docker compose down
+```
