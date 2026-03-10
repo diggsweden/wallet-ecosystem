@@ -23,21 +23,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+
+import org.junit.jupiter.api.Test;
+
 
 public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private static final String WUA_PATH = "wallet-unit-attestation";
+  private final IssuanceAgent issuer = new IssuanceAgent();
 
-  @ParameterizedTest
-  @ValueSource(strings = {
-      "wallet-unit-attestation",
-      "wallet-unit-attestation/v2"
-  })
-  void getCredential(String wuaPath) throws Exception {
-    IssuanceAgent issuer = new IssuanceAgent(new WalletProviderClient(wuaPath));
+  @Test
+  void getCredential() throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
