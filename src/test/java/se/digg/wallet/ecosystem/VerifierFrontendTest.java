@@ -12,9 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.FieldSource;
+
+import java.util.List;
 
 class VerifierFrontendTest {
 
+  private static final List<String> SITENAMES = List.of("vaccincentralen", "matcentralen");
   private final VerifierFrontendClient verifierFrontend = new VerifierFrontendClient();
 
   @Test
@@ -32,22 +37,24 @@ class VerifierFrontendTest {
     assertThat(response.jsonPath().getString("status"), is("online"));
   }
 
-  @Test
-  void createsVerificationRequest() {
-    VerifierPresentationResponse response = verifierFrontend.createPresentationRequest();
+  @ParameterizedTest
+  @FieldSource("SITENAMES")
+  void createsVerificationRequest(String siteName) {
+    VerifierPresentationResponse response = verifierFrontend.createPresentationRequest(siteName);
     assertNotNull(response);
     assertThat(response.transaction_id(), notNullValue());
     assertThat(response.request_uri(), notNullValue());
     assertThat(response.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
   }
 
-  @Test
-  void returnsVerificationStatusForValidTransaction() {
+  @ParameterizedTest
+  @FieldSource("SITENAMES")
+  void returnsVerificationStatusForValidTransaction(String siteName) {
     VerifierPresentationResponse presentationResponse =
-        verifierFrontend.createPresentationRequest();
+        verifierFrontend.createPresentationRequest(siteName);
     String transactionId = presentationResponse.transaction_id();
 
-    Response response = verifierFrontend.getPresentationStatus(transactionId);
+    Response response = verifierFrontend.getPresentationStatus(siteName, transactionId);
     assertThat(response.getStatusCode(), is(200));
     assertThat(response.getBody().jsonPath().get("status"), is("pending"));
   }
