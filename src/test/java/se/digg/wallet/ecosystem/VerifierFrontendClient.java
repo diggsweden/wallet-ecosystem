@@ -26,7 +26,7 @@ public class VerifierFrontendClient {
     return given().when().get(base.toString());
   }
 
-  public VerifierPresentationResponse createPresentationRequest() {
+  public VerifierPresentationResponse createPresentationRequest(String siteName) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
@@ -55,18 +55,18 @@ public class VerifierFrontendClient {
             }
             """)
         .when()
-        .post("api/vaccincentralen-request")
+        .post("api/{sitename}-request", siteName)
         .then()
         .statusCode(200)
         .extract()
         .as(VerifierPresentationResponse.class);
   }
 
-  public Response getPresentationStatus(String transactionId) {
+  public Response getPresentationStatus(String siteName, String transactionId) {
     return given()
         .baseUri(base.toString())
         .when()
-        .get("api/verifier-status/{transactionId}", transactionId)
+        .get("api/verifier-status/{siteName}/{transactionId}", siteName, transactionId)
         .then()
         .extract()
         .response();
