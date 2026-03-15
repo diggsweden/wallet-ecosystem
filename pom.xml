@@ -24,7 +24,7 @@ SPDX-License-Identifier: CC0-1.0
     <formatter-maven-plugin.version>2.29.0</formatter-maven-plugin.version>
     <spotbugs-maven-plugin.version>4.9.8.2</spotbugs-maven-plugin.version>
     <checkstyle-maven-plugin.version>3.6.0</checkstyle-maven-plugin.version>
-    <checkstyle.version>12.2.0</checkstyle.version>
+    <checkstyle.version>12.3.1</checkstyle.version>
     <pmd-maven-plugin.version>3.28.0</pmd-maven-plugin.version>
     <test.excludes/>
   </properties>
