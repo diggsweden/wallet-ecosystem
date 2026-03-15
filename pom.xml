@@ -78,7 +78,7 @@ SPDX-License-Identifier: CC0-1.0
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
-      <version>10.5</version>
+      <version>10.8</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
