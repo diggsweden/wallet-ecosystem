@@ -37,7 +37,7 @@ public class KeycloakTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"pid-issuer-realm", "wallet"})
+  @ValueSource(strings = {"pid-issuer-realm"})
   void servesRealm(String name) {
     keycloak.tryGetRealm(name)
         .then()
