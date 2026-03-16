@@ -62,7 +62,7 @@ SPDX-License-Identifier: CC0-1.0
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
-      <version>1.21.2</version>
+      <version>1.22.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
