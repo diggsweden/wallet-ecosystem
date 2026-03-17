@@ -23,19 +23,6 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
-  @Deprecated
-  public String createAccountByOidc(String postBody, String oidcSession) {
-    return given()
-        .when().contentType(ContentType.JSON).body(postBody)
-        .header("SESSION", oidcSession)
-        .cookie("SESSION", oidcSession)
-        .post(base.resolve("oidc/accounts/v1"))
-        .then()
-        .assertThat().statusCode(201)
-        .and().body("accountId", not(blankOrNullString()))
-        .extract().body().jsonPath().getString("accountId");
-  }
-
   public String createAccountByApiKey(String postBody, String apiKey, String path) {
     return given()
         .when()
