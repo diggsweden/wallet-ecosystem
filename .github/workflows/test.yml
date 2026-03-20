@@ -52,11 +52,31 @@ jobs:
       - name: Up with podman compose
         run: podman compose up -d; sleep 2s
 
-      - name: Run tests
+      - name: Run tests on local container
         env:
           MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true
           GITHUB_ACTOR: ${{ github.actor }}
           PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # shellcheck disable=SC2086
+          mvn $MAVEN_CLI_OPTS test
+
+      - name: Run tests on sandbox
+        env:
+          MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true
+          GITHUB_ACTOR: ${{ github.actor }}
+          PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIGG_WALLET_ECOSYSTEM_VERIFIER_AUDIENCE: x509_san_dns:wallet.sandbox.digg.se
+          DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI: https://wallet.sandbox.digg.se/demo-verifier
+          DIGG_WALLET_ECOSYSTEM_VERIFIER_BACKEND_BASE_URI: https://wallet.sandbox.digg.se/verifier
+          DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI: https://wallet.sandbox.digg.se/api
+          DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY: my_secret_key
+          DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI: https://wallet.sandbox.digg.se/wallet-provider
+          DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI: https://wallet.sandbox.digg.se/pid-issuer
+          DIGG_WALLET_ECOSYSTEM_KEYCLOAK_BASE_URI: https://wallet.sandbox.digg.se/idp
+          DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS: true
+          DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH: true
+          DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH: true
         run: |
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
