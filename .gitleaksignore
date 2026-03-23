@@ -1,1 +1,6 @@
+# SPDX-FileCopyrightText: 2025 The Wallet Ecosystem Authors
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# False positive: pinned git commit SHA, not a secret
 access-mechanism-poc/justfile:generic-api-key:10
