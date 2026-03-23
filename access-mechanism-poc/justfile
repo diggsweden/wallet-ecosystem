@@ -1,0 +1,103 @@
+# SPDX-FileCopyrightText: 2026 The Wallet Ecosystem Authors
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# automation for the Access Mechanism PoC setup
+# Run 'just' to see available commands
+
+access_mechanism_repo := "git@github.com:diggsweden/wallet-r2ps.git"
+# secretlint-disable-next-line @secretlint/secretlint-rule-generic -- commit sha to avoid always fetching latest main
+access_mechanism_commit := "d2e61d17b38f97184f59e289ce7f3318f9ce4c6b"
+repo_dir := justfile_directory() / "wallet-r2ps"
+worker_container := "wallet-ecosystem-local-rust-r2ps-worker-1"
+
+
+# List available recipes
+default:
+    @just --list
+
+# Clone the wallet-r2ps repo at the pinned commit
+[group('setup')]
+clone:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -d "{{repo_dir}}/.git" ]; then
+        echo "{{repo_dir}} already exists, skipping clone"
+    else
+        echo "Cloning {{access_mechanism_repo}} into {{repo_dir}}..."
+        git clone "{{access_mechanism_repo}}" "{{repo_dir}}"
+    fi
+    echo "Checking out pinned commit {{access_mechanism_commit}}..."
+    git -C "{{repo_dir}}" checkout "{{access_mechanism_commit}}"
+
+# Copy .env example files to actual .env files (skips existing)
+[group('setup')]
+copy-env:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    poc_dir="{{justfile_directory()}}"
+    parent_dir="{{justfile_directory()}}/.."
+    if [ -f "$poc_dir/.env" ]; then
+        echo ".env already exists, skipping"
+    elif [ -f "$parent_dir/.env.example" ]; then
+        cp "$parent_dir/.env.example" "$poc_dir/.env"
+        echo "Copied parent .env.example → .env (review and adjust values)"
+    else
+        echo "Warning: no .env.example found in parent directory"
+    fi
+    for f in .env.softhsm .env.opaque; do
+        if [ -f "$poc_dir/$f" ]; then
+            echo "$f already exists, skipping"
+        elif [ -f "{{repo_dir}}/$f" ]; then
+            cp "{{repo_dir}}/$f" "$poc_dir/$f"
+            echo "Copied $f from repo (review and adjust values)"
+        else
+            echo "Warning: $f not found in repo — create it manually"
+        fi
+    done
+    echo "Copying config/init-kafka-topics.sh from repo..."
+    mkdir -p "$poc_dir/config"
+    cp "{{repo_dir}}/config/init-kafka-topics.sh" "$poc_dir/config/init-kafka-topics.sh"
+
+# Build podman container images for both services
+[group('setup')]
+build:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    repo="{{repo_dir}}"
+    echo "Building r2ps-rest-api..."
+    podman build "$repo" -f "$repo/r2ps-rest-api/Containerfile" -t r2ps-rest-api-local
+    echo "Building rust-r2ps-worker..."
+    cd "$repo/rust-r2ps-worker" && podman build . -f Containerfile -t rust-r2ps-worker-local
+
+# Build docker container images for both services
+[group('setup-docker')]
+build-docker:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    repo="{{repo_dir}}"
+    echo "Building r2ps-rest-api..."
+    docker build "$repo" -f "$repo/r2ps-rest-api/Containerfile" -t r2ps-rest-api-local
+    echo "Building rust-r2ps-worker..."
+    cd "$repo/rust-r2ps-worker" && docker build . -f Containerfile -t rust-r2ps-worker-local
+
+# Remove the cloned wallet-r2ps repo
+[group('setup')]
+[group('setup-docker')]
+clean-repo:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -d "{{repo_dir}}" ]; then
+        echo "Removing {{repo_dir}}..."
+        rm -rf "{{repo_dir}}"
+    else
+        echo "{{repo_dir}} does not exist, nothing to remove"
+    fi
+
+# Clone repo, copy env files, build containers, then remove the repo
+[group('setup')]
+setup: clone copy-env build clean-repo
+
+# Clone repo, copy env files, build docker containers, then remove the repo
+[group('setup-docker')]
+setup-docker: clone copy-env build-docker clean-repo

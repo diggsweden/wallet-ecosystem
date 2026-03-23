@@ -14,8 +14,8 @@ services:
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
-      - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
-      - ./config/certificates/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
+      - ../config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
+      - ../config/certificates/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
     environment:
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "${BASE_URL}/refimpl-verifier-backend"
@@ -52,7 +52,7 @@ services:
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
-      - ./config/certificates/wallet-provider/wallet_provider.p12:/opt/common/wallet_provider.p12
+      - ../config/certificates/wallet-provider/wallet_provider.p12:/opt/common/wallet_provider.p12
     environment:
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-provider"
       SPRING_PROFILES_ACTIVE: "prod"
@@ -104,8 +104,9 @@ services:
       - SPRING_PROFILES_ACTIVE=insecure
       - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
       - SERVER_PORT=8080
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_SECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_ID=pid-issuer-srv
+      # secretlint-disable-next-line @secretlint/secretlint-rule-generic -- local dev secret, not used in production same as in parent (wallet-ecosystem/docker-compose.yaml)
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_SECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
       - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
       - ISSUER_PUBLICURL=${BASE_URL}/pid-issuer
       - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=${BASE_URL}/idp/realms/pid-issuer-realm
@@ -151,7 +152,7 @@ services:
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
       - JAVA_OPTS="-XX:MaxDirectMemorySize=128M"
     volumes:
-      - ./config/certificates/issuer/pid_issuer.p12:/opt/common/pid_issuer.p12:ro
+      - ../config/certificates/issuer/pid_issuer.p12:/opt/common/pid_issuer.p12:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
@@ -166,57 +167,6 @@ services:
       - "traefik.http.middlewares.well-known-pid-issuer-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/pid-issuer$"
       - "traefik.http.middlewares.well-known-pid-issuer-replace-path.replacepathregex.replacement=/pid-issuer/.well-known/$1"
       - "traefik.http.services.pid-issuer.loadbalancer.server.port=8080"
-    networks:
-      - wallet-ecosystem-network
-
-  wallet-attribute-attestation-db:
-    image: "postgres:16"
-    container_name: wallet-attribute-attestation-db
-    restart: always
-    environment:
-      POSTGRES_USER: wallet-attribute-attestation
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DATABASE: wallet-attribute-attestation
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U wallet-attribute-attestation -d wallet-attribute-attestation"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - wallet-ecosystem-network
-
-  wallet-attribute-attestation:
-    image: ghcr.io/diggsweden/wallet-attribute-attestation:v0.0.6
-    container_name: wallet-attribute-attestation
-    hostname: wallet-attribute-attestation
-    volumes:
-      - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
-    environment:
-      SERVER_SERVLET_CONTEXT_PATH: "/wallet-attribute-attestation"
-      SPRING_PROFILES_ACTIVE: "prod"
-      TZ: "Europe/Stockholm"
-      JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
-      SERVER_PORT: "8080"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://wallet-attribute-attestation-db:5432/wallet-attribute-attestation"
-      SPRING_DATASOURCE_USERNAME: "wallet-attribute-attestation"
-      SPRING_DATASOURCE_PASSWORD: "pass"
-    ports:
-      - "8081:8080"
-    depends_on:
-      wallet-attribute-attestation-db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "java", "--class-path", "/opt", "Healthcheck", "http://localhost:8080/wallet-attribute-attestation/actuator/health"]
-      start_period: 5s
-      interval: 5s
-      retries: 5
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.wallet-attribute-attestation.rule=PathPrefix(`/wallet-attribute-attestation`)"
-      - "traefik.http.routers.wallet-attribute-attestation.entrypoints=websecure"
-      - "traefik.http.routers.wallet-attribute-attestation.tls=true"
-      - "traefik.http.routers.wallet-attribute-attestation.service=wallet-attribute-attestation"
-      - "traefik.http.services.wallet-attribute-attestation.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
 
@@ -241,7 +191,7 @@ services:
     container_name: wallet-account
     hostname: wallet-account
     volumes:
-      - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
+      - ../config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-account"
       SPRING_PROFILES_ACTIVE: "prod"
@@ -290,7 +240,7 @@ services:
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
-      - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
+      - ../config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
@@ -309,8 +259,6 @@ services:
       - "8082:8080"
     depends_on:
       wallet-provider:
-        condition: service_started
-      wallet-attribute-attestation:
         condition: service_started
       wallet-account:
         condition: service_started
@@ -354,8 +302,8 @@ services:
       retries: 12
       start_period: 30s
     volumes:
-      - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
-      - ./config/keycloak/realms/:/opt/keycloak/data/import
+      - ../config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
+      - ../config/keycloak/realms/:/opt/keycloak/data/import
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp`)"
@@ -381,17 +329,166 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  r2ps-rest-api:
+    image: localhost/r2ps-rest-api-local:latest
+    ports:
+      - "8088:8088"
+      - "9012:8000"
+    restart: on-failure
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+      SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_USERNAME: "default"
+      SPRING_DATA_REDIS_PASSWORD: "secret"
+      SPRING_DATA_REDIS_DATABASE: 0
+      TZ: "Europe/Stockholm"
+    env_file: .env
+    networks:
+      - wallet-ecosystem-network
+
+  rust-r2ps-worker:
+    image: localhost/rust-r2ps-worker-local:latest
+    env_file:
+      - .env.softhsm
+      - .env.opaque
+    environment:
+      RUST_LOG: info
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+    volumes:
+      - softhsm-tokens:/myuser/softhsm/tokens:rw
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+    networks:
+      - wallet-ecosystem-network
+
+  x-kafka-common: &kafka-common
+    image: apache/kafka-native:latest
+    environment: &kafka-env
+      KAFKA_CLUSTER_ID: NjM0OUVDRTItMTg2Ni00QU
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  kafka-1:
+    !!merge <<: *kafka-common
+    container_name: kafka-1
+    ports:
+      - "9092:9092"
+    environment:
+      !!merge <<: *kafka-env
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://:19092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:19092,EXTERNAL://localhost:9092
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 19092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - wallet-ecosystem-network
+
+  kafka-2:
+    !!merge <<: *kafka-common
+    container_name: kafka-2
+    ports:
+      - "9093:9092"
+    environment:
+      !!merge <<: *kafka-env
+      KAFKA_NODE_ID: 2
+      KAFKA_LISTENERS: PLAINTEXT://:19092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:19092,EXTERNAL://localhost:9093
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 19092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - wallet-ecosystem-network
+
+  kafka-3:
+    !!merge <<: *kafka-common
+    container_name: kafka-3
+    ports:
+      - "9094:9092"
+    environment:
+      !!merge <<: *kafka-env
+      KAFKA_NODE_ID: 3
+      KAFKA_LISTENERS: PLAINTEXT://:19092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:19092,EXTERNAL://localhost:9094
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 19092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - wallet-ecosystem-network
+
+  init-kafka:
+    image: apache/kafka:latest
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-e", "/tmp/init-kafka-topics.sh"]
+    volumes:
+      - ./config/init-kafka-topics.sh:/tmp/init-kafka-topics.sh
+    networks:
+      - wallet-ecosystem-network
+
+  # Optional: Kafka UI for management
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    ports:
+      - "8084:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: wallet-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+    networks:
+      - wallet-ecosystem-network
+
   traefik:
     image: traefik:v3.6
     container_name: traefik
     restart: unless-stopped
+    cap_add:
+      - NET_BIND_SERVICE
     ports:
       - "443:443"
       - "80:80"
       - "8080:8080"
     volumes:
       - ${PODMAN_SOCK:-$XDG_RUNTIME_DIR/podman/podman.sock}:/var/run/docker.sock:ro
-      - ./config/traefik:/etc/traefik
+      - ../config/traefik:/etc/traefik
     command:
       - "--ping"
       - "--api.dashboard=true"
@@ -409,3 +506,8 @@ services:
       - "traefik.enable=true"
     networks:
       wallet-ecosystem-network:
+
+volumes:
+  softhsm-tokens:
+    name: softhsm-tokens
+    driver: local
