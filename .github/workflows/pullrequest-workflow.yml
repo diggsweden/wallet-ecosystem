@@ -23,6 +23,7 @@ jobs:
       security-events: write
     secrets: inherit
     with:
+      reusable-ci-ref: v2.7.1
       project-type: meta
       # Use devbase-check linting (replaces megalint, commitlint, licenselint)
       linters.devbasecheck: true

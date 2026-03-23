@@ -31,6 +31,7 @@ jobs:
       attestations: write
     secrets: inherit
     with:
+      reusable-ci-ref: v2.7.1
       artifacts-config: .github/artifacts.yml
       changelog-creator: git-cliff
       release-publisher: github-cli
