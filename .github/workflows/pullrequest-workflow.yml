@@ -16,13 +16,14 @@ concurrency:
 
 jobs:
   pr-checks:
-    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@659cc5dbdbedc47f1510817f38aba07de8a93ae8 # v2.6.1
+    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@cd65f1f80267cc82d7e4cdecc26be83908417b01 # v2.7.1
     permissions:
       contents: read
       packages: read
       security-events: write
     secrets: inherit
     with:
+      reusable-ci-ref: v2.7.1
       project-type: meta
       # Use devbase-check linting (replaces megalint, commitlint, licenselint)
       linters.devbasecheck: true
