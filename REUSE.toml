@@ -8,6 +8,7 @@ version = 1
 path = [
   "README.md",
   "DEVELOPMENT.md",
+  ".gommitlint.yaml",
   "renovate.json",
   "config/certificates/README.md",
 ]
