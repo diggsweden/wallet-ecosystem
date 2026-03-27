@@ -79,7 +79,7 @@ jobs:
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH: true
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH: true
         run: |
-          echo "Silly value is " . $SILLY
+          echo "Silly sec is " . ${{ secrets.SILLY_SECRET }}
           # shellcheck disable=SC2086
           mvn $MAVEN_CLI_OPTS test
 
