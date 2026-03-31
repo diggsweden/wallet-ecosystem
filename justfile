@@ -269,6 +269,7 @@ restart service:
 [group('test')]
 test:
     #!/usr/bin/env bash
+    set -euo pipefail
     source "{{colors}}"
     just_header "Running" "mvn test"
     mvn {{maven_opts}} test
@@ -278,6 +279,7 @@ test:
 [group('test')]
 verify-maven:
     #!/usr/bin/env bash
+    set -euo pipefail
     source "{{colors}}"
     just_header "Running" "mvn verify"
     mvn {{maven_opts}} verify
