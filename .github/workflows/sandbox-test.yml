@@ -33,4 +33,9 @@ jobs:
     steps:
       # Runs a single command using the runners shell
       - name: Send greeting
-        run: echo "Hello ${{ inputs.name }}"
+        env:
+          SILLY: ${{ secrets.SILLY_SECRET }}
+        run: |
+          # shellcheck disable=SC2086
+          echo "Hello ${{ inputs.name }}"
+          echo "Silly value is " "$SILLY"
