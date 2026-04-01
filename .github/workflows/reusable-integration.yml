@@ -95,13 +95,11 @@ jobs:
         run: |
           cd wallet-ecosystem
           echo "Waiting for services to become healthy..."
-
-          SERVICES_PATTERN=$(grep -E '^  [[:alnum:]-]+:' docker-compose.yaml | grep -v 'network' | sed 's|:||' | cut -d ' ' -f 3 | tr '\n' '|' | sed 's/|$//')
-          echo "Services to monitor: $SERVICES_PATTERN"
-
+          # Give services time to initialize (especially Keycloak)
           for i in {1..40}; do
             echo "Check attempt $i/40..."
-            UNHEALTHY=$(podman ps -a --format "{{.Names}} {{.Status}}" | grep -v "healthy" | grep -E "$SERVICES_PATTERN" || true)
+            # Get statuses of all containers that have health checks
+            UNHEALTHY=$(podman ps -a --format "{{.Names}} {{.Status}}" | grep -v "healthy" | grep -E "keycloak|wallet-client-gateway|wallet-attribute-attestation|wallet-account|valkey|db" || true)
             if [ -z "$UNHEALTHY" ]; then
               echo "All required services are healthy!"
               podman ps
