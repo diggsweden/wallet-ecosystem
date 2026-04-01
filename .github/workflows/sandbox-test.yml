@@ -36,5 +36,6 @@ jobs:
         env:
           SILLY: ${{ secrets.SILLY_SECRET }}
         run: |
+          # shellcheck disable=SC2086
           echo "Hello ${{ inputs.name }}"
-          echo "Silly value is " $SILLY
+          echo "Silly value is " "$SILLY"
