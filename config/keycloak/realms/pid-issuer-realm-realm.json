@@ -2131,7 +2131,8 @@
       "requiredFields": "Obligatoriska fält",
       "error-user-attribute-required": "Vänligen fyll i fältet.",
       "acceptTerms": "Jag accepterar villkoren",
-      "termsAcceptanceRequired": "Du måste acceptera våra villkor"
+      "termsAcceptanceRequired": "Du måste acceptera våra villkor",
+      "termsText": "Jag är införstådd med att tjänsten är ett testsystem och att den tillhandahålls i befintligt skick, att fel och brister kan förekomma, samt att Digg inte tar något ansvar för eventuella skador uppkomna i samband med nyttjande av tjänsten. Jag förstår att allt mitt användande sker på egen risk."
     }
   },
   "authenticationFlows": [
