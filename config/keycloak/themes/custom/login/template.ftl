@@ -1,5 +1,6 @@
 <#--
 SPDX-FileCopyrightText: 2026 Keycloak Authors
+SPDX-FileCopyrightText: 2026 The Wallet Ecosystem Authors
 
 SPDX-License-Identifier: Apache-2.0
 -->
@@ -188,6 +189,7 @@ SPDX-License-Identifier: Apache-2.0
         </#if>
       </div>
       <div class="${properties.kcLoginMainBody!}">
+        <#nested "message">
         <#if !(auth?has_content && auth.showUsername() && !auth.showResetCredentials())>
             <#if displayRequiredFields>
                 <div class="${properties.kcContentWrapperClass!}">
