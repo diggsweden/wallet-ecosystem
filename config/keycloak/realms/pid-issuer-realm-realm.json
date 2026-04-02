@@ -2129,7 +2129,9 @@
     "sv": {
       "registerTitle": "Registrera konto",
       "requiredFields": "Obligatoriska fält",
-      "error-user-attribute-required": "Vänligen fyll i fältet."
+      "error-user-attribute-required": "Vänligen fyll i fältet.",
+      "acceptTerms": "Jag accepterar villkoren",
+      "termsAcceptanceRequired": "Du måste acceptera våra villkor"
     }
   },
   "authenticationFlows": [
