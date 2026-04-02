@@ -356,6 +356,7 @@ services:
     volumes:
       - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/realms/:/opt/keycloak/data/import
+      - ./config/keycloak/themes/:/opt/keycloak/themes
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp`)"

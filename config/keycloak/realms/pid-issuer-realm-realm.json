@@ -2123,6 +2123,7 @@
     ]
   },
   "internationalizationEnabled": true,
+  "loginTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
   "localizationTexts": {
