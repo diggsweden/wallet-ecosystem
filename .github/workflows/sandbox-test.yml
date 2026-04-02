@@ -6,7 +6,8 @@
 
 name: Sandbox Test workflow
 
-permissions: {}
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:
@@ -20,8 +21,21 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        java-version: ["21"]
+        os: [ubuntu-latest]
 
     steps:
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: "temurin"
+          cache: "maven"
+
       - name: Run tests on sandbox
         env:
           MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true
@@ -40,7 +54,7 @@ jobs:
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH: true
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH: true
         run: |
-          # shellcheck disable=SC2086
           echo "Hello ${{ inputs.sandbox-url }}"
           echo "Sandbox URL value is " "$SANDBOX_URL"
-          mvn "$MAVEN_CLI_OPTS" test
+          # shellcheck disable=SC2086
+          mvn $MAVEN_CLI_OPTS test
