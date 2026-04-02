@@ -371,7 +371,7 @@ services:
       - wallet-ecosystem-network
 
   x-kafka-common: &kafka-common
-    image: apache/kafka-native:latest
+    image: apache/kafka-native:latest@sha256:777f2dddec6970003f1f27922a8c317d87140567b0537e801d35669ad9a81faf
     environment: &kafka-env
       KAFKA_CLUSTER_ID: NjM0OUVDRTItMTg2Ni00QU
       KAFKA_PROCESS_ROLES: broker,controller
@@ -444,7 +444,7 @@ services:
       - wallet-ecosystem-network
 
   init-kafka:
-    image: apache/kafka:latest
+    image: apache/kafka:latest@sha256:9516fb7634bad307d17c33b589fde9023003b0cb761374f500002b980a3149b9
     depends_on:
       kafka-1:
         condition: service_healthy
@@ -460,7 +460,7 @@ services:
 
   # Optional: Kafka UI for management
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:latest@sha256:8f2ff02d64b0a7a2b71b6b3b3148b85f66d00ec20ad40c30bdcd415d46d31818
     depends_on:
       kafka-1:
         condition: service_healthy
