@@ -2125,6 +2125,13 @@
   "internationalizationEnabled": true,
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
+  "localizationTexts": {
+    "sv": {
+      "registerTitle": "Registrera konto",
+      "requiredFields": "Obligatoriska fält",
+      "error-user-attribute-required": "Vänligen fyll i fältet."
+    }
+  },
   "authenticationFlows": [
     {
       "id": "4af945ea-3e65-4f7f-a853-347860806b47",
