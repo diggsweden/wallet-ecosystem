@@ -2123,8 +2123,19 @@
     ]
   },
   "internationalizationEnabled": true,
+  "loginTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
+  "localizationTexts": {
+    "sv": {
+      "registerTitle": "Registrera konto",
+      "requiredFields": "Obligatoriska fält",
+      "error-user-attribute-required": "Vänligen fyll i fältet.",
+      "acceptTerms": "Jag accepterar villkoren",
+      "termsAcceptanceRequired": "Du måste acceptera våra villkor",
+      "termsText": "Jag är införstådd med att tjänsten är ett testsystem och att den tillhandahålls i befintligt skick, att fel och brister kan förekomma, samt att Digg inte tar något ansvar för eventuella skador uppkomna i samband med nyttjande av tjänsten. Jag förstår att allt mitt användande sker på egen risk."
+    }
+  },
   "authenticationFlows": [
     {
       "id": "4af945ea-3e65-4f7f-a853-347860806b47",
@@ -2580,6 +2591,14 @@
           "authenticatorFlow": false,
           "requirement": "DISABLED",
           "priority": 60,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "registration-terms-and-conditions",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 70,
           "autheticatorFlow": false,
           "userSetupAllowed": false
         }
