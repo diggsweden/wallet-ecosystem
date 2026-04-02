@@ -1,5 +1,6 @@
 <#--
 SPDX-FileCopyrightText: 2026 Keycloak Authors
+SPDX-FileCopyrightText: 2026 The Wallet Ecosystem Authors
 
 SPDX-License-Identifier: Apache-2.0
 -->
@@ -18,6 +19,15 @@ SPDX-License-Identifier: Apache-2.0
         <#else>
             ${msg("registerTitle")}
         </#if>
+    <#elseif section = "message">
+        <div class="${properties.kcAlertClass!} pf-m-warning">
+            <div class="${properties.kcAlertIconClass!}">
+                <span class="${properties.kcFeedbackWarningIcon!}"></span>
+            </div>
+            <span class="${properties.kcAlertTitleClass!} kc-feedback-text">
+                OBS! Ange inga känsliga uppgifter när du registrerar kontot.
+            </span>
+        </div>
     <#elseif section = "form">
         <form id="kc-register-form" class="${properties.kcFormClass!}" action="${url.registrationAction}" method="post" novalidate="novalidate">
             <@userProfileCommons.userProfileFormFields; callback, attribute>

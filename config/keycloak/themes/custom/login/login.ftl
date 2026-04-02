@@ -1,5 +1,6 @@
 <#--
 SPDX-FileCopyrightText: 2026 Keycloak Authors
+SPDX-FileCopyrightText: 2026 The Wallet Ecosystem Authors
 
 SPDX-License-Identifier: Apache-2.0
 -->
@@ -14,6 +15,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <#if section = "header">
         ${msg("loginAccountTitle")}
+    <#elseif section = "message">
     <#elseif section = "form">
         <div id="kc-form">
           <div id="kc-form-wrapper">
