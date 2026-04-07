@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="${properties.kcFeedbackWarningIcon!}"></span>
             </div>
             <span class="${properties.kcAlertTitleClass!} kc-feedback-text">
-                OBS! Ange inga känsliga uppgifter när du registrerar kontot.
+                ${msg("registerMessage")}
             </span>
         </div>
     <#elseif section = "form">

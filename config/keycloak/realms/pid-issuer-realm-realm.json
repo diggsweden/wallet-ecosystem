@@ -2129,6 +2129,7 @@
   "localizationTexts": {
     "sv": {
       "registerTitle": "Registrera konto",
+      "registerMessage": "OBS! Ange inga känsliga uppgifter när du registrerar kontot.",
       "requiredFields": "Obligatoriska fält",
       "error-user-attribute-required": "Vänligen fyll i fältet.",
       "acceptTerms": "Jag accepterar villkoren",
