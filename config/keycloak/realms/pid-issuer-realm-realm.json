@@ -2126,7 +2126,7 @@
   "loginTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
-  "localizationTexts": {
+  "messageBundles": {
     "sv": {
       "registerTitle": "Registrera konto",
       "registerMessage": "OBS! Ange inga känsliga uppgifter när du registrerar kontot.",
