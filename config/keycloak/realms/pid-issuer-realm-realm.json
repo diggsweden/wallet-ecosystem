@@ -2126,7 +2126,7 @@
   "loginTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
-  "localizationTexts": {
+  "messageBundles": {
     "sv": {
       "registerTitle": "Registrera konto",
       "registerMessage": "OBS! Ange inga känsliga uppgifter när du registrerar kontot.",
@@ -2165,26 +2165,42 @@
       ]
     },
     {
-      "id": "731557cd-5893-4b43-8f8d-215d9b3e1796",
-      "alias": "Browser - Conditional OTP",
-      "description": "Flow to determine if the OTP is required for the authentication",
-      "providerId": "basic-flow",
+      "id": "65fdd47d-279a-46aa-bbe8-a2dff6922663",
+      "alias": "Custom registration form",
+      "description": "A registration form including terms and conditions",
+      "providerId": "form-flow",
       "topLevel": false,
-      "builtIn": true,
+      "builtIn": false,
       "authenticationExecutions": [
         {
-          "authenticator": "conditional-user-configured",
+          "authenticator": "registration-user-creation",
           "authenticatorFlow": false,
           "requirement": "REQUIRED",
-          "priority": 10,
+          "priority": 20,
           "autheticatorFlow": false,
           "userSetupAllowed": false
         },
         {
-          "authenticator": "auth-otp-form",
+          "authenticator": "registration-password-action",
           "authenticatorFlow": false,
           "requirement": "REQUIRED",
-          "priority": 20,
+          "priority": 50,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "registration-recaptcha-action",
+          "authenticatorFlow": false,
+          "requirement": "DISABLED",
+          "priority": 60,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "registration-terms-and-conditions",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 70,
           "autheticatorFlow": false,
           "userSetupAllowed": false
         }
@@ -2208,32 +2224,6 @@
         },
         {
           "authenticator": "direct-grant-validate-otp",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 20,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        }
-      ]
-    },
-    {
-      "id": "834f1f5e-d5b2-4946-bafc-c8bdfd2588ac",
-      "alias": "First broker login - Conditional OTP",
-      "description": "Flow to determine if the OTP is required for the authentication",
-      "providerId": "basic-flow",
-      "topLevel": false,
-      "builtIn": true,
-      "authenticationExecutions": [
-        {
-          "authenticator": "conditional-user-configured",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 10,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "auth-otp-form",
           "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 20,
@@ -2317,32 +2307,6 @@
           "priority": 20,
           "autheticatorFlow": true,
           "flowAlias": "Handle Existing Account",
-          "userSetupAllowed": false
-        }
-      ]
-    },
-    {
-      "id": "1aa72610-d7de-43a2-9a32-b7227c4aad5d",
-      "alias": "Verify Existing Account by Re-authentication",
-      "description": "Reauthentication of existing account",
-      "providerId": "basic-flow",
-      "topLevel": false,
-      "builtIn": true,
-      "authenticationExecutions": [
-        {
-          "authenticator": "idp-username-password-form",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 10,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticatorFlow": true,
-          "requirement": "CONDITIONAL",
-          "priority": 20,
-          "autheticatorFlow": true,
-          "flowAlias": "First broker login - Conditional OTP",
           "userSetupAllowed": false
         }
       ]
@@ -2432,6 +2396,25 @@
       ]
     },
     {
+      "id": "28c2f07e-83ff-4161-942e-4be72079501b",
+      "alias": "custom registration",
+      "description": "Custom registration flow",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "registration-page-form",
+          "authenticatorFlow": true,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": true,
+          "flowAlias": "Custom registration form",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
       "id": "a49d4be0-1f77-4bef-9506-9a0d3377f92d",
       "alias": "direct grant",
       "description": "OpenID Connect Resource Owner Grant",
@@ -2511,32 +2494,6 @@
       ]
     },
     {
-      "id": "43efddd8-ae06-48cd-a998-4ff58b741590",
-      "alias": "forms",
-      "description": "Username, password, otp and other auth forms.",
-      "providerId": "basic-flow",
-      "topLevel": false,
-      "builtIn": true,
-      "authenticationExecutions": [
-        {
-          "authenticator": "auth-username-password-form",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 10,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticatorFlow": true,
-          "requirement": "CONDITIONAL",
-          "priority": 20,
-          "autheticatorFlow": true,
-          "flowAlias": "Browser - Conditional OTP",
-          "userSetupAllowed": false
-        }
-      ]
-    },
-    {
       "id": "81ef7caa-53d1-4d89-959d-7a434f580daf",
       "alias": "registration",
       "description": "registration flow",
@@ -2572,14 +2529,6 @@
           "userSetupAllowed": false
         },
         {
-          "authenticator": "registration-profile-action",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 40,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
           "authenticator": "registration-password-action",
           "authenticatorFlow": false,
           "requirement": "REQUIRED",
@@ -2592,14 +2541,6 @@
           "authenticatorFlow": false,
           "requirement": "DISABLED",
           "priority": 60,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "registration-terms-and-conditions",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 70,
           "autheticatorFlow": false,
           "userSetupAllowed": false
         }
@@ -2766,7 +2707,7 @@
     }
   ],
   "browserFlow": "browser",
-  "registrationFlow": "registration",
+  "registrationFlow": "custom registration",
   "directGrantFlow": "direct grant",
   "resetCredentialsFlow": "reset credentials",
   "clientAuthenticationFlow": "clients",
