@@ -7,6 +7,11 @@ name: Reusable Ecosystem Integration
 on:
   workflow_call:
     inputs:
+      ecosystem-ref:
+        required: false
+        type: string
+        default: ''
+        description: "Git ref to checkout for wallet ecosystem (e.g., refs/pull/1/merge)"
       service-name:
         required: true
         type: string
@@ -43,6 +48,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: diggsweden/wallet-ecosystem
+          ref: ${{ inputs.ecosystem-ref }}
           path: wallet-ecosystem
 
       - name: Checkout Service (${{ inputs.service-name }})
