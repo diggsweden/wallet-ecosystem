@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# We accept hardwired secrets in the configuration of our local environment
+/docker-compose.yaml
+/access-mechanism-poc/docker-compose.yaml
+
+# These certificates are used in the local ecosystem only
+/config/certificates/
+
+# It is expected to 'leak' secrets to our local environment in our test code
+/src/test/java
