@@ -74,11 +74,18 @@ jobs:
           echo "PODMAN_SOCK=$XDG_RUNTIME_DIR/podman/podman.sock" >> "$GITHUB_ENV"
 
       - name: Build Service Image
+        env:
+          SERVICE_NAME: ${{ inputs.service-name }}
+          IMAGE_TAG: ${{ inputs.image-tag }}
+          CONTAINER_FILE_PATH: ${{ inputs.containerfile-path }}
         run: |
-          cd ${{ inputs.service-name }}
-          podman build -t ${{ inputs.service-name }}:${{ inputs.image-tag }} -f ${{ inputs.containerfile-path }} .
+          cd "${SERVICE_NAME}"
+          podman build -t "${SERVICE_NAME}:${IMAGE_TAG}" -f "${CONTAINER_FILE_PATH}" .
 
       - name: Prepare Ecosystem
+        env:
+          SERVICE_NAME: ${{ inputs.service-name }}
+          IMAGE_TAG: ${{ inputs.image-tag }}
         run: |
           cd wallet-ecosystem
           cp .env.example .env
@@ -86,8 +93,8 @@ jobs:
           # Create transient override
           cat <<EOF > docker-compose.override.yaml
           services:
-            ${{ inputs.service-name }}:
-              image: ${{ inputs.service-name }}:${{ inputs.image-tag }}
+            ${SERVICE_NAME}:
+              image: ${SERVICE_NAME}:${IMAGE_TAG}
           EOF
 
           # Generate TLS certificates
