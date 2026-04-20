@@ -1,6 +1,6 @@
 <#--
 SPDX-FileCopyrightText: 2026 Keycloak Authors
-SPDX-FileCopyrightText: 2026 The Wallet Ecosystem Authors
+SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
 
 SPDX-License-Identifier: Apache-2.0
 -->

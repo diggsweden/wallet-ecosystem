@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 2025 The Wallet Ecosystem Authors
+// SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
 //
 // SPDX-License-Identifier: EUPL-1.2
 
