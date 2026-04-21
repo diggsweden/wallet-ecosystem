@@ -13,7 +13,7 @@ mkdir -p "$TMP_DIR"
 function create_license() {
   local target_file="$1"
   cat >"${target_file}.license" <<EOF
-# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
 #
 # SPDX-License-Identifier: CC0-1.0
 EOF
