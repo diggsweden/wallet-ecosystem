@@ -24,6 +24,8 @@ import com.nimbusds.jwt.SignedJWT;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,6 +33,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@DisplayNameGeneration(DisplayNameGenerator.Standard.class)
 class KeycloakTest {
 
   private static final KeycloakClient keycloak = new KeycloakClient();
