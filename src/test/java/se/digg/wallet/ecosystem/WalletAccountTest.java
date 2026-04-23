@@ -7,21 +7,21 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesPattern;
-import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.PersonalIdentityNumberUtil.getRandomPersonalId;
-
-import java.util.UUID;
-
-import org.junit.jupiter.api.Test;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
-
 import io.restassured.http.ContentType;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Test;
 
+@DisplayNameGeneration(DisplayNameGenerator.Standard.class)
 public class WalletAccountTest {
 
   private static final String BASE = "https://localhost/wallet-account";
