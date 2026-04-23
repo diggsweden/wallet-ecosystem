@@ -19,12 +19,15 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@DisplayNameGeneration(DisplayNameGenerator.Standard.class)
 public class PidIssuerTest {
 
   private static final ServiceIdentifier IDENTIFIER = ServiceIdentifier.PID_ISSUER;

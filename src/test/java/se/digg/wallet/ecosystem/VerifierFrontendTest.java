@@ -12,10 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.restassured.response.Response;
 import java.util.List;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.FieldSource;
 
+@DisplayNameGeneration(DisplayNameGenerator.Standard.class)
 class VerifierFrontendTest {
 
   static final List<String> SITE_NAMES = List.of("vaccincentralen", "matcentralen");
