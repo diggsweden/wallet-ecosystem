@@ -61,7 +61,7 @@ public class PidIssuerTest {
   @ParameterizedTest
   @MethodSource("usefulLinks")
   @MethodSource("authorizationServers")
-  void linkWorks(String labelNotUsedInTestButIncludedInDisplayName, String link) {
+  void servesWorkingLinks(String labelNotUsedInTestButIncludedInDisplayName, String link) {
     given().when().get(link).then().assertThat().statusCode(200);
   }
 
@@ -106,7 +106,7 @@ public class PidIssuerTest {
   }
 
   @Test
-  void getNonce() throws Exception {
+  void producesNonceWhenGivenValidAccessTokenAndProof() throws Exception {
     ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();
 
     // 1. Get access token for user
