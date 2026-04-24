@@ -5,7 +5,23 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
+import static se.digg.wallet.ecosystem.PersonalIdentityNumberUtil.getRandomPersonalId;
+
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -17,15 +33,6 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.util.Date;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
@@ -53,6 +60,35 @@ public class WalletClientGatewayTest {
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
   }
+
+
+  @Test
+  void createAccount_should_return_accountId() throws Exception {
+    var ecKey = generateKey();
+    var accountRequestBody = stubAccountRequest(ecKey);
+    var accountId =
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "accounts");
+    assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
+  }
+
+  @Test
+  void createAccountv0_should_return_accountId() throws Exception {
+    var ecKey = generateKey();
+    var accountRequestBody = stubAccountV0Request(ecKey);
+    var accountId =
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+    assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
+  }
+
+
+  @Test
+  void addWalletKey_should_return_201() throws Exception {
+    var walletKey = generateKey();
+    walletClientGateway.addWalletKey(session, API_KEY, walletKey.toPublicJWK().toJSONString());
+  }
+
+  // TODO: add /v0/accounts/security-envelopes tests once wallet-account fixes the
+  // AccountEntity.securityEnvelope String/BLOB mapping bug (POST currently returns 500).
 
   @Test
   void createsAndGetAttributeAttestation() {
@@ -97,15 +133,31 @@ public class WalletClientGatewayTest {
   }
 
   private static String createAccountByApiKey(ECKey ecKey) {
-    var accountRequestBody = """
+    var accountRequestBody = stubAccountRequest(ecKey);
+    return walletClientGateway.createAccountByApiKey(
+        accountRequestBody, API_KEY, "accounts");
+  }
+
+  private static String stubAccountV0Request(ECKey ecKey) {
+    var id = getRandomPersonalId();
+    return """
         {
-          "personalIdentityNumber": "197001011234",
+          "personalIdentityNumber": "%s",
+          "emailAdress": "test@hej.se",
+          "telephoneNumber": "070123123123",
+          "deviceKey": %s
+        }""".formatted(id, ecKey.toPublicJWK().toJSONString());
+  }
+
+  private static String stubAccountRequest(ECKey ecKey) {
+    var id = getRandomPersonalId();
+    return """
+        {
+          "personalIdentityNumber": "%s",
           "emailAdress": "test@hej.se",
           "telephoneNumber": "070123123123",
           "publicKey": %s
-        }""".formatted(ecKey.toPublicJWK().toJSONString());
-    return walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, "accounts");
+        }""".formatted(id, ecKey.toPublicJWK().toJSONString());
   }
 
   private static String createSignedJwt(ECKey ecJwk, String nonce)

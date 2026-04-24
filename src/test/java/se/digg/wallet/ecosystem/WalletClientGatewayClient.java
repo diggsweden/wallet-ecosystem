@@ -35,6 +35,18 @@ public class WalletClientGatewayClient {
         .extract().body().jsonPath().getString("accountId");
   }
 
+  public void addWalletKey(String sessionId, String apiKey, String keyBody) {
+    given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(keyBody)
+        .header("Session", sessionId)
+        .header("X-API-KEY", apiKey)
+        .post(base.resolve("v0/accounts/wallet-keys"))
+        .then()
+        .assertThat().statusCode(201);
+  }
+
   public String initChallenge(String accountId, String keyId) {
     return given()
         .get(
