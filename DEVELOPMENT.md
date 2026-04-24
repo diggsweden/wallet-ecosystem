@@ -189,6 +189,15 @@ docker-compose up -d
 mvn test
 ```
 
+### Generating a tests report
+
+After you have the tests you can generate a nice HTML report:
+
+```shell
+just produce-test-report
+open target/surefire-reports/open-test-report.html
+```
+
 #### Running tests on alternate hosts
 
 Normally the tests suite runs against the wallet ecosystem deployed locally.
