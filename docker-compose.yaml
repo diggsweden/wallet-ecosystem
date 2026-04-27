@@ -10,12 +10,11 @@ networks:
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.8.0
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.0
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
       - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
-      - ./config/certificates/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
     environment:
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "${BASE_URL}/refimpl-verifier-backend"
@@ -30,11 +29,9 @@ services:
       VERIFIER_JAR_SIGNING_KEY_ALIAS: "verifier_backend"
       VERIFIER_JAR_SIGNING_KEY_PASSWORD: "pass1234"
       VERIFIER_VALIDATION_SDJWTVC_STATUSCHECK_ENABLED: "false"
-      VERIFIER_TRUSTSOURCES_0_PATTERN: "urn:eudi:pid:.*"
-      VERIFIER_TRUSTSOURCES_0_KEYSTORE_PATH: "file:///opt/common/trusted_issuers.p12"
-      VERIFIER_TRUSTSOURCES_0_KEYSTORE_TYPE: "PKCS12"
-      VERIFIER_TRUSTSOURCES_0_KEYSTORE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
+      VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
+      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
       JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     labels:
@@ -44,6 +41,30 @@ services:
       - "traefik.http.routers.refimpl-verifier-backend.tls=true"
       - "traefik.http.routers.refimpl-verifier-backend.service=refimpl-verifier-backend"
       - "traefik.http.services.refimpl-verifier-backend.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
+  trust-validator:
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:edge
+    container_name: trust-validator
+    hostname: trust-validator
+    volumes:
+      - ./config/certificates/trust-validator/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
+    environment:
+      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
+      TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
+      TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
+      TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_LOCATION: "file:///opt/common/trusted_issuers.p12"
+      TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_KEY_STORE_TYPE: "PKCS12"
+      TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_PASSWORD: "pass1234"
+      # Dummy LoTL configuration required by v0.2.x to enable the VerificationContexts
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
+      # Also enable Wallet Providers for E2E tests
+      TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
+      TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
+      TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
     networks:
       - wallet-ecosystem-network
 
