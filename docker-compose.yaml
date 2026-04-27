@@ -72,7 +72,7 @@ services:
       - wallet-ecosystem-network
 
   demo-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.5
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.5@sha256:8c3585d3621b2d5134080a7d25bab22078a08e09da5f6bd394f3e9834d2cb751
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
@@ -190,7 +190,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-attribute-attestation:
-    image: ghcr.io/diggsweden/wallet-attribute-attestation:v0.0.6
+    image: ghcr.io/diggsweden/wallet-attribute-attestation:v0.0.6@sha256:1ec6b9b47263f921b0bdab112b8a105cdf09aace64947a1656ba4c821e475da5
     container_name: wallet-attribute-attestation
     hostname: wallet-attribute-attestation
     volumes:
@@ -241,7 +241,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account:
-    image: ghcr.io/diggsweden/wallet-account:v0.1.0
+    image: ghcr.io/diggsweden/wallet-account:v0.1.0@sha256:4bb83c3400a1fa5fb36ec5a1aa50bf52e0ab080ed994c6b5cfa429dba2041266
     container_name: wallet-account
     hostname: wallet-account
     volumes:
@@ -290,7 +290,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.1
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.1@sha256:fb15cf568aacdcf23aa3f7c18273c90f3995b263a22a47872560e7dd1c3c6c8d
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
