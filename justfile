@@ -285,6 +285,16 @@ verify-maven:
     mvn {{maven_opts}} verify
     just_success "Maven verify completed"
 
+# Generate test report
+[group('test')]
+produce-test-report:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source "{{colors}}"
+    just_header "Running" "mvn exec:exec"
+    mvn {{maven_opts}} exec:exec
+    just_success "Maven exec:exec completed"
+
 # ==================================================================================== #
 # CERTS - Certificate management
 # ==================================================================================== #
