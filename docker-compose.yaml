@@ -174,7 +174,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-attribute-attestation-db:
-    image: "postgres:16"
+    image: "postgres:16@sha256:71e27bf60b70bded003791b5573f8b808365613f341df20ffcf0c1ed7bc13ddf"
     container_name: wallet-attribute-attestation-db
     restart: always
     environment:
@@ -225,7 +225,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account-db:
-    image: "postgres:16"
+    image: "postgres:16@sha256:71e27bf60b70bded003791b5573f8b808365613f341df20ffcf0c1ed7bc13ddf"
     container_name: wallet-account-db
     restart: always
     environment:
@@ -276,7 +276,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway-valkey:
-    image: "valkey/valkey:9.0.0-alpine"
+    image: "valkey/valkey:9.0.3-alpine@sha256:e1095c6c76ee982cb2d1e07edbb7fb2a53606630a1d810d5a47c9f646b708bf5"
     container_name: wallet-client-gateway-valkey
     restart: always
     healthcheck:
@@ -402,7 +402,7 @@ services:
       - IMPORT_FILES_LOCATIONS=/config/*.json
 
   traefik:
-    image: traefik:v3.6
+    image: traefik:v3.6@sha256:4cda3393930dceff030e144b46260e96e1337c9cfaa4fed81c90cb8f4d498f57
     container_name: traefik
     restart: unless-stopped
     ports:
