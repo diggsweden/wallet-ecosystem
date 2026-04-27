@@ -15,7 +15,6 @@ services:
     hostname: refimpl-verifier-backend
     volumes:
       - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
-      - ./config/certificates/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
     environment:
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "${BASE_URL}/refimpl-verifier-backend"
