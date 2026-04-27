@@ -49,7 +49,7 @@ services:
     container_name: trust-validator
     hostname: trust-validator
     volumes:
-      - ./config/certificates/verifier/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
+      - ./config/certificates/trust-validator/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
     environment:
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
