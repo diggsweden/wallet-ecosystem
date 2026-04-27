@@ -77,19 +77,24 @@ public class WalletAccountTest {
         .body("items.kid", hasItem(kid));
   }
 
-  /*
-   * TODO fix datatype mismatch between api and database Could not convert 'java.lang.String' to
-   * 'java.sql.Blob' using 'org.hibernat
-   *
-   * @Test void addSecurityEnvelope_isReadableOnAccount() { String id = createAccount(randomPid(),
-   * "device-kid"); String content = "envelope-" + UUID.randomUUID();
-   *
-   * given() .contentType(ContentType.JSON).body(""" { "content": "%s" }""".formatted(content))
-   * .when().post(BASE + "/v0/accounts/" + id + "/security-envelopes") .then().statusCode(201);
-   *
-   * given() .when().get(BASE + "/v0/accounts/" + id + "/security-envelopes")
-   * .then().statusCode(200) .body("items.content", hasItem(content)); }
-   */
+  // TODO fix datatype mismatch between api and database Could not convert 'java.lang.String' to
+  // 'java.sql.Blob' using 'org.hibernat
+  /*@Test
+  void addSecurityEnvelope_isReadableOnAccount() {
+    String id = createAccount(getRandomPersonalId(), "device-kid");
+    String content = "envelope-" + UUID.randomUUID();
+
+    given()
+        .contentType(ContentType.JSON).body("""
+            { "content": "%s" }""".formatted(content))
+        .when().post(BASE + "/v0/accounts/" + id + "/security-envelopes")
+        .then().statusCode(201);
+
+    given()
+        .when().get(BASE + "/v0/accounts/" + id + "/security-envelopes")
+        .then().statusCode(200)
+        .body("items.content", hasItem(content));
+  }*/
 
   private static String createAccount(String pid, String kid) {
     return given()
