@@ -10,11 +10,14 @@ import static org.hamcrest.Matchers.matchesPattern;
 
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@DisplayNameGeneration(DisplayNameGenerator.Standard.class)
 public class WalletProviderTest {
 
   private final WalletProviderClient walletProvider = new WalletProviderClient();
