@@ -6,6 +6,8 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.not;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -111,6 +113,8 @@ public class EndToEndTest {
 
     assertThat(disclosedClaims.get("given_name"), is("Tyler"));
     assertThat(disclosedClaims.get("family_name"), is("Neal"));
+    assertThat(disclosedClaims.get("personal_administrative_number"),
+        not(blankOrNullString()));
 
     // 7. Verify Events Response
     Response presentationEvents = verifierBackend.getPresentationEvents(transactionId);
