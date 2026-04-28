@@ -109,7 +109,8 @@ generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1
 
 # 3. Verifier Trust Store
 echo "Creating trusted_issuers.p12 for Verifier..."
-TRUST_P12="$CERT_DIR/verifier/trusted_issuers.p12"
+TRUST_P12="$CERT_DIR/trust-validator/trusted_issuers.p12"
+mkdir -p "$CERT_DIR/trust-validator"
 rm -f "$TRUST_P12"
 keytool -importcert -noprompt -alias pid_issuer -file "$TMP_DIR/pid_issuer.crt.trust" -keystore "$TRUST_P12" -storepass pass1234 -storetype PKCS12
 keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_P12" -storepass pass1234 -storetype PKCS12
