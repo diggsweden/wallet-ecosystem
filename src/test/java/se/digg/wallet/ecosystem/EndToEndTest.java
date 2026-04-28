@@ -35,7 +35,7 @@ public class EndToEndTest {
   private final IssuanceAgent issuer = new IssuanceAgent();
 
   @Test
-  void getCredential() throws Exception {
+  void supportsIssuanceAndPresentationOfPid() throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
