@@ -66,9 +66,9 @@ build:
     set -euo pipefail
     repo="{{repo_dir}}"
     echo "Building r2ps-rest-api..."
-    podman build "$repo" -f "$repo/r2ps-rest-api/Containerfile" -t r2ps-rest-api-local
+    docker build "$repo" -f "$repo/r2ps-rest-api/Containerfile" -t r2ps-rest-api-local
     echo "Building rust-r2ps-worker..."
-    cd "$repo/rust-r2ps-worker" && podman build . -f Containerfile -t rust-r2ps-worker-local
+    cd "$repo/rust-r2ps-worker" && docker build . -f Containerfile -t rust-r2ps-worker-local
 
 # Build docker container images for both services
 [group('setup-docker')]
