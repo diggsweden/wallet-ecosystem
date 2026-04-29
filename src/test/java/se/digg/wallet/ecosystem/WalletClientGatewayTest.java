@@ -87,8 +87,12 @@ public class WalletClientGatewayTest {
     walletClientGateway.addWalletKey(session, API_KEY, walletKey.toPublicJWK().toJSONString());
   }
 
-  // TODO: add /v0/accounts/security-envelopes tests once wallet-account fixes the
-  // AccountEntity.securityEnvelope String/BLOB mapping bug (POST currently returns 500).
+  @Test
+  void addSecurityEnvelope_should_return_201() {
+    var securityEnvelopeRequest = createSecurityEnvelopeRequest("SIGN",
+        "This is a string representation of a Blob");
+    walletClientGateway.addSecurityEnvelope(session, API_KEY, securityEnvelopeRequest);
+  }
 
   @Test
   void createsAndGetAttributeAttestation() {
@@ -172,5 +176,13 @@ public class WalletClientGatewayTest {
     signedJwt.sign(new ECDSASigner(ecJwk));
 
     return signedJwt.serialize();
+  }
+
+  private static String createSecurityEnvelopeRequest(String type, String securityEnvelope) {
+    return """
+        {
+          "type": "%s",
+          "content": "%s"
+        }""".formatted(type, securityEnvelope);
   }
 }
