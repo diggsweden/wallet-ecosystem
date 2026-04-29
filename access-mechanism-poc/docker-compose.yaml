@@ -345,7 +345,7 @@ services:
       - IMPORT_FILES_LOCATIONS=/config/*.json
 
   r2ps-rest-api:
-    image: localhost/r2ps-rest-api-local:latest
+    image: r2ps-rest-api-local:latest
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -370,7 +370,7 @@ services:
       - wallet-ecosystem-network
 
   rust-r2ps-worker:
-    image: localhost/rust-r2ps-worker-local:latest
+    image: rust-r2ps-worker-local:latest
     env_file:
       - .env.softhsm
       - .env.opaque
