@@ -1162,6 +1162,23 @@
           }
         },
         {
+          "id": "8a394bee-26d7-4671-9809-7b5e867bb9c3",
+          "name": "personal_administrative_number",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "userinfo.token.claim": "true",
+            "multivalued": "false",
+            "user.attribute": "personal_administrative_number",
+            "id.token.claim": "false",
+            "access.token.claim": "false",
+            "claim.name": "personal_administrative_number",
+            "jsonType.label": "String"
+          }
+        },
+        {
           "id": "bbf53dad-9c93-47d4-8d23-b34569f27ce9",
           "name": "PID Age over 18",
           "protocol": "openid-connect",
@@ -1483,6 +1500,23 @@
             "id.token.claim": "false",
             "access.token.claim": "false",
             "claim.name": "birthdate",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "0d6db14e-902c-4be5-b0d0-881d68dbd1fe",
+          "name": "personal_administrative_number",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "userinfo.token.claim": "true",
+            "multivalued": "false",
+            "user.attribute": "personal_administrative_number",
+            "id.token.claim": "false",
+            "access.token.claim": "false",
+            "claim.name": "personal_administrative_number",
             "jsonType.label": "String"
           }
         },
