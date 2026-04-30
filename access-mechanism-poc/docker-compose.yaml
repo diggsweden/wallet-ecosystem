@@ -187,7 +187,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account:
-    image: ghcr.io/diggsweden/wallet-account:v0.0.6
+    image: ghcr.io/diggsweden/wallet-account:v0.1.1
     container_name: wallet-account
     hostname: wallet-account
     volumes:
@@ -236,7 +236,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.4.9
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.1
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -252,6 +252,7 @@ services:
       PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
       PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
+      PROPERTIES_WALLETR2PS_BASEURL: http://wallet-ecosystem-local-r2ps-rest-api-1:8088/r2ps-api
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
       SERVER_FORWARD_HEADERS_STRATEGY: "framework"
@@ -278,13 +279,11 @@ services:
       - "traefik.http.services.wallet-client-gateway.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
-
   keycloak:
     image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak
     command:
       - start-dev
-      - --import-realm
       - --features=dpop,passkeys
     environment:
       - KC_PROXY_HEADERS=xforwarded
@@ -303,7 +302,7 @@ services:
       start_period: 30s
     volumes:
       - ../config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
-      - ../config/keycloak/realms/:/opt/keycloak/data/import
+      - ../config/keycloak/themes/:/opt/keycloak/themes
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp`)"
@@ -328,6 +327,23 @@ services:
       - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
     networks:
       - wallet-ecosystem-network
+
+  keycloak-init:
+    image: quay.io/adorsys/keycloak-config-cli@sha256:2d2a0663cf324379d9ffab896db8d00293cd0326151968b319cf166f6eec8fca
+    container_name: keycloak-init
+    depends_on:
+      keycloak:
+        condition: service_healthy
+        restart: true
+    networks:
+      - wallet-ecosystem-network
+    volumes:
+      - ./config/keycloak/realms/:/config
+    environment:
+      - KEYCLOAK_URL=http://keycloak:8080/idp
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=password
+      - IMPORT_FILES_LOCATIONS=/config/*.json
 
   r2ps-rest-api:
     image: localhost/r2ps-rest-api-local:latest
