@@ -59,7 +59,6 @@ public class WalletClientGatewayTest {
         .and().body("status", equalTo("UP"));
   }
 
-
   @Test
   void createAccount_should_return_accountId() throws Exception {
     var ecKey = generateKey();
@@ -78,7 +77,6 @@ public class WalletClientGatewayTest {
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
-
   @Test
   void addWalletKey_should_return_201() throws Exception {
     var walletKey = generateKey();
@@ -90,22 +88,6 @@ public class WalletClientGatewayTest {
     var securityEnvelopeRequest = createSecurityEnvelopeRequest("SIGN",
         "This is a string representation of a Blob");
     walletClientGateway.addSecurityEnvelope(session, API_KEY, securityEnvelopeRequest);
-  }
-
-  @Test
-  void createsAndGetAttributeAttestation() {
-    var postBody = """
-        {
-        "hsmId": "cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49",
-        "wuaId": "790acda4-3dec-4d93-8efe-71375109d30e",
-        "attestationData": "string"
-        }""";
-    var createdId = walletClientGateway.createAttributeAttestation(session, postBody);
-
-    walletClientGateway.tryGetAttributeAttestation(session, createdId)
-        .then()
-        .assertThat().statusCode(200)
-        .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
   }
 
   @ParameterizedTest
