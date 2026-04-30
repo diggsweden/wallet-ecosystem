@@ -47,6 +47,18 @@ public class WalletClientGatewayClient {
         .assertThat().statusCode(201);
   }
 
+  public void addSecurityEnvelope(String sessionId, String apiKey, String keyBody) {
+    given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(keyBody)
+        .header("Session", sessionId)
+        .header("X-API-KEY", apiKey)
+        .post(base.resolve("v0/accounts/security-envelopes"))
+        .then()
+        .assertThat().statusCode(201);
+  }
+
   public String initChallenge(String accountId, String keyId) {
     return given()
         .get(
