@@ -85,23 +85,6 @@ public class WalletClientGatewayClient {
         .extract().body().jsonPath().get("sessionId");
   }
 
-  public String createAttributeAttestation(String sessionId, String postBody) {
-    return given().when().contentType(ContentType.JSON).body(postBody)
-        .header("Session", sessionId)
-        .post(base.resolve("attribute-attestations"))
-        .then()
-        .assertThat().statusCode(201)
-        .and().body("id", not(blankOrNullString()))
-        .extract().body().jsonPath().getString("id");
-  }
-
-  public Response tryGetAttributeAttestation(String sessionId, String id) {
-    return given()
-        .when()
-        .header("Session", sessionId)
-        .get(base.resolve("attribute-attestations/%s".formatted(id)));
-  }
-
   public Response tryCreateWalletUnitAttestation(String sessionId, String nonce) {
     RequestSpecification request = given()
         .when()

@@ -116,7 +116,6 @@ podman compose up
 | Wallet Provider | <https://localhost/wallet-provider> | Issues and manages the lifecycle of Wallet Unit Attestations (WUA) |
 | Wallet Client Gateway | <https://localhost/wallet-client-gateway> | BFF for the wallet app(s) |
 | Wallet Account | <https://localhost/wallet-account> | Manages user accounts |
-| Wallet Attribute Attestation | <https://localhost/wallet-attribute-attestation> | Manages user attribute attestations |
 | Traefik | <http://localhost:8080> | Reverse proxy handling TLS termination |
 
 ---

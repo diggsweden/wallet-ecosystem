@@ -250,7 +250,6 @@ services:
       SERVER_PORT: "8080"
       PROPERTIES_APISECRET: "apikey"
       PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
-      PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
       PROPERTIES_WALLETR2PS_BASEURL: http://wallet-ecosystem-local-r2ps-rest-api-1:8088/r2ps-api
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
