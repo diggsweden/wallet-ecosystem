@@ -7,7 +7,7 @@
 
 access_mechanism_repo := "git@github.com:diggsweden/wallet-r2ps.git"
 # secretlint-disable-next-line @secretlint/secretlint-rule-generic -- commit sha to avoid always fetching latest main
-access_mechanism_commit := "d2e61d17b38f97184f59e289ce7f3318f9ce4c6b"
+access_mechanism_commit := "6620e6ad636f1d1b51ae71524cda72e8710b98a5"
 repo_dir := justfile_directory() / "wallet-r2ps"
 worker_container := "wallet-ecosystem-local-rust-r2ps-worker-1"
 
@@ -66,9 +66,9 @@ build:
     set -euo pipefail
     repo="{{repo_dir}}"
     echo "Building r2ps-rest-api..."
-    docker build "$repo" -f "$repo/r2ps-rest-api/Containerfile" -t r2ps-rest-api-local
+    docker build "$repo" -f "$repo/wallet-bff/Containerfile" -t r2ps-rest-api-local
     echo "Building rust-r2ps-worker..."
-    cd "$repo/rust-r2ps-worker" && docker build . -f Containerfile -t rust-r2ps-worker-local
+    docker build "$repo" -f "$repo/hsm-worker/Containerfile" -t rust-r2ps-worker-local
 
 # Build docker container images for both services
 [group('setup-docker')]
@@ -77,9 +77,9 @@ build-docker:
     set -euo pipefail
     repo="{{repo_dir}}"
     echo "Building r2ps-rest-api..."
-    docker build "$repo" -f "$repo/r2ps-rest-api/Containerfile" -t r2ps-rest-api-local
+    docker build "$repo" -f "$repo/wallet-bff/Containerfile" -t r2ps-rest-api-local
     echo "Building rust-r2ps-worker..."
-    cd "$repo/rust-r2ps-worker" && docker build . -f Containerfile -t rust-r2ps-worker-local
+    docker build "$repo" -f "$repo/hsm-worker/Containerfile" -t rust-r2ps-worker-local
 
 # Remove the cloned wallet-r2ps repo
 [group('setup')]

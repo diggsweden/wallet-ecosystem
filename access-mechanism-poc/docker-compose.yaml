@@ -310,7 +310,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.1
+    image: topsecret
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -433,15 +433,25 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully
     environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
-      SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
-      SPRING_DATA_REDIS_PORT: 6379
-      SPRING_DATA_REDIS_USERNAME: "default"
-      SPRING_DATA_REDIS_PASSWORD: "secret"
-      SPRING_DATA_REDIS_DATABASE: 0
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+      REDIS_HOST: "wallet-client-gateway-valkey"
+      REDIS_PORT: 6379
+      REDIS_USERNAME: "default"
+      REDIS_PASSWORD: "secret"
+      REDIS_DATABASE: 0
       TZ: "Europe/Stockholm"
-    env_file: .env
+      KAFKA_BROKER_ADDRESS_FAMILY: "v4"
+      KAFKA_GROUP_ID: "r2ps-rest-api-group"
+      SERVER_PORT: 8088
+      SERVE_SYNC: "true"
+      SYNC_TIMEOUT_MS: 10000
+      RESPONSE_TTL_SECONDS: 600
+      HSM_WORKER_RESPONSE_TOPIC: "hsm-worker-responses-bff-1"
+      STATE_INIT_RESPONSE_TOPIC: "state-init-responses-bff-1"
+      RUST_LOG: "wallet_bff=info,rdkafka=warn,redis=warn"
     networks:
       - wallet-ecosystem-network
 
@@ -535,6 +545,12 @@ services:
       - wallet-ecosystem-network
 
   init-kafka:
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+      WALLET_STATE_TOPIC: "wallet-state"
+      REQUEST_TOPICS: "hsm-requests,state-init-requests"
+      RESPONSE_TOPICS: "hsm-worker-responses-bff-1,state-init-responses-bff-1"
+      REQUEST_TOPIC_PARTITIONS: 10
     image: apache/kafka:latest
     depends_on:
       kafka-1:
