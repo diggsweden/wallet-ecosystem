@@ -8,15 +8,15 @@
   "refreshTokenMaxReuse": 0,
   "accessTokenLifespan": 300,
   "accessTokenLifespanForImplicitFlow": 900,
-  "ssoSessionIdleTimeout": 1800,
-  "ssoSessionMaxLifespan": 36000,
+  "ssoSessionIdleTimeout": 300,
+  "ssoSessionMaxLifespan": 900,
   "ssoSessionIdleTimeoutRememberMe": 0,
   "ssoSessionMaxLifespanRememberMe": 0,
-  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionIdleTimeout": 300,
   "offlineSessionMaxLifespanEnabled": false,
-  "offlineSessionMaxLifespan": 5184000,
-  "clientSessionIdleTimeout": 0,
-  "clientSessionMaxLifespan": 0,
+  "offlineSessionMaxLifespan": 900,
+  "clientSessionIdleTimeout": 300,
+  "clientSessionMaxLifespan": 900,
   "clientOfflineSessionIdleTimeout": 0,
   "clientOfflineSessionMaxLifespan": 0,
   "accessCodeLifespan": 60,
@@ -29,7 +29,6 @@
   "enabled": true,
   "sslRequired": "external",
   "registrationAllowed": false,
-  "registrationEmailAsUsername": false,
   "rememberMe": false,
   "verifyEmail": false,
   "loginWithEmailAllowed": false,
@@ -2126,17 +2125,6 @@
   "loginTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
-  "messageBundles": {
-    "sv": {
-      "registerTitle": "Registrera konto",
-      "registerMessage": "OBS! Ange inga känsliga uppgifter när du registrerar kontot.",
-      "requiredFields": "Obligatoriska fält",
-      "error-user-attribute-required": "Vänligen fyll i fältet.",
-      "acceptTerms": "Jag accepterar villkoren",
-      "termsAcceptanceRequired": "Du måste acceptera våra villkor",
-      "termsText": "Jag är införstådd med att tjänsten är ett testsystem och att den tillhandahålls i befintligt skick, att fel och brister kan förekomma, samt att Digg inte tar något ansvar för eventuella skador uppkomna i samband med nyttjande av tjänsten. Jag förstår att allt mitt användande sker på egen risk."
-    }
-  },
   "authenticationFlows": [
     {
       "id": "4af945ea-3e65-4f7f-a853-347860806b47",
@@ -2160,48 +2148,6 @@
           "priority": 20,
           "autheticatorFlow": true,
           "flowAlias": "Verify Existing Account by Re-authentication",
-          "userSetupAllowed": false
-        }
-      ]
-    },
-    {
-      "id": "65fdd47d-279a-46aa-bbe8-a2dff6922663",
-      "alias": "Custom registration form",
-      "description": "A registration form including terms and conditions",
-      "providerId": "form-flow",
-      "topLevel": false,
-      "builtIn": false,
-      "authenticationExecutions": [
-        {
-          "authenticator": "registration-user-creation",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 20,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "registration-password-action",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 50,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "registration-recaptcha-action",
-          "authenticatorFlow": false,
-          "requirement": "DISABLED",
-          "priority": 60,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "registration-terms-and-conditions",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 70,
-          "autheticatorFlow": false,
           "userSetupAllowed": false
         }
       ]
@@ -2396,25 +2342,6 @@
       ]
     },
     {
-      "id": "28c2f07e-83ff-4161-942e-4be72079501b",
-      "alias": "custom registration",
-      "description": "Custom registration flow",
-      "providerId": "basic-flow",
-      "topLevel": true,
-      "builtIn": false,
-      "authenticationExecutions": [
-        {
-          "authenticator": "registration-page-form",
-          "authenticatorFlow": true,
-          "requirement": "REQUIRED",
-          "priority": 10,
-          "autheticatorFlow": true,
-          "flowAlias": "Custom registration form",
-          "userSetupAllowed": false
-        }
-      ]
-    },
-    {
       "id": "a49d4be0-1f77-4bef-9506-9a0d3377f92d",
       "alias": "direct grant",
       "description": "OpenID Connect Resource Owner Grant",
@@ -2493,59 +2420,7 @@
         }
       ]
     },
-    {
-      "id": "81ef7caa-53d1-4d89-959d-7a434f580daf",
-      "alias": "registration",
-      "description": "registration flow",
-      "providerId": "basic-flow",
-      "topLevel": true,
-      "builtIn": true,
-      "authenticationExecutions": [
-        {
-          "authenticator": "registration-page-form",
-          "authenticatorFlow": true,
-          "requirement": "REQUIRED",
-          "priority": 10,
-          "autheticatorFlow": true,
-          "flowAlias": "registration form",
-          "userSetupAllowed": false
-        }
-      ]
-    },
-    {
-      "id": "576a2633-4e94-459f-949f-8ef450a85fad",
-      "alias": "registration form",
-      "description": "registration form",
-      "providerId": "form-flow",
-      "topLevel": false,
-      "builtIn": true,
-      "authenticationExecutions": [
-        {
-          "authenticator": "registration-user-creation",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 20,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "registration-password-action",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 50,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
-          "authenticator": "registration-recaptcha-action",
-          "authenticatorFlow": false,
-          "requirement": "DISABLED",
-          "priority": 60,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        }
-      ]
-    },
+
     {
       "id": "8b07fff6-7e07-44bd-acce-1e3ccbeed5e7",
       "alias": "reset credentials",
@@ -2608,13 +2483,6 @@
     }
   ],
   "authenticatorConfig": [
-    {
-      "id": "1c92ec14-b9d0-47d1-b13c-ed4337d90de6",
-      "alias": "create unique user config",
-      "config": {
-        "require.password.update.after.registration": "false"
-      }
-    },
     {
       "id": "e06f8586-fe1e-4991-a242-6e7c04479cff",
       "alias": "review profile config",
@@ -2707,7 +2575,6 @@
     }
   ],
   "browserFlow": "browser",
-  "registrationFlow": "custom registration",
   "directGrantFlow": "direct grant",
   "resetCredentialsFlow": "reset credentials",
   "clientAuthenticationFlow": "clients",
