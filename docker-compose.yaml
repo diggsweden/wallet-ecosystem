@@ -258,13 +258,13 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.1
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.2
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
