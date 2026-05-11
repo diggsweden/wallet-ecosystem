@@ -231,11 +231,11 @@ env DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH=true just test
 To exclude one or more test cases you can run the tests with Maven like so:
 
 ```shell
-mvn test -Dtest.excludes='TraefikTest,WalletAccountTest,WalletAttributeAttestationTest'
+mvn test -Dtest.excludes='TraefikTest,WalletAccountTest'
 ```
 
 The command above will run all test cases except
-TraefikTest, WalletAccountTest and WalletAttributeAttestationTest.
+TraefikTest and WalletAccountTest.
 
 #### Checking that the verifier rejects untrusted issuers
 

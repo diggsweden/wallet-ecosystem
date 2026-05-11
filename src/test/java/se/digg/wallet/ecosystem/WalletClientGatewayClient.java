@@ -47,6 +47,18 @@ public class WalletClientGatewayClient {
         .assertThat().statusCode(201);
   }
 
+  public void addSecurityEnvelope(String sessionId, String apiKey, String keyBody) {
+    given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(keyBody)
+        .header("Session", sessionId)
+        .header("X-API-KEY", apiKey)
+        .post(base.resolve("v0/accounts/security-envelopes"))
+        .then()
+        .assertThat().statusCode(201);
+  }
+
   public String initChallenge(String accountId, String keyId) {
     return given()
         .get(
@@ -71,23 +83,6 @@ public class WalletClientGatewayClient {
         // Deprecated header
         .and().header("session", not(blankOrNullString()))
         .extract().body().jsonPath().get("sessionId");
-  }
-
-  public String createAttributeAttestation(String sessionId, String postBody) {
-    return given().when().contentType(ContentType.JSON).body(postBody)
-        .header("Session", sessionId)
-        .post(base.resolve("attribute-attestations"))
-        .then()
-        .assertThat().statusCode(201)
-        .and().body("id", not(blankOrNullString()))
-        .extract().body().jsonPath().getString("id");
-  }
-
-  public Response tryGetAttributeAttestation(String sessionId, String id) {
-    return given()
-        .when()
-        .header("Session", sessionId)
-        .get(base.resolve("attribute-attestations/%s".formatted(id)));
   }
 
   public Response tryCreateWalletUnitAttestation(String sessionId, String nonce) {

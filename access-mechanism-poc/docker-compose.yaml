@@ -261,7 +261,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account:
-    image: ghcr.io/diggsweden/wallet-account:v0.1.0
+    image: ghcr.io/diggsweden/wallet-account:v0.1.1
     container_name: wallet-account
     hostname: wallet-account
     volumes:
@@ -310,7 +310,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.1
+    image: topsecret
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -324,9 +324,8 @@ services:
       SERVER_PORT: "8080"
       PROPERTIES_APISECRET: "apikey"
       PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
-      PROPERTIES_ATTRIBUTEATTESTATION_BASEURL: "http://wallet-attribute-attestation:8080/wallet-attribute-attestation"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
-      PROPERTIES_WALLET_R2PS: "http://wallet-r2ps:8080"
+      PROPERTIES_WALLETR2PS_BASEURL: http://wallet-ecosystem-local-r2ps-rest-api-1:8088/r2ps-api
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
       SERVER_FORWARD_HEADERS_STRATEGY: "framework"
@@ -355,7 +354,6 @@ services:
       - "traefik.http.services.wallet-client-gateway.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
-
   keycloak:
     image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak
@@ -435,15 +433,25 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully
     environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
-      SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
-      SPRING_DATA_REDIS_PORT: 6379
-      SPRING_DATA_REDIS_USERNAME: "default"
-      SPRING_DATA_REDIS_PASSWORD: "secret"
-      SPRING_DATA_REDIS_DATABASE: 0
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+      REDIS_HOST: "wallet-client-gateway-valkey"
+      REDIS_PORT: 6379
+      REDIS_USERNAME: "default"
+      REDIS_PASSWORD: "secret"
+      REDIS_DATABASE: 0
       TZ: "Europe/Stockholm"
-    env_file: .env
+      KAFKA_BROKER_ADDRESS_FAMILY: "v4"
+      KAFKA_GROUP_ID: "r2ps-rest-api-group"
+      SERVER_PORT: 8088
+      SERVE_SYNC: "true"
+      SYNC_TIMEOUT_MS: 10000
+      RESPONSE_TTL_SECONDS: 600
+      HSM_WORKER_RESPONSE_TOPIC: "hsm-worker-responses-bff-1"
+      STATE_INIT_RESPONSE_TOPIC: "state-init-responses-bff-1"
+      RUST_LOG: "wallet_bff=info,rdkafka=warn,redis=warn"
     networks:
       - wallet-ecosystem-network
 
@@ -537,6 +545,12 @@ services:
       - wallet-ecosystem-network
 
   init-kafka:
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092,kafka-2:19092,kafka-3:19092"
+      WALLET_STATE_TOPIC: "wallet-state"
+      REQUEST_TOPICS: "hsm-requests,state-init-requests"
+      RESPONSE_TOPICS: "hsm-worker-responses-bff-1,state-init-responses-bff-1"
+      REQUEST_TOPIC_PARTITIONS: 10
     image: apache/kafka:latest
     depends_on:
       kafka-1:

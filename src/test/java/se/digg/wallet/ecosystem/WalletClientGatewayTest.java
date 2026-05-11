@@ -10,18 +10,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static se.digg.wallet.ecosystem.PersonalIdentityNumberUtil.getRandomPersonalId;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -33,6 +21,16 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
@@ -61,7 +59,6 @@ public class WalletClientGatewayTest {
         .and().body("status", equalTo("UP"));
   }
 
-
   @Test
   void createAccount_should_return_accountId() throws Exception {
     var ecKey = generateKey();
@@ -80,30 +77,17 @@ public class WalletClientGatewayTest {
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
-
   @Test
   void addWalletKey_should_return_201() throws Exception {
     var walletKey = generateKey();
     walletClientGateway.addWalletKey(session, API_KEY, walletKey.toPublicJWK().toJSONString());
   }
 
-  // TODO: add /v0/accounts/security-envelopes tests once wallet-account fixes the
-  // AccountEntity.securityEnvelope String/BLOB mapping bug (POST currently returns 500).
-
   @Test
-  void createsAndGetAttributeAttestation() {
-    var postBody = """
-        {
-        "hsmId": "cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49",
-        "wuaId": "790acda4-3dec-4d93-8efe-71375109d30e",
-        "attestationData": "string"
-        }""";
-    var createdId = walletClientGateway.createAttributeAttestation(session, postBody);
-
-    walletClientGateway.tryGetAttributeAttestation(session, createdId)
-        .then()
-        .assertThat().statusCode(200)
-        .and().body("hsmId", equalTo("cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49"));
+  void addSecurityEnvelope_should_return_201() {
+    var securityEnvelopeRequest = createSecurityEnvelopeRequest("SIGN",
+        "This is a string representation of a Blob");
+    walletClientGateway.addSecurityEnvelope(session, API_KEY, securityEnvelopeRequest);
   }
 
   @ParameterizedTest
@@ -172,5 +156,13 @@ public class WalletClientGatewayTest {
     signedJwt.sign(new ECDSASigner(ecJwk));
 
     return signedJwt.serialize();
+  }
+
+  private static String createSecurityEnvelopeRequest(String type, String securityEnvelope) {
+    return """
+        {
+          "type": "%s",
+          "content": "%s"
+        }""".formatted(type, securityEnvelope);
   }
 }

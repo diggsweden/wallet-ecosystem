@@ -7,20 +7,17 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesPattern;
-import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.PersonalIdentityNumberUtil.getRandomPersonalId;
-
-import java.util.UUID;
-
-import org.junit.jupiter.api.Test;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
-
 import io.restassured.http.ContentType;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 public class WalletAccountTest {
 
@@ -77,19 +74,26 @@ public class WalletAccountTest {
         .body("items.kid", hasItem(kid));
   }
 
-  // TODO fix datatype mismatch between api and database Could not convert 'java.lang.String' to
-  // 'java.sql.Blob' using 'org.hibernat
-  /*
-   * @Test void addSecurityEnvelope_isReadableOnAccount() { String id =
-   * createAccount(getRandomPersonalId(), "device-kid"); String content = "envelope-" +
-   * UUID.randomUUID();
-   *
-   * given() .contentType(ContentType.JSON).body(""" { "content": "%s" }""".formatted(content))
-   * .when().post(BASE + "/v0/accounts/" + id + "/security-envelopes") .then().statusCode(201);
-   *
-   * given() .when().get(BASE + "/v0/accounts/" + id + "/security-envelopes")
-   * .then().statusCode(200) .body("items.content", hasItem(content)); }
-   */
+  @Test
+  void addSecurityEnvelope_isReadableOnAccount() {
+    String id = createAccount(getRandomPersonalId(), "device-kid");
+    String content = "envelope-" + UUID.randomUUID();
+
+    given()
+        .contentType(ContentType.JSON).body(
+            """
+                {
+                "type": "SIGN",
+                "content": "%s"
+                }""".formatted(content))
+        .when().post(BASE + "/v0/accounts/" + id + "/security-envelopes")
+        .then().statusCode(201);
+
+    given()
+        .when().get(BASE + "/v0/accounts/" + id + "/security-envelopes")
+        .then().statusCode(200)
+        .body("items.content", hasItem(content));
+  }
 
   private static String createAccount(String pid, String kid) {
     return given()
