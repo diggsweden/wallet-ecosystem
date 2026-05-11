@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.PID_ISSUER;
+import static se.digg.wallet.ecosystem.ServiceIdentifier.TRUST_VALIDATOR;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.UNTRUSTED_KEYCLOAK;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.UNTRUSTED_PID_ISSUER;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER;
@@ -38,6 +39,7 @@ class ServiceIdentifierTest {
             UNTRUSTED_WALLET_PROVIDER, "DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI",
             VERIFIER_BACKEND, "DIGG_WALLET_ECOSYSTEM_VERIFIER_BACKEND_BASE_URI",
             VERIFIER_FRONTEND, "DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI",
+            TRUST_VALIDATOR, "DIGG_WALLET_ECOSYSTEM_TRUST_VALIDATOR_BASE_URI",
             WALLET_CLIENT_GATEWAY, "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI")));
   }
 }

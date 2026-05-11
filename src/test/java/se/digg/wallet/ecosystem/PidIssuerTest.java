@@ -19,6 +19,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -31,6 +32,11 @@ public class PidIssuerTest {
 
   private final PidIssuerClient pidIssuer = new PidIssuerClient();
   private final KeycloakClient keycloak = new KeycloakClient();
+
+  @BeforeAll
+  static void ensureReady() {
+    PidIssuerClient.waitUntilReady();
+  }
 
   @Test
   void presentsUsefulLinks() {

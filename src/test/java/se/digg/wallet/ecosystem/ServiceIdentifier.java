@@ -16,6 +16,7 @@ public enum ServiceIdentifier {
   UNTRUSTED_WALLET_PROVIDER("https://localhost/untrusted-wallet-provider"),
   VERIFIER_BACKEND("https://localhost/refimpl-verifier-backend"),
   VERIFIER_FRONTEND("https://localhost/demo-verifier"),
+  TRUST_VALIDATOR("https://localhost/trust-validator"),
   WALLET_CLIENT_GATEWAY("https://localhost/wallet-client-gateway");
 
   private final String defaultUri;

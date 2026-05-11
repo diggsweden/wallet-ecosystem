@@ -13,6 +13,9 @@ services:
     image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.0
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
+    depends_on:
+      trust-validator:
+        condition: service_started
     volumes:
       - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
     environment:
@@ -29,7 +32,8 @@ services:
       VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
-      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust"
+      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust-validator/trust"
+      VERIFIER_VALIDATION_SDJWTVC_TRUSTVALIDATION_TYPE: "REST"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
       JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     labels:
@@ -43,26 +47,39 @@ services:
       - wallet-ecosystem-network
 
   trust-validator:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:edge
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.2.0-alpha
     container_name: trust-validator
     hostname: trust-validator
     volumes:
       - ./config/certificates/trust-validator/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
+      - ./config/trust-validator/eu-lotl.xml:/opt/common/eu-lotl.xml:ro
     environment:
-      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
+      SPRING_WEBFLUX_BASEPATH: "/trust-validator"
+      LOGGING_LEVEL_ROOT: "INFO"
+      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "DEBUG"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
       TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
       TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_LOCATION: "file:///opt/common/trusted_issuers.p12"
       TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_KEY_STORE_TYPE: "PKCS12"
       TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_PASSWORD: "pass1234"
-      # Dummy LoTL configuration required by v0.2.x to enable the VerificationContexts
-      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
+      # Official EU LoTL configuration (local copy)
+      # Maintenance: This file is valid until 2026-10-21.
+      # To update: curl -sL https://ec.europa.eu/tools/lotl/eu-lotl.xml -o config/trust-validator/eu-lotl.xml
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_LOCATION: "file:///opt/common/eu-lotl.xml"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
       # Also enable Wallet Providers for E2E tests
-      TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
+      TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_LOCATION: "file:///opt/common/eu-lotl.xml"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
+      JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trust-validator.rule=PathPrefix(`/trust-validator`)"
+      - "traefik.http.routers.trust-validator.entrypoints=web,websecure"
+      - "traefik.http.routers.trust-validator.tls=true"
+      - "traefik.http.routers.trust-validator.service=trust-validator"
+      - "traefik.http.services.trust-validator.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
 
@@ -264,7 +281,7 @@ services:
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"

@@ -17,20 +17,27 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 
 public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final IssuanceAgent issuer = new IssuanceAgent();
+
+  @BeforeAll
+  static void ensureReady() {
+    TrustValidatorClient.waitUntilReady();
+    VerifierBackendClient.waitUntilReady();
+  }
 
   @Test
   void getCredential() throws Exception {
@@ -66,19 +73,16 @@ public class EndToEndTest {
 
     // 5. Post wallet response
     String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
-    Response postWalletResponse =
-        given()
-            .baseUri(responseUri)
-            .contentType(ContentType.URLENC)
-            .formParam("state", state)
-            .formParam("vp_token", vpTokenJson)
-            .when()
-            .post()
-            .then()
-            .extract()
-            .response();
 
-    assertThat(postWalletResponse.getStatusCode(), is(200));
+    given()
+        .baseUri(responseUri)
+        .contentType(ContentType.URLENC)
+        .formParam("state", state)
+        .formParam("vp_token", vpTokenJson)
+        .when()
+        .post()
+        .then()
+        .assertThat().statusCode(200);
 
     // 6. Verify the received Verifiable Presentation Token
     Response response = verifierBackend.getPresentationsStatus(transactionId);
@@ -96,7 +100,7 @@ public class EndToEndTest {
         Arrays.stream(returnedVpToken.split("~"))
             .skip(1)
             .filter(part -> !part.contains("."))
-            .map(part -> new String(Base64.getUrlDecoder().decode(part)))
+            .map(part -> new String(Base64.getUrlDecoder().decode(part), StandardCharsets.UTF_8))
             .map(
                 decoded -> {
                   try {

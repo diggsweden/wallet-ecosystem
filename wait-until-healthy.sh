@@ -6,7 +6,7 @@
 
 echo "Waiting for services to become healthy..."
 REGEX_FOR_ALL_SERVICES=$(yq -r '.services | to_entries | .[].key' docker-compose.yaml | sort | xargs | tr ' ' '|')
-REGEX_FOR_SERVICES_WITH_HEALTH_CHECKS='(keycloak|wallet-client-gateway|wallet-account|valkey|db) .*healthy'
+REGEX_FOR_SERVICES_WITH_HEALTH_CHECKS='(keycloak|wallet-client-gateway|wallet-account|valkey|db) .* \(healthy\)'
 REGEX_FOR_INIT_CONTAINERS='keycloak-init Exited \(0\)'
 REGEX_FOR_OTHERS='(refimpl-verifier-backend|wallet-provider|pid-issuer|traefik|demo-verifier|trust-validator) Up'
 # Give services time to initialize (especially Keycloak)

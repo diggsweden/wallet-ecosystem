@@ -4,11 +4,15 @@
 
 package se.digg.wallet.ecosystem;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,6 +22,8 @@ public class VerifierBackendClient {
       Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_VERIFIER_AUDIENCE"))
           .orElse("x509_san_dns:localhost");
 
+  private static boolean ready = false;
+
   private final URI base;
 
   public VerifierBackendClient() {
@@ -26,6 +32,29 @@ public class VerifierBackendClient {
 
   public VerifierBackendClient(URI base) {
     this.base = base;
+  }
+
+  /**
+   * Waits for the Verifier Backend service to be fully responsive. This ensures that the service is
+   * reachable through the reverse proxy and that the internal components are initialized and ready.
+   * The result is cached for the duration of the JVM session.
+   */
+  public static void waitUntilReady() {
+    if (ready) {
+      return;
+    }
+    VerifierBackendClient client = new VerifierBackendClient();
+    await("Wait for Verifier Backend to be healthy")
+        .atMost(60, SECONDS)
+        .pollInterval(Duration.ofSeconds(2))
+        .ignoreExceptions()
+        .untilAsserted(() -> {
+          client.tryGetHealth()
+              .then()
+              .assertThat().statusCode(200)
+              .and().body("status", is("UP"));
+        });
+    ready = true;
   }
 
   public Response tryGetHealth() {
@@ -105,7 +134,7 @@ public class VerifierBackendClient {
         dcqlId, dcqlId, nonce);
   }
 
-  public Response validateSdJwtVc(String sdJwtVc, String nonce) {
+  public Response tryValidateSdJwtVc(String sdJwtVc, String nonce) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.URLENC)

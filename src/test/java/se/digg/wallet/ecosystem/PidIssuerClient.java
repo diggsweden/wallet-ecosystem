@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -26,6 +27,7 @@ import io.restassured.response.ValidatableResponse;
 import java.net.URI;
 import java.security.interfaces.ECPrivateKey;
 import java.text.ParseException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +37,8 @@ import org.jsoup.nodes.Element;
 
 public class PidIssuerClient {
 
+  private static boolean ready = false;
+
   private final URI base;
 
   public PidIssuerClient() {
@@ -43,6 +47,26 @@ public class PidIssuerClient {
 
   public PidIssuerClient(URI base) {
     this.base = base;
+  }
+
+  /**
+   * Waits for the Pid Issuer service to be fully responsive. This ensures that the service is
+   * reachable through the reverse proxy and that its internal components (e.g., metadata endpoints)
+   * are ready. The result is cached for the duration of the JVM session.
+   */
+  public static void waitUntilReady() {
+    if (ready) {
+      return;
+    }
+    PidIssuerClient client = new PidIssuerClient();
+    await("Wait for Pid Issuer to be healthy")
+        .atMost(Duration.ofSeconds(60))
+        .pollInterval(Duration.ofSeconds(2))
+        .ignoreExceptions()
+        .untilAsserted(() -> {
+          client.getCredentialIssuerMetadata();
+        });
+    ready = true;
   }
 
   public Response tryGetOpenIdCredentialIssuerMetadata(MetadataLocationStrategy strategy) {
