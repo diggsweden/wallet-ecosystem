@@ -33,7 +33,7 @@ public class EndToEndTest {
   private final IssuanceAgent issuer = new IssuanceAgent();
 
   @Test
-  void getCredential() throws Exception {
+  void supportsIssuanceAndPresentationOfPid() throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
@@ -111,6 +111,7 @@ public class EndToEndTest {
 
     assertThat(disclosedClaims.get("given_name"), is("Tyler"));
     assertThat(disclosedClaims.get("family_name"), is("Neal"));
+    assertThat(disclosedClaims.get("personal_administrative_number"), is("195504162776"));
 
     // 7. Verify Events Response
     Response presentationEvents = verifierBackend.getPresentationEvents(transactionId);

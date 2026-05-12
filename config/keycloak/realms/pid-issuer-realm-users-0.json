@@ -18,8 +18,11 @@
         "gender_as_string": [
           "male"
         ],
+        "personal_administrative_number": [
+          "195504162776"
+        ],
         "birthdate": [
-          "1955-04-12"
+          "1955-04-16"
         ],
         "age_over_18": [
           "true"
