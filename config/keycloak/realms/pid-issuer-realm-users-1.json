@@ -12,54 +12,22 @@
           "firstName": "Sune",
           "lastName": "Nilsson",
           "attributes": {
-            "gender": [
-              "1"
-            ],
-            "gender_as_string": [
-              "male"
-            ],
-            "birthdate": [
-              "1941-06-17"
-            ],
-            "age_over_18": [
-              "true"
-            ],
-            "street": [
-              "Pensevägen"
-            ],
-            "address_house_number": [
-              "2"
-            ],
-            "locality": [
-              "Ekerö"
-            ],
-            "region": [
-              "Stockholm"
-            ],
-            "postal_code": [
-              "17838"
-            ],
-            "country": [
-              "SE"
-            ],
-            "birth_country": [
-              "SE"
-            ],
-            "birth_city": [
-              "Boo"
-            ],
-            "birth_place": [
-              "Boo"
-            ],
-            "nationality": [
-              "SE"
-            ],
-            "birth_family_name": [
-              "Sune"
-            ],
-            "birth_given_name": [
-              "Nilsson"
-            ]
+            "gender": ["1"],
+            "gender_as_string": ["male"],
+            "birthdate": ["1941-06-17"],
+            "age_over_18": ["true"],
+            "street": ["Pensevägen"],
+            "address_house_number": ["2"],
+            "locality": ["Ekerö"],
+            "region": ["Stockholm"],
+            "postal_code": ["17838"],
+            "country": ["SE"],
+            "birth_country": ["SE"],
+            "birth_city": ["Boo"],
+            "birth_place": ["Boo"],
+            "nationality": ["SE"],
+            "birth_family_name": ["Sune"],
+            "birth_given_name": ["Nilsson"]
           },
           "credentials": [
             {
@@ -78,28 +46,6 @@
           ],
           "notBefore": 0,
           "groups": []
-        },
-    {
-      "id": "cfddc8df-b7b8-4038-a74d-1a6582a84989",
-      "createdTimestamp": 1700060675127,
-      "username": "service-account-pid-issuer-srv",
-      "enabled": true,
-      "totp": false,
-      "emailVerified": false,
-      "serviceAccountClientId": "pid-issuer-srv",
-      "credentials": [],
-      "disableableCredentialTypes": [],
-      "requiredActions": [],
-      "realmRoles": [
-        "default-roles-pid-issuer-realm"
-      ],
-      "clientRoles": {
-        "pid-issuer-srv": [
-          "uma_protection"
-        ]
-      },
-      "notBefore": 0,
-      "groups": []
-    }
+        }
   ]
 }
