@@ -7,7 +7,7 @@
 
 access_mechanism_repo := "git@github.com:diggsweden/wallet-r2ps.git"
 # secretlint-disable-next-line @secretlint/secretlint-rule-generic -- commit sha to avoid always fetching latest main
-access_mechanism_commit := "6620e6ad636f1d1b51ae71524cda72e8710b98a5"
+access_mechanism_commit := "6988fb13194cc15e6d5365f5bbfb89402e82aea6"
 repo_dir := justfile_directory() / "wallet-r2ps"
 worker_container := "wallet-ecosystem-local-rust-r2ps-worker-1"
 
