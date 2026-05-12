@@ -145,7 +145,7 @@ public class WalletClientGatewayTest {
   private static String stubAccountV0RequestWithNullPersonalIdentityNumber(ECKey ecKey) {
     return """
         {
-          "personalIdentityNumber": "%s",
+          "personalIdentityNumber": %s,
           "emailAdress": "test@hej.se",
           "telephoneNumber": "070123123123",
           "deviceKey": %s
