@@ -87,6 +87,15 @@ public class WalletClientGatewayTest {
   }
 
   @Test
+  void createAccountv0WithOnlyDeviceKey_should_return_accountId() throws Exception {
+    var ecKey = generateKey();
+    var accountRequestBody = stubAccountV0RequestWithOnlyDeviceKey(ecKey);
+    var accountId =
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+    assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
+  }
+
+  @Test
   void addWalletKey_should_return_201() throws Exception {
     var walletKey = generateKey();
     walletClientGateway.addWalletKey(session, API_KEY, walletKey.toPublicJWK().toJSONString());
@@ -145,11 +154,16 @@ public class WalletClientGatewayTest {
   private static String stubAccountV0RequestWithNullPersonalIdentityNumber(ECKey ecKey) {
     return """
         {
-          "personalIdentityNumber": %s,
-          "emailAdress": "test@hej.se",
-          "telephoneNumber": "070123123123",
+          "personalIdentityNumber": null,
           "deviceKey": %s
-        }""".formatted(null, ecKey.toPublicJWK().toJSONString());
+        }""".formatted(ecKey.toPublicJWK().toJSONString());
+  }
+
+  private static String stubAccountV0RequestWithOnlyDeviceKey(ECKey ecKey) {
+    return """
+        {
+          "deviceKey": %s
+        }""".formatted(ecKey.toPublicJWK().toJSONString());
   }
 
   private static String stubAccountRequest(ECKey ecKey) {
