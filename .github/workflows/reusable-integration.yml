@@ -45,14 +45,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Wallet Ecosystem
-        uses: actions/checkout@0de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: diggsweden/wallet-ecosystem
           ref: ${{ inputs.ecosystem-ref }}
           path: wallet-ecosystem
 
       - name: Checkout Service (${{ inputs.service-name }})
-        uses: actions/checkout@0de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ inputs.service-repo }}
           ref: ${{ inputs.service-ref }}
