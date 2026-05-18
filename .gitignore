@@ -22,6 +22,11 @@ out
 ### VS Code ###
 .vscode/
 
+### Eclipse / JDT LS ###
+.classpath
+.project
+.settings/
+
 # Maven
 /target
 

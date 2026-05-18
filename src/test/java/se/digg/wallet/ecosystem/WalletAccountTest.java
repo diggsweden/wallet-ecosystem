@@ -45,6 +45,18 @@ public class WalletAccountTest {
   }
 
   @Test
+  void createAccountWithOnlyDeviceKey_returnsAccountWithId() {
+    given()
+        .contentType(ContentType.JSON).body(accountBodyWithOnlyDeviceKey("device-kid-only"))
+        .when().post(BASE + "/v0/accounts")
+        .then().statusCode(201)
+        .body("id", matchesPattern(UUID_PATTERN))
+        .body("personalIdentityNumber", equalTo(null))
+        .body("email", equalTo(null))
+        .body("phoneNumber", equalTo(null));
+  }
+
+  @Test
   void getAccount_returnsCreatedAccount() {
     String pid = getRandomPersonalId();
     String id = createAccount(pid, "device-kid");
@@ -111,6 +123,13 @@ public class WalletAccountTest {
           "phoneNumber": "070-123 45 67",
           "deviceKey": %s
         }""".formatted(pid, keyBody(kid));
+  }
+
+  private static String accountBodyWithOnlyDeviceKey(String kid) {
+    return """
+        {
+          "deviceKey": %s
+        }""".formatted(keyBody(kid));
   }
 
   private static String keyBody(String kid) {
