@@ -14,6 +14,9 @@
           "attributes": {
             "gender": ["1"],
             "gender_as_string": ["male"],
+            "personal_administrative_number": [
+              "194106177753"
+            ],
             "birthdate": ["1941-06-17"],
             "age_over_18": ["true"],
             "street": ["Pensevägen"],
