@@ -310,13 +310,13 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.2
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.8
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
       - ../config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
@@ -325,7 +325,7 @@ services:
       PROPERTIES_APISECRET: "apikey"
       PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
-      PROPERTIES_WALLETR2PS_BASEURL: http://wallet-ecosystem-local-r2ps-rest-api-1:8088/r2ps-api
+      PROPERTIES_WALLETR2PS_BASEURL: http://wallet-ecosystem-local-r2ps-rest-api-1:8088
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
       SERVER_FORWARD_HEADERS_STRATEGY: "framework"
