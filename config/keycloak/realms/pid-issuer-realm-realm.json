@@ -489,7 +489,7 @@
   "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister": false,
   "webAuthnPolicyPasswordlessAcceptableAaguids": [],
   "webAuthnPolicyPasswordlessExtraOrigins": [],
-  "webAuthnPolicyPasswordlessPasskeysEnabled": true,
+  "webAuthnPolicyPasswordlessPasskeysEnabled": false,
   "scopeMappings": [
     {
       "clientScope": "eu.europa.ec.eudi.pid_vc_sd_jwt",
