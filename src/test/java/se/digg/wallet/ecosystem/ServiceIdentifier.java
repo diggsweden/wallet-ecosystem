@@ -9,7 +9,8 @@ import java.util.Optional;
 
 public enum ServiceIdentifier {
   KEYCLOAK("https://localhost/idp"),
-  KEYCLOAK_INTERNAL("https://localhost/idp-internal"),
+  KEYCLOAK_INTERNAL("https://wallet-keycloak.apps.diggprod.capdigg.sgit.se/idp-test"),
+  KEYCLOAK_EXTERNAL("https://wallet.sandbox.digg.se/idp-test"),
   UNTRUSTED_KEYCLOAK("https://localhost/untrusted-idp"),
   PID_ISSUER("https://localhost/pid-issuer"),
   UNTRUSTED_PID_ISSUER("https://localhost/untrusted-pid-issuer"),
