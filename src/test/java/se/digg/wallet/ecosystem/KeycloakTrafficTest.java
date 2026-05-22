@@ -5,9 +5,11 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK_INTERNAL;
@@ -17,10 +19,13 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import io.restassured.response.Response;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.regex.Pattern;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.provider.Arguments;
@@ -109,6 +114,13 @@ public class KeycloakTrafficTest {
             .map(strategy -> Arguments.of(serviceIdentifier, strategy)));
   }
 
+  private static URI resolveExternalResourceUri(String resourceReference) {
+    if (resourceReference.startsWith("http://") || resourceReference.startsWith("https://")) {
+      return URI.create(resourceReference);
+    }
+    return KEYCLOAK_EXTERNAL.getResourceRoot().resolve(resourceReference);
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"live", "ready", "started", ""})
   @DisabledIfEnvironmentVariable(
@@ -168,6 +180,49 @@ public class KeycloakTrafficTest {
             "realms/pid-issuer-realm").toString()))
         .and().body("token_endpoint", equalTo(serviceIdentifier.getResourceRoot().resolve(
             "realms/pid-issuer-realm/protocol/openid-connect/token").toString())));
+  }
+
+  @Test
+  void pidIssuerRealmLoginFormLoadsExternally() {
+    Response accountPage = clientFor(KEYCLOAK_EXTERNAL).tryGetRealmAccount("pid-issuer-realm");
+    String html = accountPage
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .contentType(containsString("text/html"))
+        .extract()
+        .asString();
+
+    java.util.regex.Matcher loginFormMatcher = Pattern
+        .compile("<form[^>]*id=['\"]kc-form-login['\"]")
+        .matcher(html);
+
+    boolean hasLoginForm = loginFormMatcher.find();
+    boolean hasAuthenticateAction = html.contains("/login-actions/authenticate");
+    boolean hasAccountConsoleShell = html.contains("<title>Account Management</title>")
+        || html.contains("keycloak__loading-container")
+        || html.contains("id=\"app\"");
+    String htmlPreview = html.substring(0, Math.min(html.length(), 800));
+
+    assertTrue(
+        (hasLoginForm && hasAuthenticateAction) || hasAccountConsoleShell,
+        "Expected Keycloak login form or account shell HTML for pid-issuer-realm. First 800 chars: "
+            + htmlPreview);
+
+    java.util.regex.Matcher resourceMatcher = Pattern
+        .compile("(?:href|src)\\s*=\\s*['\"]([^'\"]*/resources/[^'\"]+)['\"]")
+        .matcher(html);
+
+    if (resourceMatcher.find()) {
+      URI resourceUri = resolveExternalResourceUri(resourceMatcher.group(1));
+      given()
+          .when()
+          .get(resourceUri)
+          .then()
+          .assertThat()
+          .statusCode(200);
+    }
   }
 
   // Whitelist tests — verify Traefik blocks disallowed paths externally
