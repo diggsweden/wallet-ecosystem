@@ -1,9 +1,0 @@
-# SPDX-FileCopyrightText: 2026 The Wallet Ecosystem Authors
-#
-# SPDX-License-Identifier: CC0-1.0
-
-.env
-.env.*
-test-client/
-wallet-r2ps/
-config/
