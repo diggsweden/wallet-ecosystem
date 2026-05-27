@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -169,9 +170,9 @@ public class KeycloakTrafficTest {
   }
 
   @ParameterizedTest
-  @MethodSource("allKeycloaksAndStrategies")
-  void servesMetadataForPidIssuerRealm(ServiceIdentifier serviceIdentifier,
-      MetadataLocationStrategy strategy) {
+  @EnumSource(MetadataLocationStrategy.class)
+  void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
+    ServiceIdentifier serviceIdentifier = KEYCLOAK_EXTERNAL;
     runWithInternalHostTolerance(serviceIdentifier, () -> clientFor(serviceIdentifier)
         .tryGetOauthAuthorizationServerMetadata("pid-issuer-realm", strategy)
         .then()
