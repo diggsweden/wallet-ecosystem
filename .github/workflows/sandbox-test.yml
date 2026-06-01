@@ -48,6 +48,7 @@ jobs:
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_USING_CUSTOM_HOSTS: true
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH: true
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH: true
+          DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_INTERNAL: true
         run: |
           echo "Running tests on sandbox..."
           # shellcheck disable=SC2086
