@@ -4,3 +4,6 @@
 
 # False positive: pinned git commit SHA, not a secret
 access-mechanism-poc/justfile:generic-api-key:10
+
+# Only used for local development and testing
+.env.opaque:private-key:8
