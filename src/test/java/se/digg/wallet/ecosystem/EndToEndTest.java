@@ -35,7 +35,7 @@ public class EndToEndTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   public static Stream<Arguments> issuers() {
-    return Stream.of(Arguments.argumentSet("internal", new IssuanceAgent()));
+    return Stream.of(Arguments.argumentSet("internal", new InternalIssuanceAgent()));
   }
 
   @ParameterizedTest

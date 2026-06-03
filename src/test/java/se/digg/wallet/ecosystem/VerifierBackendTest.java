@@ -35,7 +35,7 @@ class VerifierBackendTest {
   @BeforeEach
   void setUp() throws JOSEException {
     verifierBackend = new VerifierBackendClient();
-    issuer = new IssuanceAgent();
+    issuer = new InternalIssuanceAgent();
     bindingKey = new ECKeyGenerator(Curve.P_256)
         .algorithm(JWSAlgorithm.ES256)
         .keyUse(KeyUse.SIGNATURE)
@@ -103,7 +103,7 @@ class VerifierBackendTest {
       named = "DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER",
       matches = "true")
   void rejectsUntrustedPidIssuer() throws Exception {
-    IssuanceAgent untrustedIssuer = IssuanceAgent.untrusted();
+    IssuanceAgent untrustedIssuer = InternalIssuanceAgent.untrusted();
 
     // 1. Get credential
     String sdJwtVc = untrustedIssuer.issuePidCredential(bindingKey, "tneal", "password");
