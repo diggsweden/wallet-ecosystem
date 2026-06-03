@@ -12,7 +12,7 @@ if [ -n "$IGNORED_TEMPLATE_SERVICES" ]; then
 fi
 REGEX_FOR_ALL_SERVICES=$(yq -r '.services | to_entries | .[].key | select(test("^x-") | not)' docker-compose.yaml | sort | xargs | tr ' ' '|')
 REGEX_FOR_CONTAINER_NAME="^($REGEX_FOR_ALL_SERVICES|$PROJECT_NAME-($REGEX_FOR_ALL_SERVICES)-[0-9]+) "
-REGEX_FOR_SERVICES_WITH_HEALTH_CHECKS='(keycloak|wallet-client-gateway|wallet-account|valkey|db|kafka-[123])(-[0-9]+)? .*healthy'
+REGEX_FOR_SERVICES_WITH_HEALTH_CHECKS='(keycloak|wallet-client-gateway|wallet-account|valkey|db|kafka-[0-9]+)(-[0-9]+)? .*healthy'
 REGEX_FOR_INIT_CONTAINERS='(keycloak-init|init-kafka)(-[0-9]+)? Exited \(0\)'
 REGEX_FOR_OTHERS='(refimpl-verifier-backend|wallet-provider|pid-issuer|traefik|demo-verifier|trust-validator|wallet-bff|hsm-worker|kafka-ui)(-[0-9]+)? Up'
 # Give services time to initialize (especially Keycloak)
