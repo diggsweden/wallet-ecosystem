@@ -23,17 +23,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 
 public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
   private final ObjectMapper objectMapper = new ObjectMapper();
-  private final IssuanceAgent issuer = new IssuanceAgent();
 
-  @Test
-  void supportsIssuanceAndPresentationOfPid() throws Exception {
+  public static Stream<Arguments> issuers() {
+    return Stream.of(Arguments.argumentSet("internal", new IssuanceAgent()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("issuers")
+  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer) throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
