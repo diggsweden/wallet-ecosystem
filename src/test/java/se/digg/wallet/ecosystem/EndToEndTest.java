@@ -35,7 +35,9 @@ public class EndToEndTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   public static Stream<Arguments> issuers() {
-    return Stream.of(Arguments.argumentSet("internal", new InternalIssuanceAgent()));
+    return Stream.of(
+        Arguments.argumentSet("internal", new InternalIssuanceAgent()),
+        Arguments.argumentSet("public", new PublicIssuanceAgent()));
   }
 
   @ParameterizedTest
@@ -61,6 +63,7 @@ public class EndToEndTest {
     // 3. Get credential
     ECKey bindingKey =
         new ECKeyGenerator(Curve.P_256)
+            .keyID("binding-key")
             .algorithm(JWSAlgorithm.ES256)
             .keyUse(KeyUse.SIGNATURE)
             .generate();
