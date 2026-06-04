@@ -62,9 +62,9 @@ public class WalletClientGatewayTest {
   @Test
   void createAccount_should_return_accountId() throws Exception {
     var ecKey = generateKey();
-    var accountRequestBody = stubAccountRequest(ecKey);
+    var accountRequestBody = stubAccountV0Request(ecKey);
     var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "accounts");
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -111,8 +111,16 @@ public class WalletClientGatewayTest {
   @ParameterizedTest
   @ValueSource(strings = {"nonce"})
   @NullSource
-  void createsWalletUnitAttestation(String nonce) {
-    walletClientGateway.tryCreateWalletUnitAttestation(session, nonce)
+  void createWalletUnitAttestation(String wuaNonce) throws Exception {
+    var ecKey = generateKey();
+    var accountId = createAccountByApiKey(ecKey);
+    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
+    var signedJwt = createSignedJwt(ecKey, nonce);
+    var session = walletClientGateway.respondToChallenge(signedJwt);
+    var walletKey = generateKey();
+    walletClientGateway.addWalletKey(session, API_KEY, walletKey.toPublicJWK().toJSONString());
+
+    walletClientGateway.tryCreateWalletUnitAttestation(session, wuaNonce)
         .then()
         .assertThat().statusCode(201).and()
         .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
@@ -135,9 +143,9 @@ public class WalletClientGatewayTest {
   }
 
   private static String createAccountByApiKey(ECKey ecKey) {
-    var accountRequestBody = stubAccountRequest(ecKey);
+    var accountRequestBody = stubAccountV0Request(ecKey);
     return walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, "accounts");
+        accountRequestBody, API_KEY, "v0/accounts");
   }
 
   private static String stubAccountV0Request(ECKey ecKey) {
@@ -164,17 +172,6 @@ public class WalletClientGatewayTest {
         {
           "deviceKey": %s
         }""".formatted(ecKey.toPublicJWK().toJSONString());
-  }
-
-  private static String stubAccountRequest(ECKey ecKey) {
-    var id = getRandomPersonalId();
-    return """
-        {
-          "personalIdentityNumber": "%s",
-          "emailAdress": "test@hej.se",
-          "telephoneNumber": "070123123123",
-          "publicKey": %s
-        }""".formatted(id, ecKey.toPublicJWK().toJSONString());
   }
 
   private static String createSignedJwt(ECKey ecJwk, String nonce)
