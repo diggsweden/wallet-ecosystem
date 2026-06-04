@@ -30,7 +30,7 @@ class ServiceIdentifierTest {
   void hasSpecificEnvironmentVariableNames() {
     assertThat(Stream.of(values()).collect(
         Collectors.toMap(Function.identity(), ServiceIdentifier::getEnvironmentVariableName)),
-      equalTo(Map.ofEntries(
+        equalTo(Map.ofEntries(
             Map.entry(KEYCLOAK, "DIGG_WALLET_ECOSYSTEM_KEYCLOAK_BASE_URI"),
             Map.entry(KEYCLOAK_INTERNAL, "DIGG_WALLET_ECOSYSTEM_KEYCLOAK_INTERNAL_BASE_URI"),
             Map.entry(UNTRUSTED_KEYCLOAK, "DIGG_WALLET_ECOSYSTEM_UNTRUSTED_KEYCLOAK_BASE_URI"),
