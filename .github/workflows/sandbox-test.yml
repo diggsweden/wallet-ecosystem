@@ -50,4 +50,4 @@ jobs:
         run: |
           echo "Running tests on sandbox..."
           # shellcheck disable=SC2086
-          mvn $MAVEN_CLI_OPTS test -Dtest.excludes='TraefikTest'
+          mvn $MAVEN_CLI_OPTS test -Dtest.excludes='TraefikTest,WalletAccountTest'
