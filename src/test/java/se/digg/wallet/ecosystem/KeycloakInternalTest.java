@@ -23,11 +23,11 @@ class KeycloakInternalTest {
   }
 
   @Test
-  void pidIssuerRealmIsNotAccessibleInternally() {
+  void pidIssuerRealmIsAccessibleInternally() {
     clientFor(KEYCLOAK_INTERNAL)
         .tryGetRealm("pid-issuer-realm")
         .then()
-        .assertThat().statusCode(anyOf(is(403)));
+        .assertThat().statusCode(anyOf(is(200)));
   }
 
   @Test

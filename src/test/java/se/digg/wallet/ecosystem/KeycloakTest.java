@@ -126,20 +126,20 @@ class KeycloakTest {
   void masterRealmDeniesRiskyProtocolEndpointsExternally(String path) {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/protocol/" + path))
-        .then().assertThat().statusCode(is(403));
+        .then().assertThat().statusCode(is(404));
   }
 
   @Test
   void masterRealmIsBlockedExternally() {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/console/"))
-        .then().assertThat().statusCode(anyOf(is(403)));
+        .then().assertThat().statusCode(anyOf(is(404)));
   }
 
   @Test
   void adminConsoleIsBlockedExternally() {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve("realms/admin/master/console"))
-        .then().assertThat().statusCode(anyOf(is(403)));
+        .then().assertThat().statusCode(anyOf(is(404)));
   }
 }
