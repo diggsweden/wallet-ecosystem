@@ -12,11 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
 
-import java.util.Map;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import java.util.Map;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
@@ -126,20 +126,20 @@ class KeycloakTest {
   void masterRealm_Denies_RiskyProtocolEndpoints_Externally(String path) {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/protocol/" + path))
-        .then().assertThat().statusCode(is(403));
+        .then().assertThat().statusCode(is(404));
   }
 
   @Test
   void masterRealmIsBlockedExternally() {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/console/"))
-        .then().assertThat().statusCode(anyOf(is(403)));
+        .then().assertThat().statusCode(anyOf(is(404)));
   }
 
   @Test
   void adminConsoleIsBlockedExternally() {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve("realms/admin/master/console"))
-        .then().assertThat().statusCode(anyOf(is(403)));
+        .then().assertThat().statusCode(anyOf(is(404)));
   }
 }
