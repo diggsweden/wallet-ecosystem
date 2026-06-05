@@ -357,7 +357,14 @@ services:
     labels:
       - "traefik.enable=true"
       # Whitelist bare minimum for PID issuer use cases
-      - "traefik.http.routers.keycloak-wl.rule=PathPrefix(`/idp/realms/pid-issuer-realm`) || PathPrefix(`/idp/resources`) || PathPrefix(`/idp/js`) || Path(`/idp/.well-known/openid-configuration`) || Path(`/idp/realms/pid-issuer-realm/.well-known/openid-configuration`) || PathPrefix(`/.well-known/oauth-authorization-server`)"
+      - >
+        traefik.http.routers.keycloak-wl.rule=PathPrefix(`/idp/realms/pid-issuer-realm`)
+        || PathPrefix(`/idp/resources`)
+        || PathPrefix(`/idp/js`)
+        || Path(`/idp/.well-known/openid-configuration`)
+        || Path(`/idp/realms/pid-issuer-realm/.well-known/openid-configuration`)
+        || PathPrefix(`/.well-known/oauth-authorization-server`)
+
       - "traefik.http.routers.keycloak-wl.entrypoints=websecure"
       - "traefik.http.routers.keycloak-wl.tls=true"
       - "traefik.http.routers.keycloak-wl.service=keycloak"
