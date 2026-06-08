@@ -341,6 +341,7 @@ services:
       - KC_HTTP_RELATIVE_PATH=/idp
       - KC_HEALTH_ENABLED=true
       - KC_HOSTNAME=${BASE_URL}/idp
+      - KC_HOSTNAME_ADMIN=${BASE_URL}/idp-internal
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
@@ -355,14 +356,23 @@ services:
       - ./config/keycloak/themes/:/opt/keycloak/themes
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls=true"
-      - "traefik.http.routers.keycloak.service=keycloak"
+      # Whitelist: pid-issuer-realm (all subpaths), shared resources, js, and well-known endpoints
+      - "traefik.http.routers.keycloak-whitelist.rule=PathPrefix(`/idp/realms/pid-issuer-realm`) || PathPrefix(`/idp/resources`) || PathPrefix(`/idp/js`) || Path(`/idp/.well-known/openid-configuration`) || Path(`/idp/realms/pid-issuer-realm/.well-known/openid-configuration`)"
+      - "traefik.http.routers.keycloak-whitelist.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-whitelist.tls=true"
+      - "traefik.http.routers.keycloak-whitelist.service=keycloak"
+      # Whitelist: health endpoints → management port 9000
+      - "traefik.http.routers.keycloak-wl-health.rule=PathPrefix(`/idp/health`)"
+      - "traefik.http.routers.keycloak-wl-health.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-wl-health.tls=true"
+      - "traefik.http.routers.keycloak-wl-health.service=keycloak-health"
+      # Keycloak services
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
-      - "traefik.http.routers.keycloak.middlewares=keycloak-replace-path"
+      - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
+      # Path rewrite middleware for well-known discovery
       - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/keycloak/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
+      # OAuth server discovery endpoint
       - "traefik.http.routers.well-known-oauth-server.rule=PathPrefix(`/.well-known/oauth-authorization-server`)"
       - "traefik.http.routers.well-known-oauth-server.entrypoints=websecure"
       - "traefik.http.routers.well-known-oauth-server.tls=true"
@@ -370,11 +380,22 @@ services:
       - "traefik.http.routers.well-known-oauth-server.middlewares=well-known-oauth-server-replace-path"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
-      - "traefik.http.routers.keycloak-health.rule=PathPrefix(`/idp/health`)"
-      - "traefik.http.routers.keycloak-health.entrypoints=websecure"
-      - "traefik.http.routers.keycloak-health.tls=true"
-      - "traefik.http.routers.keycloak-health.service=keycloak-health"
-      - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
+      # Internal route: full access to all Keycloak paths including admin and master realm
+      - "traefik.http.routers.keycloak-internal.rule=PathPrefix(`/idp-internal`)"
+      - "traefik.http.routers.keycloak-internal.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-internal.tls=true"
+      - "traefik.http.routers.keycloak-internal.service=keycloak"
+      - "traefik.http.routers.keycloak-internal.middlewares=keycloak-internal-rewrite"
+      # Internal whitelist: master realm protocol endpoints (login, OIDC, 3P cookies)
+      - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp-internal/realms/master/protocol`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls=true"
+      - "traefik.http.routers.keycloak.service=keycloak"
+      - "traefik.http.routers.keycloak.middlewares=keycloak-internal-rewrite"
+      # middleware
+      - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.regex=^/idp-internal(.*)"
+      - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.replacement=/idp$$1"
+
     networks:
       - wallet-ecosystem-network
 
@@ -384,7 +405,6 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
-        restart: true
     networks:
       - wallet-ecosystem-network
     volumes:
@@ -393,7 +413,32 @@ services:
       - KEYCLOAK_URL=http://keycloak:8080/idp
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=password
-      - IMPORT_FILES_LOCATIONS=/config/*.json
+      - IMPORT_FILES_LOCATIONS=/config/pid-issuer-realm*.json
+      - BASE_URL=${BASE_URL}
+
+  keycloak-master-config:
+    image: quay.io/keycloak/keycloak:26.3.4-0
+    container_name: keycloak-master-config
+    entrypoint: bash
+    command:
+      - -c
+      - |
+        # Configure master realm
+        /opt/keycloak/bin/kcadm.sh config credentials \
+          --server http://keycloak:8080/idp \
+          --realm master --user admin --password password && \
+        /opt/keycloak/bin/kcadm.sh update realms/master \
+          --server http://keycloak:8080/idp \
+          -s "attributes.frontendUrl=${BASE_URL}/idp-internal"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      keycloak-init:
+        condition: service_completed_successfully
+    networks:
+      - wallet-ecosystem-network
+    environment:
+      - BASE_URL=${BASE_URL}
 
   wallet-bff:
     image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-feat-pod-name-in-topic-name-b6b9b08

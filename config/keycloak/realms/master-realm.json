@@ -1,0 +1,6 @@
+{
+  "realm": "master",
+  "attributes": {
+    "frontendUrl": "https://localhost/idp-internal"
+  }
+}
