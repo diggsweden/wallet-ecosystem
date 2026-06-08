@@ -36,8 +36,8 @@ public class EndToEndTest {
 
   public static Stream<Arguments> issuers() {
     return Stream.of(
-        Arguments.argumentSet("internal", new InternalIssuanceAgent()),
-        Arguments.argumentSet("public", new PublicIssuanceAgent()));
+        Arguments.argumentSet("internal", new IssuanceAgent(new InternalWalletClient())),
+        Arguments.argumentSet("public", new IssuanceAgent(new PublicWalletClient())));
   }
 
   @ParameterizedTest
