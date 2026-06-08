@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public enum ServiceIdentifier {
   KEYCLOAK("https://localhost/idp"),
+  KEYCLOAK_INTERNAL("https://localhost/idp-internal"),
   UNTRUSTED_KEYCLOAK("https://localhost/untrusted-idp"),
   PID_ISSUER("https://localhost/pid-issuer"),
   UNTRUSTED_PID_ISSUER("https://localhost/untrusted-pid-issuer"),

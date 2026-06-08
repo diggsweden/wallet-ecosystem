@@ -96,8 +96,9 @@
           ],
           "client": {
             "account": [
-              "manage-account",
-              "view-profile"
+              "view-profile",
+              "view-applications",
+              "view-consent"
             ]
           }
         },
@@ -521,8 +522,10 @@
       {
         "client": "account-console",
         "roles": [
-          "manage-account",
-          "view-groups"
+          "view-profile",
+          "view-groups",
+          "view-applications",
+          "view-consent"
         ]
       }
     ]
@@ -2157,6 +2160,7 @@
   },
   "internationalizationEnabled": true,
   "loginTheme": "custom",
+  "accountTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
   "authenticationFlows": [
