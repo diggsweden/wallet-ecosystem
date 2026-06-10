@@ -9,14 +9,11 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
-import java.util.Optional;
 import java.util.UUID;
 
 public class VerifierBackendClient {
 
-  public static final String VERIFIER_AUDIENCE =
-      Optional.ofNullable(System.getenv("DIGG_WALLET_ECOSYSTEM_VERIFIER_AUDIENCE"))
-          .orElse("x509_san_dns:localhost");
+  public static final String VERIFIER_AUDIENCE = Property.VERIFIER_AUDIENCE.getValue();
 
   private final URI base;
 

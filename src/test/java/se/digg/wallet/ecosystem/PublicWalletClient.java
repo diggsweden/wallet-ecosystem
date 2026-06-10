@@ -12,12 +12,8 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.util.Date;
-import java.util.Optional;
 
 public class PublicWalletClient implements WalletClient {
-
-  private static final String API_KEY = Optional.ofNullable(System.getenv(
-      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
 
   private final WalletClientGatewayClient gateway = new WalletClientGatewayClient();
 
