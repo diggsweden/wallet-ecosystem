@@ -12,10 +12,13 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.net.URI;
+import java.util.Optional;
 
 public class WalletClientGatewayClient {
 
   private final URI base = ServiceIdentifier.WALLET_CLIENT_GATEWAY.getResourceRoot();
+  private static final String API_KEY = Optional.ofNullable(System.getenv(
+      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
 
   public Response tryGetHealth() {
     return given()
@@ -23,11 +26,11 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
-  public String createAccountByApiKey(String postBody, String apiKey) {
+  public String createAccount(String postBody) {
     return given()
         .when()
         .contentType(ContentType.JSON).body(postBody)
-        .header("X-API-KEY", apiKey)
+        .header("X-API-KEY", API_KEY)
         .post(base.resolve("v0/accounts"))
         .then()
         .assertThat().statusCode(201)
@@ -35,25 +38,25 @@ public class WalletClientGatewayClient {
         .extract().body().jsonPath().getString("accountId");
   }
 
-  public void addWalletKey(String sessionId, String apiKey, String keyBody) {
+  public void addWalletKey(String sessionId, String keyBody) {
     given()
         .when()
         .contentType(ContentType.JSON)
         .body(keyBody)
         .header("Session", sessionId)
-        .header("X-API-KEY", apiKey)
+        .header("X-API-KEY", API_KEY)
         .post(base.resolve("v0/accounts/wallet-keys"))
         .then()
         .assertThat().statusCode(201);
   }
 
-  public void addSecurityEnvelope(String sessionId, String apiKey, String keyBody) {
+  public void addSecurityEnvelope(String sessionId, String keyBody) {
     given()
         .when()
         .contentType(ContentType.JSON)
         .body(keyBody)
         .header("Session", sessionId)
-        .header("X-API-KEY", apiKey)
+        .header("X-API-KEY", API_KEY)
         .post(base.resolve("v0/accounts/security-envelopes"))
         .then()
         .assertThat().statusCode(201);
