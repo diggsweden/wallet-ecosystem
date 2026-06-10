@@ -23,12 +23,12 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
-  public String createAccountByApiKey(String postBody, String apiKey, String path) {
+  public String createAccountByApiKey(String postBody, String apiKey) {
     return given()
         .when()
         .contentType(ContentType.JSON).body(postBody)
         .header("X-API-KEY", apiKey)
-        .post(base.resolve(path))
+        .post(base.resolve("v0/accounts"))
         .then()
         .assertThat().statusCode(201)
         .and().body("accountId", not(blankOrNullString()))

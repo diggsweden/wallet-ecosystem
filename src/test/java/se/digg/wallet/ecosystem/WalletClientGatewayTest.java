@@ -64,7 +64,7 @@ public class WalletClientGatewayTest {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0Request(ecKey);
     var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -73,7 +73,7 @@ public class WalletClientGatewayTest {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0Request(ecKey);
     var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -82,7 +82,7 @@ public class WalletClientGatewayTest {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0RequestWithNullPersonalIdentityNumber(ecKey);
     var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -91,7 +91,7 @@ public class WalletClientGatewayTest {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0RequestWithOnlyDeviceKey(ecKey);
     var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -145,7 +145,7 @@ public class WalletClientGatewayTest {
   private static String createAccountByApiKey(ECKey ecKey) {
     var accountRequestBody = stubAccountV0Request(ecKey);
     return walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, "v0/accounts");
+        accountRequestBody, API_KEY);
   }
 
   private static String stubAccountV0Request(ECKey ecKey) {
