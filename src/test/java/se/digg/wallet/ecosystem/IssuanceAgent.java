@@ -25,34 +25,36 @@ public class IssuanceAgent {
 
   static IssuanceAgent untrusted() {
     return new IssuanceAgent(
+        new InternalWalletClient(
+            new WalletProviderClient(
+                ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot())),
         new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
-        new WalletProviderClient(ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot()),
         new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
         ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
   }
 
+  private final WalletClient wallet;
   private final KeycloakClient keycloak;
-  private final WalletProviderClient walletProvider;
   private final PidIssuerClient pidIssuer;
   private final String audience;
 
   public IssuanceAgent() {
-    this(new WalletProviderClient());
+    this(new InternalWalletClient(new WalletProviderClient()));
   }
 
-  public IssuanceAgent(WalletProviderClient walletProvider) {
-    this(new KeycloakClient(), walletProvider, new PidIssuerClient(),
+  public IssuanceAgent(WalletClient wallet) {
+    this(wallet, new KeycloakClient(), new PidIssuerClient(),
         ServiceIdentifier.PID_ISSUER.toString());
   }
 
   public IssuanceAgent(
+      WalletClient wallet,
       KeycloakClient keycloak,
-      WalletProviderClient walletProvider,
       PidIssuerClient pidIssuer,
       String audience) {
 
+    this.wallet = wallet;
     this.keycloak = keycloak;
-    this.walletProvider = walletProvider;
     this.pidIssuer = pidIssuer;
     this.audience = audience;
   }
@@ -79,7 +81,7 @@ public class IssuanceAgent {
                 "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, userJwk);
-    String walletAttestation = walletProvider.getWalletUnitAttestation(bindingKey, nonce);
+    String walletAttestation = wallet.createWalletUnitAttestation(bindingKey, nonce);
     String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =

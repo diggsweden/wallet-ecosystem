@@ -12,13 +12,11 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.net.URI;
-import java.util.Optional;
 
 public class WalletClientGatewayClient {
 
   private final URI base = ServiceIdentifier.WALLET_CLIENT_GATEWAY.getResourceRoot();
-  private static final String API_KEY = Optional.ofNullable(System.getenv(
-      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
+  private static final String API_KEY = Property.WALLET_CLIENT_GATEWAY_API_KEY.getValue();
 
   public Response tryGetHealth() {
     return given()
