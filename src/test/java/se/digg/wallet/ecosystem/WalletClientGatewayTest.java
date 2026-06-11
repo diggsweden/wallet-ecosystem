@@ -22,7 +22,6 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.util.Date;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -35,8 +34,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 @TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
-  private static final String API_KEY = Optional.ofNullable(System.getenv(
-      "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY")).orElse("apikey");
   private static final WalletClientGatewayClient walletClientGateway =
       new WalletClientGatewayClient();
   private static final String KEY_ID = "123";
@@ -45,7 +42,7 @@ public class WalletClientGatewayTest {
   @BeforeAll
   static void beforeAll() throws Exception {
     var ecKey = generateKey();
-    var accountId = createAccountByApiKey(ecKey);
+    var accountId = createAccount(ecKey);
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
     session = walletClientGateway.respondToChallenge(signedJwt);
@@ -63,8 +60,7 @@ public class WalletClientGatewayTest {
   void createAccount_should_return_accountId() throws Exception {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0Request(ecKey);
-    var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+    var accountId = walletClientGateway.createAccount(accountRequestBody);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -72,8 +68,7 @@ public class WalletClientGatewayTest {
   void createAccountv0_should_return_accountId() throws Exception {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0Request(ecKey);
-    var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+    var accountId = walletClientGateway.createAccount(accountRequestBody);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -82,7 +77,7 @@ public class WalletClientGatewayTest {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0RequestWithNullPersonalIdentityNumber(ecKey);
     var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+        walletClientGateway.createAccount(accountRequestBody);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
@@ -90,22 +85,21 @@ public class WalletClientGatewayTest {
   void createAccountv0WithOnlyDeviceKey_should_return_accountId() throws Exception {
     var ecKey = generateKey();
     var accountRequestBody = stubAccountV0RequestWithOnlyDeviceKey(ecKey);
-    var accountId =
-        walletClientGateway.createAccountByApiKey(accountRequestBody, API_KEY, "v0/accounts");
+    var accountId = walletClientGateway.createAccount(accountRequestBody);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
   }
 
   @Test
   void addWalletKey_should_return_201() throws Exception {
     var walletKey = generateKey();
-    walletClientGateway.addWalletKey(session, API_KEY, walletKey.toPublicJWK().toJSONString());
+    walletClientGateway.addWalletKey(session, walletKey.toPublicJWK().toJSONString());
   }
 
   @Test
   void addSecurityEnvelope_should_return_201() {
     var securityEnvelopeRequest = createSecurityEnvelopeRequest("SIGN",
         "This is a string representation of a Blob");
-    walletClientGateway.addSecurityEnvelope(session, API_KEY, securityEnvelopeRequest);
+    walletClientGateway.addSecurityEnvelope(session, securityEnvelopeRequest);
   }
 
   @ParameterizedTest
@@ -113,12 +107,12 @@ public class WalletClientGatewayTest {
   @NullSource
   void createWalletUnitAttestation(String wuaNonce) throws Exception {
     var ecKey = generateKey();
-    var accountId = createAccountByApiKey(ecKey);
+    var accountId = createAccount(ecKey);
     var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
     var signedJwt = createSignedJwt(ecKey, nonce);
     var session = walletClientGateway.respondToChallenge(signedJwt);
     var walletKey = generateKey();
-    walletClientGateway.addWalletKey(session, API_KEY, walletKey.toPublicJWK().toJSONString());
+    walletClientGateway.addWalletKey(session, walletKey.toPublicJWK().toJSONString());
 
     walletClientGateway.tryCreateWalletUnitAttestation(session, wuaNonce)
         .then()
@@ -142,10 +136,9 @@ public class WalletClientGatewayTest {
         .generate();
   }
 
-  private static String createAccountByApiKey(ECKey ecKey) {
+  private static String createAccount(ECKey ecKey) {
     var accountRequestBody = stubAccountV0Request(ecKey);
-    return walletClientGateway.createAccountByApiKey(
-        accountRequestBody, API_KEY, "v0/accounts");
+    return walletClientGateway.createAccount(accountRequestBody);
   }
 
   private static String stubAccountV0Request(ECKey ecKey) {
