@@ -98,4 +98,33 @@ public class WalletClientGatewayClient {
 
     return request.post(base.resolve("wua"));
   }
+
+  public Response saveDeviceState(String sessionId, String body) {
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .header("Session", sessionId)
+        .header("X-API-KEY", API_KEY)
+        .post(base.resolve("hsm/v0/device-states"));
+  }
+
+  public Response createHsmRequest(String sessionId, String body) {
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .header("Session", sessionId)
+        .header("X-API-KEY", API_KEY)
+        .post(base.resolve("hsm/v0/requests"));
+  }
+
+  public Response getAsyncHsmResult(String sessionId, String id) {
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .header("Session", sessionId)
+        .header("X-API-KEY", API_KEY)
+        .get(base.resolve("hsm/v0/requests/%s".formatted(id)));
+  }
 }

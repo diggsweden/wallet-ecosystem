@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.fail;
 import static se.digg.wallet.ecosystem.PersonalIdentityNumberUtil.getRandomPersonalId;
 
 import com.nimbusds.jose.Algorithm;
@@ -24,6 +25,7 @@ import com.nimbusds.jwt.SignedJWT;
 import java.util.Date;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -128,12 +130,63 @@ public class WalletClientGatewayTest {
         .assertThat().statusCode(400);
   }
 
-  private static ECKey generateKey() throws Exception {
-    return new ECKeyGenerator(Curve.P_256)
-        .keyID(KEY_ID)
-        .algorithm(Algorithm.NONE)
-        .keyUse(KeyUse.SIGNATURE)
-        .generate();
+  @Disabled
+  void saveDeviceState() {
+    var request = """
+        {
+          "deviceKey": {
+            "kty": "EC",
+            "kid": "%s",
+            "alg": null,
+            "use": null,
+            "crv": "P-256",
+            "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
+            "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
+          },
+          "ttl": "P30D"
+        }""".formatted(UUID.randomUUID().toString());
+
+    walletClientGateway.saveDeviceState(session, request)
+        .then()
+        .assertThat()
+        .statusCode(201);
+  }
+
+  @Disabled
+  void malformedJwsInOuterRequest() {
+    var request = """
+        {
+          "outerRequestJws": "malformed-outer-request-jws",
+          "clientId": "%s",
+          "stateJws": "the-state-jws"
+        }""".formatted(UUID.randomUUID().toString());
+
+    walletClientGateway.createHsmRequest(session, request)
+        .then()
+        .assertThat()
+        .statusCode(500);
+  }
+
+  @Disabled
+  void nonExistingHsmResultReturnsAccepted() {
+    var nonExistingId = UUID.randomUUID().toString();
+    walletClientGateway.getAsyncHsmResult(session, nonExistingId)
+        .then()
+        .assertThat()
+        .statusCode(202);
+  }
+
+  static ECKey generateKey() {
+    try {
+      return new ECKeyGenerator(Curve.P_256)
+          .keyID(KEY_ID)
+          .algorithm(Algorithm.NONE)
+          .keyUse(KeyUse.SIGNATURE)
+          .generate();
+    } catch (Exception e) {
+      fail("Unable to generate key");
+      return null;
+    }
   }
 
   private static String createAccount(ECKey ecKey) {

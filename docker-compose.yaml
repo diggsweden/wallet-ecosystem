@@ -286,7 +286,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.5.7
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.0
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -396,7 +396,7 @@ services:
       - IMPORT_FILES_LOCATIONS=/config/*.json
 
   wallet-bff:
-    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-feat-pod-name-in-topic-name-b6b9b08
+    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -427,7 +427,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-feat-pod-name-in-topic-name-b6b9b08
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-feat-fix-latency-issue-67afdc8
     env_file:
       - .env.opaque
       - .env.softhsm
