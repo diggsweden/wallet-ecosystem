@@ -1,4 +1,0 @@
-section:has(#two-factor-categ-title),
-section:has(#passwordless-categ-title) {
-    display: none;
-}

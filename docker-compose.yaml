@@ -347,20 +347,30 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
     healthcheck:
       test: "bash /opt/keycloak/health-check.sh"
-      interval: 5s
-      timeout: 10s
-      retries: 12
-      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     volumes:
       - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/themes/:/opt/keycloak/themes
     labels:
       - "traefik.enable=true"
-      # Whitelist: pid-issuer-realm (all subpaths), shared resources, js, and well-known endpoints
-      - "traefik.http.routers.keycloak-whitelist.rule=PathPrefix(`/idp/realms/pid-issuer-realm`) || PathPrefix(`/idp/resources`) || PathPrefix(`/idp/js`) || Path(`/idp/.well-known/openid-configuration`) || Path(`/idp/realms/pid-issuer-realm/.well-known/openid-configuration`)"
-      - "traefik.http.routers.keycloak-whitelist.entrypoints=websecure"
-      - "traefik.http.routers.keycloak-whitelist.tls=true"
-      - "traefik.http.routers.keycloak-whitelist.service=keycloak"
+       # Whitelist bare minimum for PID issuer use cases
+      - >
+        traefik.http.routers.keycloak-wl.rule=PathPrefix(`/idp/realms/pid-issuer-realm`)
+        || PathPrefix(`/idp/resources`)
+        || PathPrefix(`/idp/js`)
+        || Path(`/idp/.well-known/openid-configuration`)
+        || Path(`/idp/realms/pid-issuer-realm/.well-known/openid-configuration`)
+        || PathPrefix(`/.well-known/oauth-authorization-server`)
+
+      - "traefik.http.routers.keycloak-wl.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-wl.tls=true"
+      - "traefik.http.routers.keycloak-wl.service=keycloak"
+      - "traefik.http.routers.keycloak-wl.middlewares=well-known-oauth-server-replace-path"
+      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
+      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
       # Whitelist: health endpoints → management port 9000
       - "traefik.http.routers.keycloak-wl-health.rule=PathPrefix(`/idp/health`)"
       - "traefik.http.routers.keycloak-wl-health.entrypoints=websecure"
@@ -369,17 +379,6 @@ services:
       # Keycloak services
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
       - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
-      # Path rewrite middleware for well-known discovery
-      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/keycloak/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
-      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
-      # OAuth server discovery endpoint
-      - "traefik.http.routers.well-known-oauth-server.rule=PathPrefix(`/.well-known/oauth-authorization-server`)"
-      - "traefik.http.routers.well-known-oauth-server.entrypoints=websecure"
-      - "traefik.http.routers.well-known-oauth-server.tls=true"
-      - "traefik.http.routers.well-known-oauth-server.service=keycloak"
-      - "traefik.http.routers.well-known-oauth-server.middlewares=well-known-oauth-server-replace-path"
-      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
-      - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
       # Internal route: full access to all Keycloak paths including admin and master realm
       - "traefik.http.routers.keycloak-internal.rule=PathPrefix(`/idp-internal`)"
       - "traefik.http.routers.keycloak-internal.entrypoints=websecure"

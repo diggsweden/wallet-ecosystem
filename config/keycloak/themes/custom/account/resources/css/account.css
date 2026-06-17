@@ -1,0 +1,14 @@
+/*update password button*/
+ #app > div > main > section:nth-child(2) > section:nth-child(1) > ul > li > div > div > div:nth-child(3) > button {
+    display: none !important;
+}
+
+/*setup authenticator*/
+#app > div > main > section:nth-child(2) > section:nth-child(2) > div > div.pf-v5-l-split__item.pf-m-fill > div > button.pf-v5-c-button.pf-m-link.pf-v5-u-display-none.pf-v5-u-display-inline-flex-on-lg {
+    display: none !important;
+}
+
+/*setup passkey*/
+#app > div > main > section:nth-child(2) > section:nth-child(3) > div > div.pf-v5-l-split__item.pf-m-fill > div > button.pf-v5-c-button.pf-m-link.pf-v5-u-display-none.pf-v5-u-display-inline-flex-on-lg {
+    display: none !important;
+}
