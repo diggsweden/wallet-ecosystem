@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+replicas: 1
+
+tempo:
+  reportingEnabled: false
+  retention: 24h
+  memBallastSizeMbs: 0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+
+persistence:
+  enabled: false
+
+serviceMonitor:
+  enabled: false

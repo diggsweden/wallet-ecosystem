@@ -8,6 +8,8 @@ version = 1
 path = [
   "README.md",
   "DEVELOPMENT.md",
+  "development/k3s/README.md",
+  "development/k3s/observability/*.yml",
   ".gommitlint.yaml",
   "renovate.json",
   "config/certificates/README.md",

@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: refimpl-verifier-backend
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: refimpl-verifier-backend
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  selector:
+    app.kubernetes.io/name: refimpl-verifier-backend
+    app.kubernetes.io/part-of: wallet-ecosystem
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: refimpl-verifier-backend
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: refimpl-verifier-backend
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: refimpl-verifier-backend
+      app.kubernetes.io/part-of: wallet-ecosystem
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: refimpl-verifier-backend
+        app.kubernetes.io/part-of: wallet-ecosystem
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "true"
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: refimpl-verifier-backend
+          image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: SPRING_WEBFLUX_BASEPATH
+              value: /refimpl-verifier-backend
+            - name: VERIFIER_PUBLICURL
+              value: http://localhost:28080/refimpl-verifier-backend
+            - name: VERIFIER_ORIGINALCLIENTID
+              value: localhost
+            - name: VERIFIER_CLIENTIDPREFIX
+              value: x509_san_dns
+            - name: SPRING_PROFILES_ACTIVE
+              value: self-signed
+            - name: VERIFIER_ACCESS_CERTIFICATE_SIGNING_ALGORITHM
+              value: ES256
+            - name: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE
+              value: file:///opt/common/verifier_backend.p12
+            - name: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_TYPE
+              value: PKCS12
+            - name: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD
+              value: pass1234
+            - name: VERIFIER_ACCESS_CERTIFICATE_ALIAS
+              value: verifier_backend
+            - name: VERIFIER_ACCESS_CERTIFICATE_PASSWORD
+              value: pass1234
+            - name: VERIFIER_RESPONSE_MODE
+              value: DirectPost
+            - name: VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS
+              value: urn:eudi:pid:1
+            - name: VERIFIER_TRUSTVALIDATOR_SERVICEURL
+              value: http://trust-validator:8080/trust
+            - name: LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT
+              value: DEBUG
+            - name: JAVA_OPTS
+              value: -XX:MaxDirectMemorySize=128M
+          readinessProbe:
+            httpGet:
+              path: /refimpl-verifier-backend/actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /refimpl-verifier-backend/actuator/health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          volumeMounts:
+            - name: verifier-backend-certificate
+              mountPath: /opt/common/verifier_backend.p12
+              subPath: verifier_backend.p12
+              readOnly: true
+      volumes:
+        - name: verifier-backend-certificate
+          secret:
+            secretName: verifier-backend-certificate

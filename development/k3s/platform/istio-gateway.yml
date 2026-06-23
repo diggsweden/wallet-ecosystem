@@ -1,0 +1,245 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: wallet-gateway
+  namespace: wallet-ecosystem-local
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak-health
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /idp/health
+      backendRefs:
+        - name: keycloak
+          port: 9000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /idp
+      backendRefs:
+        - name: keycloak
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak-well-known
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /.well-known/oauth-authorization-server/idp/realms/pid-issuer-realm
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /idp/realms/pid-issuer-realm/.well-known/oauth-authorization-server
+      backendRefs:
+        - name: keycloak
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: wallet-account
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /wallet-account
+      backendRefs:
+        - name: wallet-account
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: refimpl-verifier-backend
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /refimpl-verifier-backend
+      backendRefs:
+        - name: refimpl-verifier-backend
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: demo-verifier
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /demo-verifier
+      backendRefs:
+        - name: demo-verifier
+          port: 3002
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pid-issuer
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /pid-issuer
+      backendRefs:
+        - name: pid-issuer
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pid-issuer-well-known-openid-credential-issuer
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /.well-known/openid-credential-issuer/pid-issuer
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /pid-issuer/.well-known/openid-credential-issuer
+      backendRefs:
+        - name: pid-issuer
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pid-issuer-well-known-jwt-vc-issuer
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /.well-known/jwt-vc-issuer/pid-issuer
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /pid-issuer/.well-known/jwt-vc-issuer
+      backendRefs:
+        - name: pid-issuer
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pid-issuer-well-known-oauth-protected-resource
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /.well-known/oauth-protected-resource/pid-issuer
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /pid-issuer/.well-known/oauth-protected-resource
+      backendRefs:
+        - name: pid-issuer
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: wallet-provider
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /wallet-provider
+      backendRefs:
+        - name: wallet-provider
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: wallet-client-gateway
+  namespace: wallet-ecosystem-local
+spec:
+  parentRefs:
+    - name: wallet-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /wallet-client-gateway
+      backendRefs:
+        - name: wallet-client-gateway
+          port: 8080

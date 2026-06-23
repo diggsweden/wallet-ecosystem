@@ -1,0 +1,84 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: trust-validator
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: trust-validator
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  selector:
+    app.kubernetes.io/name: trust-validator
+    app.kubernetes.io/part-of: wallet-ecosystem
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trust-validator
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: trust-validator
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: trust-validator
+      app.kubernetes.io/part-of: wallet-ecosystem
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: trust-validator
+        app.kubernetes.io/part-of: wallet-ecosystem
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "true"
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: trust-validator
+          image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:edge
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: LOGGING_LEVEL_EU_EUROPA_EC_EUDI
+              value: TRACE
+            - name: TRUST_VALIDATOR_DSS_CACHE_LOCATION
+              value: /tmp/dss-cache
+            - name: TRUST_VALIDATOR_LOTE_CACHE_LOCATION
+              value: /tmp/lote-cache
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_LOCATION
+              value: file:///opt/common/trusted_issuers.p12
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_KEY_STORE_TYPE
+              value: PKCS12
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_PASSWORD
+              value: pass1234
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_LOCATION
+              value: http://localhost/dummy.xml
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_ISSUANCE_SERVICE
+              value: http://uri.etsi.org/19602/SvcType/PID/Issuance
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_REVOCATION_SERVICE
+              value: http://uri.etsi.org/19602/SvcType/PID/Revocation
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_LOCATION
+              value: http://localhost/dummy.xml
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_ISSUANCE_SERVICE
+              value: http://uri.etsi.org/19602/SvcType/PID/Issuance
+            - name: TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_REVOCATION_SERVICE
+              value: http://uri.etsi.org/19602/SvcType/PID/Revocation
+          volumeMounts:
+            - name: trusted-issuers
+              mountPath: /opt/common/trusted_issuers.p12
+              subPath: trusted_issuers.p12
+              readOnly: true
+      volumes:
+        - name: trusted-issuers
+          secret:
+            secretName: trust-validator-certificate

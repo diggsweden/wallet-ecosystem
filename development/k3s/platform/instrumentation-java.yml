@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: wallet-java
+  namespace: wallet-ecosystem-local
+spec:
+  exporter:
+    endpoint: http://otel-collector-collector:4318
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    type: parentbased_traceidratio
+    argument: "1"
+  env:
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: http/protobuf
+    - name: OTEL_TRACES_EXPORTER
+      value: otlp
+    - name: OTEL_METRICS_EXPORTER
+      value: otlp
+    - name: OTEL_LOGS_EXPORTER
+      value: otlp
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: service.namespace=wallet,deployment.environment=local-k3s
+    - name: OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED
+      value: "true"
+    - name: OTEL_INSTRUMENTATION_LOGBACK_APPENDER_ENABLED
+      value: "true"

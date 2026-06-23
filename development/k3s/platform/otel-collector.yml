@@ -1,0 +1,111 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector
+  namespace: wallet-ecosystem-local
+spec:
+  mode: deployment
+  image: otel/opentelemetry-collector-contrib:0.129.1
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 256
+        spike_limit_mib: 64
+      filter/drop-health-logs:
+        logs:
+          log_record:
+            - 'IsMatch(body, ".*actuator/health.*")'
+            - 'attributes["url.path"] != nil and IsMatch(attributes["url.path"], ".*/actuator/health.*")'
+      filter/drop-health-traces:
+        traces:
+          span:
+            - 'IsMatch(name, ".*actuator/health.*")'
+            - 'attributes["url.path"] != nil and IsMatch(attributes["url.path"], ".*/actuator/health.*")'
+      resource:
+        attributes:
+          - key: service.namespace
+            value: wallet
+            action: upsert
+          - key: deployment.environment
+            value: local-k3s
+            action: upsert
+      batch: {}
+    exporters:
+      debug:
+        verbosity: detailed
+      prometheus/appmetrics:
+        endpoint: 0.0.0.0:9464
+      otlp/tempo:
+        endpoint: tempo.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+      otlphttp/loki:
+        endpoint: http://loki.observability.svc.cluster.local:3100/otlp
+    service:
+      pipelines:
+        traces:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/drop-health-traces
+            - resource
+            - batch
+          exporters:
+            - debug
+            - otlp/tempo
+        metrics:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - resource
+            - batch
+          exporters:
+            - debug
+            - prometheus/appmetrics
+        logs:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/drop-health-logs
+            - resource
+            - batch
+          exporters:
+            - debug
+            - otlphttp/loki
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector-appmetrics
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: otel-collector-appmetrics
+    app.kubernetes.io/part-of: wallet-ecosystem
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9464"
+spec:
+  selector:
+    app.kubernetes.io/component: opentelemetry-collector
+    app.kubernetes.io/instance: wallet-ecosystem-local.otel-collector
+    app.kubernetes.io/managed-by: opentelemetry-operator
+    app.kubernetes.io/part-of: opentelemetry
+  ports:
+    - name: metrics
+      port: 9464
+      targetPort: 9464

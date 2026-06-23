@@ -1,0 +1,110 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-bff
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: wallet-bff
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  selector:
+    app.kubernetes.io/name: wallet-bff
+    app.kubernetes.io/part-of: wallet-ecosystem
+  ports:
+    - name: http
+      port: 8088
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-bff
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: wallet-bff
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: wallet-bff
+      app.kubernetes.io/part-of: wallet-ecosystem
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: wallet-bff
+        app.kubernetes.io/part-of: wallet-ecosystem
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z kafka-1 19092; do sleep 5; done
+        - name: wait-for-topics
+          image: apache/kafka:latest@sha256:9516fb7634bad307d17c33b589fde9023003b0cb761374f500002b980a3149b9
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              until /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --list \
+                | grep -qx 'wallet-state'; do
+                sleep 5
+              done
+      containers:
+        - name: wallet-bff
+          image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8088
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:19092
+            - name: KAFKA_BROKER_ADDRESS_FAMILY
+              value: v4
+            - name: KAFKA_GROUP_ID
+              value: r2ps-rest-api-group
+            - name: REDIS_HOST
+              value: wallet-client-gateway-valkey
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_USERNAME
+              value: ""
+            - name: REDIS_PASSWORD
+              value: ""
+            - name: REDIS_DATABASE
+              value: "0"
+            - name: SERVER_PORT
+              value: "8088"
+            - name: SERVE_SYNC
+              value: "true"
+            - name: SYNC_TIMEOUT_MS
+              value: "3000"
+            - name: RESPONSE_TTL_SECONDS
+              value: "600"
+            - name: HSM_WORKER_RESPONSE_TOPIC
+              value: hsm-worker-responses-bff-1
+            - name: STATE_INIT_RESPONSE_TOPIC
+              value: state-init-responses-bff-1
+            - name: RUST_LOG
+              value: wallet_bff=info,rdkafka=warn,redis=warn
+            - name: TZ
+              value: Europe/Stockholm
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 20

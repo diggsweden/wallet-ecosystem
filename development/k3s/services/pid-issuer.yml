@@ -1,0 +1,188 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: pid-issuer
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: pid-issuer
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  selector:
+    app.kubernetes.io/name: pid-issuer
+    app.kubernetes.io/part-of: wallet-ecosystem
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pid-issuer
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: pid-issuer
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pid-issuer
+      app.kubernetes.io/part-of: wallet-ecosystem
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pid-issuer
+        app.kubernetes.io/part-of: wallet-ecosystem
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "true"
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: pid-issuer
+          image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.9.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: insecure
+            - name: SPRING_WEBFLUX_BASE_PATH
+              value: /pid-issuer
+            - name: SERVER_PORT
+              value: "8080"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_ID
+              value: pid-issuer-srv
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_SECRET
+              value: zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
+            - name: SERVER_FORWARD_HEADERS_STRATEGY
+              value: FRAMEWORK
+            - name: ISSUER_PUBLICURL
+              value: http://localhost:28080/pid-issuer
+            - name: ISSUER_AUTHORIZATIONSERVER_PUBLICURL
+              value: http://localhost:28080/idp/realms/pid-issuer-realm
+            - name: ISSUER_AUTHORIZATIONSERVER_METADATA
+              value: http://keycloak:8080/idp/realms/pid-issuer-realm/.well-known/openid-configuration
+            - name: ISSUER_AUTHORIZATIONSERVER_INTROSPECTION
+              value: http://keycloak:8080/idp/realms/pid-issuer-realm/protocol/openid-connect/token/introspect
+            - name: ISSUER_CREDENTIALRESPONSEENCRYPTION_SUPPORTED
+              value: "true"
+            - name: ISSUER_CREDENTIALRESPONSEENCRYPTION_REQUIRED
+              value: "true"
+            - name: ISSUER_CREDENTIALRESPONSEENCRYPTION_ALGORITHMSSUPPORTED
+              value: ECDH-ES
+            - name: ISSUER_CREDENTIALRESPONSEENCRYPTION_ENCRYPTIONMETHODS
+              value: A128GCM
+            - name: ISSUER_PID_MSO_MDOC_ENABLED
+              value: "false"
+            - name: ISSUER_PID_SD_JWT_VC_ENABLED
+              value: "true"
+            - name: ISSUER_PID_SD_JWT_VC_NOTUSEBEFORE
+              value: PT0S
+            - name: ISSUER_PID_SD_JWT_VC_NOTIFICATIONS_ENABLED
+              value: "true"
+            - name: ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_REQUIRED
+              value: "true"
+            - name: ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_CONSTRAINTS_KEY_STORAGE
+              value: iso_18045_high
+            - name: ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_CONSTRAINTS_USER_AUTHENTICATION
+              value: iso_18045_high
+            - name: ISSUER_PID_ISSUINGCOUNTRY
+              value: SE
+            - name: ISSUER_PID_ISSUINGJURISDICTION
+              value: SE-Y
+            - name: ISSUER_EHIC_ENABLED
+              value: "false"
+            - name: ISSUER_MDL_ENABLED
+              value: "false"
+            - name: ISSUER_LEARNINGCREDENTIAL_ENABLED
+              value: "false"
+            - name: ISSUER_CREDENTIALOFFER_URI
+              value: openid-credential-offer://
+            - name: ISSUER_KEYSTORE_FILE
+              value: file:///opt/common/pid_issuer.p12
+            - name: ISSUER_KEYSTORE_TYPE
+              value: PKCS12
+            - name: ISSUER_KEYSTORE_PASSWORD
+              value: pass1234
+            - name: ISSUER_PID_SD_JWT_VC_SIGNING_KEY
+              value: LoadFromKeystore
+            - name: ISSUER_PID_SD_JWT_VC_SIGNING_KEY_ALIAS
+              value: pid_issuer
+            - name: ISSUER_PID_SD_JWT_VC_SIGNING_KEY_PASSWORD
+              value: pass1234
+            - name: ISSUER_METADATA_SIGNED_METADATA_ENABLED
+              value: "false"
+            - name: ISSUER_KEYCLOAK_SERVER_URL
+              value: http://keycloak:8080/idp
+            - name: ISSUER_KEYCLOAK_AUTHENTICATION_REALM
+              value: master
+            - name: ISSUER_KEYCLOAK_CLIENT_ID
+              value: admin-cli
+            - name: ISSUER_KEYCLOAK_USERNAME
+              value: admin
+            - name: ISSUER_KEYCLOAK_PASSWORD
+              value: password
+            - name: ISSUER_KEYCLOAK_USER_REALM
+              value: pid-issuer-realm
+            - name: ISSUER_DPOP_PROOF_MAX_AGE
+              value: PT1M
+            - name: ISSUER_DPOP_CACHE_PURGE_INTERVAL
+              value: PT10M
+            - name: ISSUER_DPOP_REALM
+              value: pid-issuer
+            - name: ISSUER_DPOP_NONCE_ENABLED
+              value: "false"
+            - name: ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_ENABLED
+              value: "true"
+            - name: ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_BATCHSIZE
+              value: "10"
+            - name: ISSUER_CNONCE_EXPIRATION
+              value: PT5M
+            - name: ISSUER_ACCESS_TOKEN_TYPE
+              value: BearerAndDPoPIfAvailable
+            - name: ISSUER_METADATA_DISPLAY_0_LOGO_URI
+              value: https://dela.digg.se/img/sr-logo-color.png
+            - name: ISSUER_METADATA_DISPLAY_0_NAME
+              value: DIGG issuer
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: health,info,loggers,httpexchanges
+            - name: SPRING_CODEC_LOG_REQUEST_DETAILS
+              value: "true"
+            - name: LOGGING_LEVEL_EU_EUROPA_EC_EUDI
+              value: DEBUG
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE
+              value: DEBUG
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP_SERVER_REACTIVE
+              value: DEBUG
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
+              value: DEBUG
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP_CODEC
+              value: DEBUG
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE_FUNCTION_CLIENT_EXCHANGEFUNCTIONS
+              value: DEBUG
+            - name: JAVA_OPTS
+              value: -XX:MaxDirectMemorySize=128M
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          volumeMounts:
+            - name: pid-issuer-certificate
+              mountPath: /opt/common/pid_issuer.p12
+              subPath: pid_issuer.p12
+              readOnly: true
+      volumes:
+        - name: pid-issuer-certificate
+          secret:
+            secretName: pid-issuer-certificate

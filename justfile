@@ -285,6 +285,50 @@ verify-maven:
     mvn {{maven_opts}} verify
     just_success "Maven verify completed"
 
+# Run the integration tests that are supported by the local k3s slice
+[group('test')]
+test-k3s:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source "{{colors}}"
+    port_forward_pid=""
+    cleanup() {
+        if [[ -n "${port_forward_pid}" ]] && kill -0 "${port_forward_pid}" 2>/dev/null; then
+            kill "${port_forward_pid}" 2>/dev/null || true
+            wait "${port_forward_pid}" 2>/dev/null || true
+        fi
+    }
+    trap cleanup EXIT
+    kubectl -n wallet-ecosystem-local port-forward service/wallet-gateway-istio 28080:80 \
+        >/tmp/wallet-k3s-identity-port-forward.log 2>&1 &
+    port_forward_pid="$!"
+    for _ in $(seq 1 30); do
+        if curl --silent --show-error --fail \
+            http://127.0.0.1:28080/idp/realms/pid-issuer-realm >/dev/null; then
+            break
+        fi
+        sleep 1
+    done
+    if ! curl --silent --show-error --fail \
+        http://127.0.0.1:28080/idp/realms/pid-issuer-realm >/dev/null; then
+        printf "Gateway port-forward to http://127.0.0.1:28080 did not become ready\n" >&2
+        printf "kubectl port-forward log:\n" >&2
+        cat /tmp/wallet-k3s-identity-port-forward.log >&2
+      ##  exit 1
+    fi
+    export DIGG_WALLET_ECOSYSTEM_KEYCLOAK_BASE_URI="http://localhost:28080/idp"
+    export DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI="http://localhost:28080/pid-issuer"
+    export DIGG_WALLET_ECOSYSTEM_VERIFIER_BACKEND_BASE_URI="http://localhost:28080/refimpl-verifier-backend"
+    export DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI="http://localhost:28080/demo-verifier"
+    export DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI="http://localhost:28080/wallet-provider"
+    export DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI="http://localhost:28080/wallet-client-gateway"
+    export DIGG_WALLET_ECOSYSTEM_WALLET_ACCOUNT_BASE_URI="http://localhost:28080/wallet-account"
+    export DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_HEALTH="true"
+    just_header "Running" "k3s integration tests against http://localhost:28080"
+    mvn {{maven_opts}} -Dformatter.skip=true \
+        -Dtest=WalletAccountTest,WalletProviderTest,WalletClientGatewayTest,KeycloakTest,PidIssuerTest,VerifierBackendTest,VerifierFrontendTest,EndToEndTest test
+    just_success "k3s tests completed"
+
 # ==================================================================================== #
 # CERTS - Certificate management
 # ==================================================================================== #

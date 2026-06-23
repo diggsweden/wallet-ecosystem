@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 public class WalletAccountTest {
 
-  private static final String BASE = "https://localhost/wallet-account";
+  private static final String BASE = Property.WALLET_ACCOUNT_BASE_URI.getValue();
   private static final String UUID_PATTERN =
       "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 

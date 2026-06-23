@@ -1,0 +1,89 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-client-gateway
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: wallet-client-gateway
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  selector:
+    app.kubernetes.io/name: wallet-client-gateway
+    app.kubernetes.io/part-of: wallet-ecosystem
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-client-gateway
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: wallet-client-gateway
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: wallet-client-gateway
+      app.kubernetes.io/part-of: wallet-ecosystem
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: wallet-client-gateway
+        app.kubernetes.io/part-of: wallet-ecosystem
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "true"
+    spec:
+      containers:
+        - name: wallet-client-gateway
+          # image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.0
+          image: localhost/wallet-client-gateway:wua-span
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
+              value: INFO
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: /wallet-client-gateway
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: TZ
+              value: Europe/Stockholm
+            - name: JAVA_OPTS
+              value: -Djava.net.preferIPv4Stack=true
+            - name: SERVER_PORT
+              value: "8080"
+            - name: PROPERTIES_APISECRET
+              value: apikey
+            - name: PROPERTIES_WALLETPROVIDER_BASEURL
+              value: http://wallet-provider:8080/wallet-provider
+            - name: PROPERTIES_WALLETACCOUNT_BASEURL
+              value: http://wallet-account:8080/wallet-account
+            - name: PROPERTIES_WALLETR2PS_BASEURL
+              value: http://wallet-bff:8088
+            - name: SPRING_DATA_REDIS_HOST
+              value: wallet-client-gateway-valkey
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+            - name: SERVER_FORWARD_HEADERS_STRATEGY
+              value: framework
+          readinessProbe:
+            httpGet:
+              path: /wallet-client-gateway/actuator/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /wallet-client-gateway/actuator/health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20

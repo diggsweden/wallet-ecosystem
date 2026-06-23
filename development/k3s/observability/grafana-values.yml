@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+adminUser: admin
+adminPassword: admin
+
+persistence:
+  enabled: false
+
+service:
+  type: ClusterIP
+
+testFramework:
+  enabled: false
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: http://tempo:3200
+        isDefault: false
+        jsonData:
+          tracesToLogsV2:
+            datasourceUid: loki
+            customQuery: true
+            filterByTraceID: false
+            filterBySpanID: false
+            spanStartTimeShift: -5m
+            spanEndTimeShift: 5m
+            query: '{service_name=~".+"} | trace_id="$${__trace.traceId}"'
+        uid: tempo
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki:3100
+        uid: loki
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-server
+        isDefault: true
+        uid: prometheus
+      - name: Existing Jaeger
+        type: jaeger
+        access: proxy
+        url: http://jaeger.observability:16686
+        uid: jaeger
+
+grafana.ini:
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+  users:
+    default_theme: light

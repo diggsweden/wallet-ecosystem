@@ -1,0 +1,222 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+# SPDX-License-Identifier: CC0-1.0
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-kafka-topics
+  namespace: wallet-ecosystem-local
+data:
+  init-kafka-topics.sh: |
+    #!/bin/sh
+    set -eu
+
+    : "${KAFKA_BOOTSTRAP_SERVERS:?KAFKA_BOOTSTRAP_SERVERS must be set}"
+    : "${WALLET_STATE_TOPIC:?WALLET_STATE_TOPIC must be set}"
+    : "${REQUEST_TOPICS:?REQUEST_TOPICS must be set}"
+    : "${RESPONSE_TOPICS:?RESPONSE_TOPICS must be set}"
+
+    WALLET_STATE_PARTITIONS="${WALLET_STATE_PARTITIONS:-10}"
+    WALLET_STATE_REPLICATION_FACTOR="${WALLET_STATE_REPLICATION_FACTOR:-1}"
+    WALLET_STATE_MIN_INSYNC_REPLICAS="${WALLET_STATE_MIN_INSYNC_REPLICAS:-1}"
+    WALLET_STATE_RETENTION_MS="${WALLET_STATE_RETENTION_MS:--1}"
+
+    REQUEST_TOPIC_PARTITIONS="${REQUEST_TOPIC_PARTITIONS:-10}"
+    RESPONSE_TOPIC_PARTITIONS="${RESPONSE_TOPIC_PARTITIONS:-1}"
+    TRANSIENT_REPLICATION_FACTOR="${TRANSIENT_REPLICATION_FACTOR:-1}"
+    TRANSIENT_MIN_INSYNC_REPLICAS="${TRANSIENT_MIN_INSYNC_REPLICAS:-1}"
+    TRANSIENT_RETENTION_MS="${TRANSIENT_RETENTION_MS:-600000}"
+
+    create_transient_topic() {
+      topic="$1"
+      partitions="$2"
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" \
+        --create --if-not-exists --topic "$topic" \
+        --partitions "$partitions" \
+        --replication-factor "$TRANSIENT_REPLICATION_FACTOR" \
+        --config min.insync.replicas="$TRANSIENT_MIN_INSYNC_REPLICAS" \
+        --config retention.ms="$TRANSIENT_RETENTION_MS" \
+        --config cleanup.policy=delete
+    }
+
+    echo 'Waiting for Kafka cluster...'
+    /opt/kafka/bin/kafka-topics.sh --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" --list
+
+    /opt/kafka/bin/kafka-topics.sh --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" \
+      --create --if-not-exists --topic "$WALLET_STATE_TOPIC" \
+      --partitions "$WALLET_STATE_PARTITIONS" \
+      --replication-factor "$WALLET_STATE_REPLICATION_FACTOR" \
+      --config min.insync.replicas="$WALLET_STATE_MIN_INSYNC_REPLICAS" \
+      --config retention.ms="$WALLET_STATE_RETENTION_MS" \
+      --config cleanup.policy=compact
+
+    echo "$REQUEST_TOPICS" | tr ',' '\n' | while read -r topic; do
+      [ -z "$topic" ] && continue
+      create_transient_topic "$topic" "$REQUEST_TOPIC_PARTITIONS"
+    done
+
+    echo "$RESPONSE_TOPICS" | tr ',' '\n' | while read -r topic; do
+      [ -z "$topic" ] && continue
+      create_transient_topic "$topic" "$RESPONSE_TOPIC_PARTITIONS"
+    done
+
+    echo 'Topics:'
+    /opt/kafka/bin/kafka-topics.sh --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" --list
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-1
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: kafka-1
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: kafka-1
+    app.kubernetes.io/part-of: wallet-ecosystem
+  ports:
+    - name: broker
+      port: 19092
+      targetPort: broker
+    - name: controller
+      port: 9093
+      targetPort: controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-1
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: kafka-1
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kafka-1
+      app.kubernetes.io/part-of: wallet-ecosystem
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kafka-1
+        app.kubernetes.io/part-of: wallet-ecosystem
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: kafka
+          image: apache/kafka-native:latest@sha256:777f2dddec6970003f1f27922a8c317d87140567b0537e801d35669ad9a81faf
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: broker
+              containerPort: 19092
+            - name: controller
+              containerPort: 9093
+          env:
+            - name: KAFKA_CLUSTER_ID
+              value: NjM0OUVDRTItMTg2Ni00QU
+            - name: KAFKA_PROCESS_ROLES
+              value: broker,controller
+            - name: KAFKA_NODE_ID
+              value: "1"
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: CONTROLLER
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+            - name: KAFKA_LISTENERS
+              value: PLAINTEXT://:19092,CONTROLLER://:9093
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: PLAINTEXT://kafka-1:19092
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: 1@kafka-1:9093
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_MIN_INSYNC_REPLICAS
+              value: "1"
+            - name: KAFKA_LOG_DIRS
+              value: /tmp/kraft-combined-logs
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "false"
+          readinessProbe:
+            tcpSocket:
+              port: broker
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: broker
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-kafka
+  namespace: wallet-ecosystem-local
+  labels:
+    app.kubernetes.io/name: init-kafka
+    app.kubernetes.io/part-of: wallet-ecosystem
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: init-kafka
+        app.kubernetes.io/part-of: wallet-ecosystem
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z kafka-1 19092; do sleep 5; done
+      containers:
+        - name: init-kafka
+          image: apache/kafka:latest@sha256:9516fb7634bad307d17c33b589fde9023003b0cb761374f500002b980a3149b9
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -e
+            - /tmp/init-kafka-topics.sh
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:19092
+            - name: WALLET_STATE_TOPIC
+              value: wallet-state
+            - name: REQUEST_TOPICS
+              value: hsm-requests,state-init-requests
+            - name: RESPONSE_TOPICS
+              value: hsm-worker-responses-bff-1,state-init-responses-bff-1,hsm-worker-responses-bff-2,state-init-responses-bff-2
+            - name: REQUEST_TOPIC_PARTITIONS
+              value: "10"
+            - name: WALLET_STATE_REPLICATION_FACTOR
+              value: "1"
+            - name: WALLET_STATE_MIN_INSYNC_REPLICAS
+              value: "1"
+            - name: TRANSIENT_REPLICATION_FACTOR
+              value: "1"
+            - name: TRANSIENT_MIN_INSYNC_REPLICAS
+              value: "1"
+          volumeMounts:
+            - name: init-kafka-topics
+              mountPath: /tmp/init-kafka-topics.sh
+              subPath: init-kafka-topics.sh
+              readOnly: true
+      volumes:
+        - name: init-kafka-topics
+          configMap:
+            name: init-kafka-topics
+            defaultMode: 0755
