@@ -31,7 +31,7 @@ class KeycloakInternalTest {
       new KeycloakClient(KEYCLOAK_INTERNAL.getResourceRoot());
 
   @Test
-  void pidIssuerRealmIsAccessibleInternally() {
+  void allowsAccessToPidIssuerRealm() {
     internalKeycloak
         .tryGetRealm("pid-issuer-realm")
         .then()
@@ -39,12 +39,12 @@ class KeycloakInternalTest {
   }
 
   @Test
-  void masterRealmIsAccessibleInternally() {
+  void allowsAccessToMasterRealm() {
     internalKeycloak.tryGetRealm("master").then().assertThat().statusCode(200);
   }
 
   @Test
-  void adminConsoleLoadsCorrectly() {
+  void servesMasterAdminConsole() {
     internalKeycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"))
@@ -55,7 +55,7 @@ class KeycloakInternalTest {
 
   @ParameterizedTest
   @MethodSource("masterAdminConsoleUrls")
-  void adminConsolePointsToInternalUrls(String url) {
+  void servesMasterAdminConsolePointingToInternalUrls(String url) {
     assertThat(url, is(KEYCLOAK_INTERNAL.toString()));
   }
 
