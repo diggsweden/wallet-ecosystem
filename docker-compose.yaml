@@ -340,6 +340,7 @@ services:
       - KC_HTTP_RELATIVE_PATH=/idp
       - KC_HEALTH_ENABLED=true
       - KC_HOSTNAME=${BASE_URL}/idp
+      - KC_HOSTNAME_ADMIN=${BASE_URL}/idp-internal
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
@@ -355,14 +356,23 @@ services:
       - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp`)"
+      # Whitelist: pid-issuer-realm (all subpaths), shared resources, js, and well-known endpoints
+      - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp/realms/pid-issuer-realm`) || PathPrefix(`/idp/resources`) || PathPrefix(`/idp/js`) || Path(`/idp/.well-known/openid-configuration`) || Path(`/idp/realms/pid-issuer-realm/.well-known/openid-configuration`)"
       - "traefik.http.routers.keycloak.entrypoints=websecure"
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.service=keycloak"
+      # Whitelist: health endpoints → management port 9000
+      - "traefik.http.routers.keycloak-health.rule=PathPrefix(`/idp/health`)"
+      - "traefik.http.routers.keycloak-health.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-health.tls=true"
+      - "traefik.http.routers.keycloak-health.service=keycloak-health"
+      # Keycloak services
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
-      - "traefik.http.routers.keycloak.middlewares=keycloak-replace-path"
+      - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
+      # Path rewrite middleware for well-known discovery
       - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/keycloak/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
+      # OAuth server discovery endpoint
       - "traefik.http.routers.well-known-oauth-server.rule=PathPrefix(`/.well-known/oauth-authorization-server`)"
       - "traefik.http.routers.well-known-oauth-server.entrypoints=websecure"
       - "traefik.http.routers.well-known-oauth-server.tls=true"
@@ -370,11 +380,24 @@ services:
       - "traefik.http.routers.well-known-oauth-server.middlewares=well-known-oauth-server-replace-path"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.regex=^/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
       - "traefik.http.middlewares.well-known-oauth-server-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
-      - "traefik.http.routers.keycloak-health.rule=PathPrefix(`/idp/health`)"
-      - "traefik.http.routers.keycloak-health.entrypoints=websecure"
-      - "traefik.http.routers.keycloak-health.tls=true"
-      - "traefik.http.routers.keycloak-health.service=keycloak-health"
-      - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
+      # Internal route: full access to all Keycloak paths including admin and master realm & master realm protocol endpoints (login, OIDC, 3P cookies)
+      - "traefik.http.routers.keycloak-internal.rule=PathPrefix(`/idp-internal`)"
+      - "traefik.http.routers.keycloak-internal.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-internal.tls=true"
+      - "traefik.http.routers.keycloak-internal.service=keycloak"
+      - "traefik.http.routers.keycloak-internal.middlewares=keycloak-internal-rewrite"
+      # middleware
+      - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.regex=^/idp-internal(.*)"
+      - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.replacement=/idp$$1"
+      - "traefik.http.middlewares.keycloak-block-403.plugin.fail.statusCode=403"
+      # Blacklist: idp/admin/master/console because traefik dont hv authpolicy
+      - "traefik.http.routers.keycloak-block.priority=20"
+      - "traefik.http.routers.keycloak-block.rule=PathPrefix(`idp/admin/master/console`)"
+      - "traefik.http.routers.keycloak-block.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-block.tls=true"
+      - "traefik.http.routers.keycloak-block.service=noop@internal"
+      - "traefik.http.middlewares.keycloak-block-admin=block-403"
+
     networks:
       - wallet-ecosystem-network
 
