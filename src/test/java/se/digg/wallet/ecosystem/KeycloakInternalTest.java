@@ -35,9 +35,10 @@ class KeycloakInternalTest {
       "pid-issuer-realm",
       "master"
   })
-  void allowsAccessToRealm(String realm) {
-    internalKeycloak.tryGetRealm(realm)
-        .then().assertThat().statusCode(is(200));
+  void servesRealm(String name) {
+    internalKeycloak.tryGetRealm(name)
+        .then().assertThat().statusCode(200)
+        .and().body("realm", is(name));
   }
 
   @Test
