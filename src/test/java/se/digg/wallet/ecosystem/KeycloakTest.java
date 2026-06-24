@@ -5,7 +5,6 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.oneOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,7 +34,7 @@ class KeycloakTest {
   void isHealthy(String path) {
     keycloak.tryGetHealth(path)
         .then().assertThat().statusCode(200)
-        .and().body("status", equalTo("UP"));
+        .and().body("status", is("UP"));
   }
 
   @ParameterizedTest
@@ -43,7 +42,7 @@ class KeycloakTest {
   void servesRealm(String name) {
     keycloak.tryGetRealm(name)
         .then().assertThat().statusCode(200)
-        .and().body("realm", equalTo(name));
+        .and().body("realm", is(name));
   }
 
   @Test
@@ -78,9 +77,9 @@ class KeycloakTest {
   void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
     keycloak.tryGetOauthAuthorizationServerMetadata("pid-issuer-realm", strategy)
         .then().assertThat().statusCode(200)
-        .and().body("issuer", equalTo(KEYCLOAK.getResourceRoot().resolve(
+        .and().body("issuer", is(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm").toString()))
-        .and().body("token_endpoint", equalTo(KEYCLOAK.getResourceRoot().resolve(
+        .and().body("token_endpoint", is(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm/protocol/openid-connect/token").toString()));
   }
 
