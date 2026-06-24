@@ -121,7 +121,8 @@ class KeycloakTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"realms/master/console/", "realms/admin/master/console", "admin/master/console/"})
+  @ValueSource(
+      strings = {"realms/master/console/", "realms/admin/master/console", "admin/master/console/"})
   void masterRealmAndAdminConsoleIsBlockedExternally(String path) {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve(path))
