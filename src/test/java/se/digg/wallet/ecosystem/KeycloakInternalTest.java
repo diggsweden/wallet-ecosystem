@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK_INTERNAL;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
+import static org.hamcrest.Matchers.oneOf;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -69,5 +70,20 @@ class KeycloakInternalTest {
         .map(entry -> Map.entry(entry.getKey(), entry.getValue().asText()))
         .filter(entry -> entry.getValue().startsWith("http"))
         .map(entry -> Arguments.argumentSet(entry.getKey(), entry.getValue()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "auth",
+      "logout",
+      "introspect",
+      "userinfo",
+      "revoke",
+      "certs"
+  })
+  void masterRealmDeniesRiskyProtocolEndpointsInternally(String path) {
+    given()
+        .when().get(KEYCLOAK_INTERNAL.getResourceRoot().resolve("realms/master/protocol/" + path))
+        .then().assertThat().statusCode(is(oneOf(403, 404)));
   }
 }
