@@ -4,10 +4,10 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.oneOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
@@ -117,12 +117,12 @@ class KeycloakTest {
   void masterRealmDeniesRiskyProtocolEndpointsExternally(String path) {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/protocol/" + path))
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
+        .then().assertThat().statusCode(is(oneOf(403, 404)));
   }
 
   @Test
   void adminConsoleIsBlockedExternally() {
     keycloak.tryGetMasterAdminConsole()
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
+        .then().assertThat().statusCode(is(oneOf(403, 404)));
   }
 }
