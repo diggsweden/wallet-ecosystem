@@ -21,6 +21,7 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @DisabledIfEnvironmentVariable(
     named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_INTERNAL",
@@ -30,17 +31,16 @@ class KeycloakInternalTest {
   private static final KeycloakClient internalKeycloak =
       new KeycloakClient(KEYCLOAK_INTERNAL.getResourceRoot());
 
-  @Test
-  void allowsAccessToPidIssuerRealm() {
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "pid-issuer-realm",
+      "master"
+  })
+  void allowsAccessToRealm(String realm) {
     internalKeycloak
-        .tryGetRealm("pid-issuer-realm")
+        .tryGetRealm(realm)
         .then()
         .assertThat().statusCode(anyOf(is(200)));
-  }
-
-  @Test
-  void allowsAccessToMasterRealm() {
-    internalKeycloak.tryGetRealm("master").then().assertThat().statusCode(200);
   }
 
   @Test
