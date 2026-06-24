@@ -427,7 +427,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-feat-fix-latency-issue-67afdc8
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639
     env_file:
       - .env.opaque
       - .env.softhsm
