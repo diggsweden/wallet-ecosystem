@@ -139,8 +139,6 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
-      keycloak-init:
-        condition: service_completed_successfully
     environment:
       - SPRING_PROFILES_ACTIVE=insecure
       - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
@@ -334,6 +332,7 @@ services:
     container_name: keycloak
     command:
       - start-dev
+      - --import-realm
       - --features=dpop,passkeys
     environment:
       - KC_PROXY_HEADERS=xforwarded
@@ -354,6 +353,7 @@ services:
     volumes:
       - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/themes/:/opt/keycloak/themes
+      - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:
       - "traefik.enable=true"
       # Whitelist: pid-issuer-realm (all subpaths), shared resources, js, and well-known endpoints
@@ -401,47 +401,6 @@ services:
     networks:
       - wallet-ecosystem-network
 
-  keycloak-init:
-    image: quay.io/adorsys/keycloak-config-cli@sha256:2d2a0663cf324379d9ffab896db8d00293cd0326151968b319cf166f6eec8fca
-    container_name: keycloak-init
-    depends_on:
-      keycloak:
-        condition: service_healthy
-        restart: true
-    networks:
-      - wallet-ecosystem-network
-    volumes:
-      - ./config/keycloak/realms/:/config
-    environment:
-      - KEYCLOAK_URL=http://keycloak:8080/idp
-      - KEYCLOAK_USER=${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
-      - KEYCLOAK_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD:-password}
-      - IMPORT_FILES_LOCATIONS=/config/pid-issuer-realm*.json
-
-  keycloak-master-config:
-    image: quay.io/keycloak/keycloak:26.3.4-0
-    container_name: keycloak-master-config
-    entrypoint: bash
-    command:
-      - -c
-      - |
-        # Configure master realm
-        /opt/keycloak/bin/kcadm.sh config credentials \
-          --server http://keycloak:8080/idp \
-          --realm master --user ${KC_BOOTSTRAP_ADMIN_USERNAME:-admin} --password ${KC_BOOTSTRAP_ADMIN_PASSWORD:-password} && \
-        /opt/keycloak/bin/kcadm.sh update realms/master \
-          --server http://keycloak:8080/idp \
-          -s "attributes.frontendUrl=${BASE_URL}/idp-internal"
-    depends_on:
-      keycloak:
-        condition: service_healthy
-      keycloak-init:
-        condition: service_completed_successfully
-    networks:
-      - wallet-ecosystem-network
-    environment:
-      - BASE_URL=${BASE_URL}
-
   wallet-bff:
     image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
     ports:
@@ -474,7 +433,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-feat-fix-latency-issue-67afdc8
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639
     env_file:
       - .env.opaque
       - .env.softhsm
