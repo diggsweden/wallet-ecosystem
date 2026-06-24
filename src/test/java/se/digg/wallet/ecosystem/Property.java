@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public enum Property {
   KEYCLOAK_BASE_URI("https://localhost/idp"),
+  KEYCLOAK_INTERNAL_BASE_URI("https://localhost/idp-internal"),
   UNTRUSTED_KEYCLOAK_BASE_URI("https://localhost/untrusted-idp"),
   PID_ISSUER_BASE_URI("https://localhost/pid-issuer"),
   UNTRUSTED_PID_ISSUER_BASE_URI("https://localhost/untrusted-pid-issuer"),

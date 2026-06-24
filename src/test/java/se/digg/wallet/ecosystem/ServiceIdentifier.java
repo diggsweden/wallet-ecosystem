@@ -8,6 +8,7 @@ import java.net.URI;
 
 public enum ServiceIdentifier {
   KEYCLOAK,
+  KEYCLOAK_INTERNAL,
   UNTRUSTED_KEYCLOAK,
   PID_ISSUER,
   UNTRUSTED_PID_ISSUER,
