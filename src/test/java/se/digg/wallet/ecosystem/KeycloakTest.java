@@ -52,7 +52,7 @@ class KeycloakTest {
   }
 
   @Test
-  void canGetDpopAccessTokenForClientCredentials() throws JOSEException {
+  void createsDpopAccessTokenFromValidClientCredentials() throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
     assertNotNull(keycloak.getDpopAccessToken("pid-issuer-realm", jwk, Map.of(
@@ -62,7 +62,7 @@ class KeycloakTest {
   }
 
   @Test
-  void canGetDpopAccessTokenForUser() throws JOSEException {
+  void createsDpopAccessTokenFromValidPasswordCredentials() throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
     assertNotNull(keycloak.getDpopAccessToken("pid-issuer-realm", jwk, Map.of(
@@ -84,7 +84,7 @@ class KeycloakTest {
   }
 
   @Test
-  void pidIssuerRealmServesAccountConsole() {
+  void servesAccountConsoleForPidIssuerRealm() {
     keycloak.tryGetRealmAccount("pid-issuer-realm")
         .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"));
@@ -95,7 +95,7 @@ class KeycloakTest {
       "realms/pid-issuer-realm/protocol/openid-connect/3p-cookies/step1.html",
       "realms/pid-issuer-realm/protocol/openid-connect/3p-cookies/step2.html"
   })
-  void pidIssuerRealmLoadsResourcesExternally(String path) {
+  void servesOpenIdConnectResourcesForPidIssuerRealm(String path) {
     given().when()
         .get(KEYCLOAK.getResourceRoot().resolve(path))
         .then().assertThat().statusCode(200)
@@ -103,7 +103,7 @@ class KeycloakTest {
   }
 
   @Test
-  void adminConsoleIsBlockedExternally() {
+  void blocksMasterAdminConsole() {
     keycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(is(oneOf(403, 404)));
   }
