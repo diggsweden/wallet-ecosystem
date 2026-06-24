@@ -27,11 +27,8 @@ import org.junit.jupiter.params.provider.MethodSource;
     matches = "true")
 class KeycloakInternalTest {
 
-  private static KeycloakClient clientFor(ServiceIdentifier serviceIdentifier) {
-    return new KeycloakClient(serviceIdentifier.getResourceRoot());
-  }
-
-  private static final KeycloakClient internalKeycloak = clientFor(KEYCLOAK_INTERNAL);
+  private static final KeycloakClient internalKeycloak =
+      new KeycloakClient(KEYCLOAK_INTERNAL.getResourceRoot());
 
   @Test
   void pidIssuerRealmIsAccessibleInternally() {
