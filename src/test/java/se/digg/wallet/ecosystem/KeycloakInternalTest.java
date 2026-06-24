@@ -31,11 +31,11 @@ class KeycloakInternalTest {
     return new KeycloakClient(serviceIdentifier.getResourceRoot());
   }
 
-  private final KeycloakClient internalKeycloak = clientFor(KEYCLOAK_INTERNAL);
+  private static final KeycloakClient internalKeycloak = clientFor(KEYCLOAK_INTERNAL);
 
   @Test
   void pidIssuerRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL)
+    internalKeycloak
         .tryGetRealm("pid-issuer-realm")
         .then()
         .assertThat().statusCode(anyOf(is(200)));
@@ -43,7 +43,7 @@ class KeycloakInternalTest {
 
   @Test
   void masterRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL).tryGetRealm("master").then().assertThat().statusCode(200);
+    internalKeycloak.tryGetRealm("master").then().assertThat().statusCode(200);
   }
 
   @Test
@@ -64,7 +64,7 @@ class KeycloakInternalTest {
 
   private static Stream<Arguments.ArgumentSet> masterAdminConsoleUrls()
       throws JsonProcessingException {
-    String environment = clientFor(KEYCLOAK_INTERNAL).tryGetMasterAdminConsole()
+    String environment = internalKeycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(200)
         .extract().body().htmlPath().get("html.body.script.find { it.@id == 'environment' }");
 
