@@ -35,7 +35,7 @@ class KeycloakInternalTest {
 
   @Test
   void pidIssuerRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL)
+    internalKeycloak
         .tryGetRealm("pid-issuer-realm")
         .then()
         .assertThat().statusCode(anyOf(is(200)));
@@ -43,7 +43,7 @@ class KeycloakInternalTest {
 
   @Test
   void masterRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL).tryGetRealm("master").then().assertThat().statusCode(200);
+    internalKeycloak.tryGetRealm("master").then().assertThat().statusCode(200);
   }
 
   @Test
