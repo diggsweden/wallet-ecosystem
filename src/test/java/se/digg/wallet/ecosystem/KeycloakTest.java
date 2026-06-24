@@ -34,22 +34,16 @@ class KeycloakTest {
       matches = "true")
   void isHealthy(String path) {
     keycloak.tryGetHealth(path)
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("status", equalTo("UP"));
+        .then().assertThat().statusCode(200)
+        .and().body("status", equalTo("UP"));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"pid-issuer-realm"})
   void servesRealm(String name) {
     keycloak.tryGetRealm(name)
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("realm", equalTo(name));
+        .then().assertThat().statusCode(200)
+        .and().body("realm", equalTo(name));
   }
 
   @Test
@@ -83,8 +77,7 @@ class KeycloakTest {
   @EnumSource(MetadataLocationStrategy.class)
   void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
     keycloak.tryGetOauthAuthorizationServerMetadata("pid-issuer-realm", strategy)
-        .then()
-        .assertThat().statusCode(200)
+        .then().assertThat().statusCode(200)
         .and().body("issuer", equalTo(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm").toString()))
         .and().body("token_endpoint", equalTo(KEYCLOAK.getResourceRoot().resolve(
@@ -94,8 +87,7 @@ class KeycloakTest {
   @Test
   void pidIssuerRealmServesAccountConsole() {
     keycloak.tryGetRealmAccount("pid-issuer-realm")
-        .then()
-        .assertThat().statusCode(200)
+        .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"));
   }
 
