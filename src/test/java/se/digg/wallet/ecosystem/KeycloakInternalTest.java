@@ -36,10 +36,8 @@ class KeycloakInternalTest {
       "master"
   })
   void allowsAccessToRealm(String realm) {
-    internalKeycloak
-        .tryGetRealm(realm)
-        .then()
-        .assertThat().statusCode(is(200));
+    internalKeycloak.tryGetRealm(realm)
+        .then().assertThat().statusCode(is(200));
   }
 
   @Test
