@@ -4,10 +4,12 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK_INTERNAL;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -68,5 +70,14 @@ class KeycloakInternalTest {
         .map(entry -> Map.entry(entry.getKey(), entry.getValue().asText()))
         .filter(entry -> entry.getValue().startsWith("http"))
         .map(entry -> Arguments.argumentSet(entry.getKey(), entry.getValue()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {"realms/master/console/", "realms/admin/master/console"})
+  void masterRealmAndAdminConsoleIsBlockedExternally(String path) {
+    given()
+        .when().get(KEYCLOAK_INTERNAL.getResourceRoot().resolve(path))
+        .then().assertThat().statusCode(anyOf(is(403), is(404)));
   }
 }
