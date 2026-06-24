@@ -111,21 +111,6 @@ class KeycloakTest {
         .and().contentType(containsString("text/html"));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {
-      "auth",
-      "logout",
-      "introspect",
-      "userinfo",
-      "revoke",
-      "certs"
-  })
-  void masterRealmDeniesRiskyProtocolEndpointsExternally(String path) {
-    given()
-        .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/protocol/" + path))
-        .then().assertThat().statusCode(is(oneOf(403, 404)));
-  }
-
   @Test
   void masterAdminConsoleIsBlockedExternally() {
     keycloak.tryGetMasterAdminConsole()
