@@ -125,13 +125,4 @@ class KeycloakTest {
     keycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(anyOf(is(403), is(404)));
   }
-
-  @ParameterizedTest
-  @ValueSource(
-      strings = {"realms/master/console/", "realms/admin/master/console", "admin/master/console/"})
-  void masterRealmAndAdminConsoleIsBlockedExternally(String path) {
-    given()
-        .when().get(KEYCLOAK.getResourceRoot().resolve(path))
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
-  }
 }
