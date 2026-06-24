@@ -53,6 +53,12 @@ class KeycloakTest {
   }
 
   @Test
+  void blocksMasterRealm() {
+    keycloak.tryGetRealm("master")
+        .then().assertThat().statusCode(404);
+  }
+
+  @Test
   void canGetDpopAccessTokenForClientCredentials() throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
