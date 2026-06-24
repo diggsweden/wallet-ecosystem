@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,7 +39,7 @@ class KeycloakInternalTest {
     internalKeycloak
         .tryGetRealm(realm)
         .then()
-        .assertThat().statusCode(anyOf(is(200)));
+        .assertThat().statusCode(is(200));
   }
 
   @Test
