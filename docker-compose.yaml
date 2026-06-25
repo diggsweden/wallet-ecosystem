@@ -401,6 +401,26 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  keycloak-master-init:
+    image: quay.io/keycloak/keycloak:26.3.4-0
+    container_name: keycloak-config
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        /opt/keycloak/bin/kcadm.sh config credentials \
+          --server http://keycloak:8080/idp \
+          --realm master \
+          --user "${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}" \
+          --password "${KC_BOOTSTRAP_ADMIN_PASSWORD:-password}"
+        /opt/keycloak/bin/kcadm.sh update realms/master \
+          --server http://keycloak:8080/idp \
+          -s "attributes.frontendUrl=${BASE_URL}/idp-internal"
+    networks:
+      - wallet-ecosystem-network
+
   wallet-bff:
     image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
     ports:
