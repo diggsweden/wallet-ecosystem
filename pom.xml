@@ -26,6 +26,7 @@ SPDX-License-Identifier: CC0-1.0
     <checkstyle-maven-plugin.version>3.6.0</checkstyle-maven-plugin.version>
     <checkstyle.version>12.3.1</checkstyle.version>
     <pmd-maven-plugin.version>3.28.0</pmd-maven-plugin.version>
+    <open-test-reporting.version>0.2.5</open-test-reporting.version>
     <test.excludes/>
   </properties>
   <dependencyManagement>
@@ -71,6 +72,19 @@ SPDX-License-Identifier: CC0-1.0
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-reporting</artifactId>
+      <version>6.0.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.opentest4j.reporting</groupId>
+      <artifactId>open-test-reporting-cli</artifactId>
+      <version>${open-test-reporting.version}</version>
+      <classifier>standalone</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <scope>test</scope>
@@ -92,9 +106,41 @@ SPDX-License-Identifier: CC0-1.0
           <excludes>
             <exclude>${test.excludes}</exclude>
           </excludes>
+          <properties>
+            <configurationParameters>
+              junit.platform.reporting.output.dir = target/surefire-reports
+              junit.platform.reporting.open.xml.enabled = true
+            </configurationParameters>
+          </properties>
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.6.3</version>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>java</executable>
+                <arguments>
+                  <argument>-jar</argument>
+                  <argument>
+                    ${settings.localRepository}/org/opentest4j/reporting/open-test-reporting-cli/${open-test-reporting.version}/open-test-reporting-cli-${open-test-reporting.version}-standalone.jar
+                  </argument>
+                  <argument>html-report</argument>
+                  <argument>--output</argument>
+                  <argument>target/surefire-reports/open-test-report.html</argument>
+                  <argument>target/surefire-reports/open-test-report.xml</argument>
+                </arguments>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
         <groupId>net.revelc.code.formatter</groupId>
         <artifactId>formatter-maven-plugin</artifactId>
         <version>${formatter-maven-plugin.version}</version>
