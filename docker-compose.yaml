@@ -30,7 +30,7 @@ x-kafka-common: &kafka-common
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.2
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.2@sha256:d2c1ae99d53e007d79ef99e3677bada017d28bc1d4705585a6bdc02c5542c35d
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
@@ -63,7 +63,7 @@ services:
       - wallet-ecosystem-network
 
   trust-validator:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:edge
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:edge@sha256:dd2ee52371f12da62e2a48336cf847c73c45a6116566a6cb1be86035b6e2c3b6
     container_name: trust-validator
     hostname: trust-validator
     volumes:
@@ -134,7 +134,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.9.1
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.9.1@sha256:1235284fa57d592023379753b3c3cd28393b8bc326cf29aca10489a92da9bed2
     container_name: pid-issuer
     depends_on:
       keycloak:
