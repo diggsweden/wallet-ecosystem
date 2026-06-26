@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,33 +20,29 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @DisabledIfEnvironmentVariable(
     named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_INTERNAL",
     matches = "true")
 class KeycloakInternalTest {
 
-  private static KeycloakClient clientFor(ServiceIdentifier serviceIdentifier) {
-    return new KeycloakClient(serviceIdentifier.getResourceRoot());
-  }
+  private static final KeycloakClient internalKeycloak =
+      new KeycloakClient(KEYCLOAK_INTERNAL.getResourceRoot());
 
-  private final KeycloakClient internalKeycloak = clientFor(KEYCLOAK_INTERNAL);
-
-  @Test
-  void pidIssuerRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL)
-        .tryGetRealm("pid-issuer-realm")
-        .then()
-        .assertThat().statusCode(anyOf(is(200)));
-  }
-
-  @Test
-  void masterRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL).tryGetRealm("master").then().assertThat().statusCode(200);
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "pid-issuer-realm",
+      "master"
+  })
+  void servesRealm(String name) {
+    internalKeycloak.tryGetRealm(name)
+        .then().assertThat().statusCode(200)
+        .and().body("realm", is(name));
   }
 
   @Test
-  void adminConsoleLoadsCorrectly() {
+  void servesMasterAdminConsole() {
     internalKeycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"))
@@ -58,13 +53,13 @@ class KeycloakInternalTest {
 
   @ParameterizedTest
   @MethodSource("masterAdminConsoleUrls")
-  void adminConsolePointsToInternalUrls(String url) {
+  void servesMasterAdminConsolePointingToInternalUrls(String url) {
     assertThat(url, is(KEYCLOAK_INTERNAL.toString()));
   }
 
   private static Stream<Arguments.ArgumentSet> masterAdminConsoleUrls()
       throws JsonProcessingException {
-    String environment = clientFor(KEYCLOAK_INTERNAL).tryGetMasterAdminConsole()
+    String environment = internalKeycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(200)
         .extract().body().htmlPath().get("html.body.script.find { it.@id == 'environment' }");
 

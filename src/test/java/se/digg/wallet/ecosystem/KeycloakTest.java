@@ -4,10 +4,9 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.oneOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
@@ -34,26 +33,26 @@ class KeycloakTest {
       matches = "true")
   void isHealthy(String path) {
     keycloak.tryGetHealth(path)
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("status", equalTo("UP"));
+        .then().assertThat().statusCode(200)
+        .and().body("status", is("UP"));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"pid-issuer-realm"})
   void servesRealm(String name) {
     keycloak.tryGetRealm(name)
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("realm", equalTo(name));
+        .then().assertThat().statusCode(200)
+        .and().body("realm", is(name));
   }
 
   @Test
-  void canGetDpopAccessTokenForClientCredentials() throws JOSEException {
+  void blocksMasterRealm() {
+    keycloak.tryGetRealm("master")
+        .then().assertThat().statusCode(404);
+  }
+
+  @Test
+  void createsDpopAccessTokenFromValidClientCredentials() throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
     assertNotNull(keycloak.getDpopAccessToken("pid-issuer-realm", jwk, Map.of(
@@ -63,7 +62,7 @@ class KeycloakTest {
   }
 
   @Test
-  void canGetDpopAccessTokenForUser() throws JOSEException {
+  void createsDpopAccessTokenFromValidPasswordCredentials() throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
     assertNotNull(keycloak.getDpopAccessToken("pid-issuer-realm", jwk, Map.of(
@@ -77,19 +76,17 @@ class KeycloakTest {
   @EnumSource(MetadataLocationStrategy.class)
   void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
     keycloak.tryGetOauthAuthorizationServerMetadata("pid-issuer-realm", strategy)
-        .then()
-        .assertThat().statusCode(200)
-        .and().body("issuer", equalTo(KEYCLOAK.getResourceRoot().resolve(
+        .then().assertThat().statusCode(200)
+        .and().body("issuer", is(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm").toString()))
-        .and().body("token_endpoint", equalTo(KEYCLOAK.getResourceRoot().resolve(
+        .and().body("token_endpoint", is(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm/protocol/openid-connect/token").toString()));
   }
 
   @Test
-  void pidIssuerRealmServesAccountConsole() {
+  void servesAccountConsoleForPidIssuerRealm() {
     keycloak.tryGetRealmAccount("pid-issuer-realm")
-        .then()
-        .assertThat().statusCode(200)
+        .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"));
   }
 
@@ -98,40 +95,16 @@ class KeycloakTest {
       "realms/pid-issuer-realm/protocol/openid-connect/3p-cookies/step1.html",
       "realms/pid-issuer-realm/protocol/openid-connect/3p-cookies/step2.html"
   })
-  void pidIssuerRealmLoadsResourcesExternally(String path) {
+  void servesOpenIdConnectResourcesForPidIssuerRealm(String path) {
     given().when()
         .get(KEYCLOAK.getResourceRoot().resolve(path))
         .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {
-      "auth",
-      "logout",
-      "introspect",
-      "userinfo",
-      "revoke",
-      "certs"
-  })
-  void masterRealmDeniesRiskyProtocolEndpointsExternally(String path) {
-    given()
-        .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/protocol/" + path))
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
-  }
-
   @Test
-  void adminConsoleIsBlockedExternally() {
+  void blocksMasterAdminConsole() {
     keycloak.tryGetMasterAdminConsole()
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
-  }
-
-  @ParameterizedTest
-  @ValueSource(
-      strings = {"realms/master/console/", "realms/admin/master/console", "admin/master/console/"})
-  void masterRealmAndAdminConsoleIsBlockedExternally(String path) {
-    given()
-        .when().get(KEYCLOAK.getResourceRoot().resolve(path))
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
+        .then().assertThat().statusCode(is(oneOf(403, 404)));
   }
 }

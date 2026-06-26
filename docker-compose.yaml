@@ -369,9 +369,6 @@ services:
       # Keycloak services
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
       - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
-      # Path rewrite middleware for well-known discovery
-      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/keycloak/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
-      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
       # OAuth server discovery endpoint
       - "traefik.http.routers.well-known-oauth-server.rule=PathPrefix(`/.well-known/oauth-authorization-server`)"
       - "traefik.http.routers.well-known-oauth-server.entrypoints=websecure"
@@ -389,14 +386,6 @@ services:
       # middleware
       - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.regex=^/idp-internal(.*)"
       - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.replacement=/idp$$1"
-      - "traefik.http.middlewares.keycloak-block-403.plugin.fail.statusCode=403"
-      # Blacklist: idp/admin/master/console because traefik dont hv authpolicy
-      - "traefik.http.routers.keycloak-block.priority=20"
-      - "traefik.http.routers.keycloak-block.rule=PathPrefix(`idp/admin/master/console`)"
-      - "traefik.http.routers.keycloak-block.entrypoints=websecure"
-      - "traefik.http.routers.keycloak-block.tls=true"
-      - "traefik.http.routers.keycloak-block.service=noop@internal"
-      - "traefik.http.middlewares.keycloak-block-admin=block-403"
 
     networks:
       - wallet-ecosystem-network
