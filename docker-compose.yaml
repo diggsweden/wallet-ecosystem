@@ -403,7 +403,7 @@ services:
 
   keycloak-master-init:
     image: quay.io/keycloak/keycloak:26.3.4-0
-    container_name: keycloak-config
+    container_name: keycloak-master-init
     depends_on:
       keycloak:
         condition: service_healthy
