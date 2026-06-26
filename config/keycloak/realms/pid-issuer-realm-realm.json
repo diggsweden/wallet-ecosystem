@@ -2157,6 +2157,7 @@
   },
   "internationalizationEnabled": true,
   "loginTheme": "custom",
+  "accountTheme": "custom",
   "supportedLocales": [
     "sv"
   ],
