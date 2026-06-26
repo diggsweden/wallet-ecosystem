@@ -16,8 +16,8 @@ REGEX_FOR_SERVICES_WITH_HEALTH_CHECKS='(keycloak|wallet-client-gateway|wallet-ac
 REGEX_FOR_INIT_CONTAINERS='(init-kafka)(-[0-9]+)? Exited \(0\)'
 REGEX_FOR_OTHERS='(refimpl-verifier-backend|wallet-provider|pid-issuer|traefik|demo-verifier|trust-validator|wallet-bff|hsm-worker|kafka-ui)(-[0-9]+)? Up'
 # Give services time to initialize (especially Keycloak)
-for i in {1..40}; do
-  echo "Check attempt $i/40..."
+for i in {1..10}; do
+  echo "Check attempt $i/10..."
   # Get statuses of all containers that have health checks
   UNHEALTHY=$(
     podman ps -a --format "{{.Names}} {{.Status}}" |
