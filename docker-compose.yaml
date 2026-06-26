@@ -111,7 +111,7 @@ services:
       - wallet-ecosystem-network
 
   demo-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.5
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.5@sha256:8c3585d3621b2d5134080a7d25bab22078a08e09da5f6bd394f3e9834d2cb751
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
@@ -235,7 +235,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account:
-    image: ghcr.io/diggsweden/wallet-account:v0.1.3
+    image: ghcr.io/diggsweden/wallet-account:v0.1.3@sha256:acfc72db582f9ff1e240e3736770077ebd5f7f1231f3c23c83272ff6afa7e2f5
     container_name: wallet-account
     hostname: wallet-account
     volumes:
@@ -284,7 +284,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.0
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.0@sha256:309306e34878ec04b73613bdba109e9119adb25b9852824dcf16834ffa5e6834
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -422,7 +422,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-bff:
-    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639@sha256:fc63a91dd698ccb2114dcced589654a367651f21fd671862a6a127d23e3bc9e5
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -453,7 +453,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639@sha256:33533b4475dec3924b0d4af006f2ffc0eb8b7e34d40ece12b24c7582f808969f
     env_file:
       - .env.opaque
       - .env.softhsm
