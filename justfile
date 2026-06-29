@@ -8,6 +8,7 @@
 devtools_repo := env("DEVBASE_CHECK_REPO", "https://github.com/diggsweden/devbase-check")
 devtools_dir := env("XDG_DATA_HOME", env("HOME") + "/.local/share") + "/devbase-check"
 lint := devtools_dir + "/linters"
+node_lint := devtools_dir + "/linters/node"
 java_lint := devtools_dir + "/linters/java"
 colors := devtools_dir + "/utils/colors.sh"
 
@@ -196,13 +197,18 @@ lint-java-fmt:
 [group('lint')]
 lint-container:
 
+# Lint Node - prettier check only
+[group('lint')]
+lint-node-format:
+    @{{node_lint}}/format.sh check
+
 # ==================================================================================== #
 # LINT-FIX - Auto-fix code issues
 # ==================================================================================== #
 
 # ▪ Fix all auto-fixable issues
 [group('lint-fix')]
-lint-fix: _ensure-devtools lint-yaml-fix lint-markdown-fix lint-shell-fmt-fix lint-java-fmt-fix
+lint-fix: _ensure-devtools lint-yaml-fix lint-markdown-fix lint-shell-fmt-fix lint-java-fmt-fix lint-node-format-fix
     #!/usr/bin/env bash
     source "{{colors}}"
     just_success "All auto-fixes completed"
@@ -227,6 +233,10 @@ lint-shell-fmt-fix:
 lint-java-fmt-fix:
     @{{java_lint}}/format.sh fix
 
+# Fix Node formatting
+[group('lint-fix')]
+lint-node-format-fix:
+    @{{node_lint}}/format.sh fix
 # ==================================================================================== #
 # PODMAN COMPOSE - Service orchestration
 # ==================================================================================== #
