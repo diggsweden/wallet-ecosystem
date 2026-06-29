@@ -5,6 +5,7 @@
 **/*.md
 **/*.yml
 **/*.yaml
+.rumdl-cache
 megalinter-reports
 target
 development/format/eclipse-java-google-style.xml
