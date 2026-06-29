@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: CC0-1.0
 
 **/*.md
+**/*.yml
+**/*.yaml
 megalinter-reports
 target
 development/format/eclipse-java-google-style.xml
