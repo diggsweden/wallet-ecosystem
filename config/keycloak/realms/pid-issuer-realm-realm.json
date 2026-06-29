@@ -2870,6 +2870,7 @@
     }
   ],
   "browserFlow": "browser",
+  "registrationFlow": "browser",
   "directGrantFlow": "direct grant",
   "resetCredentialsFlow": "reset credentials",
   "clientAuthenticationFlow": "clients",
