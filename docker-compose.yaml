@@ -390,13 +390,21 @@ services:
       - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.regex=^/idp-internal(.*)"
       - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.replacement=/idp$$1"
       - "traefik.http.middlewares.keycloak-block-403.plugin.fail.statusCode=403"
-      # Blacklist: idp/admin/master/console because traefik dont hv authpolicy
+      # Blacklist: /idp/admin entirely to prevent exposure of admin APIs
       - "traefik.http.routers.keycloak-block.priority=20"
-      - "traefik.http.routers.keycloak-block.rule=PathPrefix(`idp/admin/master/console`)"
+      - "traefik.http.routers.keycloak-block.rule=PathPrefix(`/idp/admin`)"
       - "traefik.http.routers.keycloak-block.entrypoints=websecure"
       - "traefik.http.routers.keycloak-block.tls=true"
       - "traefik.http.routers.keycloak-block.service=noop@internal"
-      - "traefik.http.middlewares.keycloak-block-admin=block-403"
+      - "traefik.http.routers.keycloak-block.middlewares=keycloak-block-403"
+      # Redirect /idp and /idp/ to account
+      - "traefik.http.routers.keycloak-root.rule=Path(`/idp`) || Path(`/idp/`)"
+      - "traefik.http.routers.keycloak-root.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-root.tls=true"
+      - "traefik.http.routers.keycloak-root.middlewares=keycloak-root-redirect"
+      - "traefik.http.routers.keycloak-root.service=noop@internal"
+      - "traefik.http.middlewares.keycloak-root-redirect.redirectregex.regex=^(https?://[^/]+)/idp/?$$"
+      - "traefik.http.middlewares.keycloak-root-redirect.redirectregex.replacement=$$1/idp/realms/pid-issuer-realm/account"
 
     networks:
       - wallet-ecosystem-network
