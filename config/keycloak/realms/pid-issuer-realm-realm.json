@@ -501,7 +501,10 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": ["/realms/pid-issuer-realm/account/*"],
+      "redirectUris": [
+        "/realms/pid-issuer-realm/account",
+        "/realms/pid-issuer-realm/account/*"
+      ],
       "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": false,
@@ -532,7 +535,10 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": ["/realms/pid-issuer-realm/account/*"],
+      "redirectUris": [
+        "/realms/pid-issuer-realm/account",
+        "/realms/pid-issuer-realm/account/*"
+      ],
       "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": false,
