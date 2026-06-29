@@ -35,7 +35,7 @@ default:
 
 # ▪ Install devtools and tools
 [group('setup')]
-install: setup-devtools tools-install
+install: setup-devtools tools-install npm-install
 
 # ▪ Setup devtools (clone or update)
 [group('setup')]
@@ -73,7 +73,7 @@ tools-install: _ensure-devtools
 # Install npm dependencies (for prettier XML)
 [group('setup')]
 npm-install:
-    npm ci
+    npm ci --include=dev
 
 # ==================================================================================== #
 # DOCUMENTATION
