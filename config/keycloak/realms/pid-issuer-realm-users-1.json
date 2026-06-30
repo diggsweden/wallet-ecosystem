@@ -1,54 +1,50 @@
 {
   "realm": "pid-issuer-realm",
   "users": [
-  {
-          "id": "9f3c2a17-6d4e-4b91-8a72-1c5e9d0f4b28",
-          "createdTimestamp": 1700060375219,
-          "username": "snilsson",
-          "enabled": true,
-          "totp": false,
-          "email": "sune.nilsson@example.com",
-          "emailVerified": true,
-          "firstName": "Sune",
-          "lastName": "Nilsson",
-          "attributes": {
-            "gender": ["1"],
-            "gender_as_string": ["male"],
-            "personal_administrative_number": [
-              "194106177753"
-            ],
-            "birthdate": ["1941-06-17"],
-            "age_over_18": ["true"],
-            "street": ["Pensevägen"],
-            "address_house_number": ["2"],
-            "locality": ["Ekerö"],
-            "region": ["Stockholm"],
-            "postal_code": ["17838"],
-            "country": ["SE"],
-            "birth_country": ["SE"],
-            "birth_city": ["Boo"],
-            "birth_place": ["Boo"],
-            "nationality": ["SE"],
-            "birth_family_name": ["Sune"],
-            "birth_given_name": ["Nilsson"]
-          },
-          "credentials": [
-            {
-              "id": "304577a0-61f7-2217-b009-b5a72004411a",
-              "type": "password",
-              "userLabel": "My password",
-              "createdDate": 1700060375219,
-              "secretData": "{\"value\":\"egKcJR5bC34qoA0jlkrnq9ncKUet2Fnik+QY3Y7SLXg=\",\"salt\":\"4Fd5FLOSfE52BT3EGjSfTw==\",\"additionalParameters\":{}}",
-              "credentialData": "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
-            }
-          ],
-          "disableableCredentialTypes": [],
-          "requiredActions": [],
-          "realmRoles": [
-            "eid-holder-natural-person"
-          ],
-          "notBefore": 0,
-          "groups": []
+    {
+      "id": "9f3c2a17-6d4e-4b91-8a72-1c5e9d0f4b28",
+      "createdTimestamp": 1700060375219,
+      "username": "snilsson",
+      "enabled": true,
+      "totp": false,
+      "email": "sune.nilsson@example.com",
+      "emailVerified": true,
+      "firstName": "Sune",
+      "lastName": "Nilsson",
+      "attributes": {
+        "gender": ["1"],
+        "gender_as_string": ["male"],
+        "personal_administrative_number": ["194106177753"],
+        "birthdate": ["1941-06-17"],
+        "age_over_18": ["true"],
+        "street": ["Pensevägen"],
+        "address_house_number": ["2"],
+        "locality": ["Ekerö"],
+        "region": ["Stockholm"],
+        "postal_code": ["17838"],
+        "country": ["SE"],
+        "birth_country": ["SE"],
+        "birth_city": ["Boo"],
+        "birth_place": ["Boo"],
+        "nationality": ["SE"],
+        "birth_family_name": ["Sune"],
+        "birth_given_name": ["Nilsson"]
+      },
+      "credentials": [
+        {
+          "id": "304577a0-61f7-2217-b009-b5a72004411a",
+          "type": "password",
+          "userLabel": "My password",
+          "createdDate": 1700060375219,
+          "secretData": "{\"value\":\"egKcJR5bC34qoA0jlkrnq9ncKUet2Fnik+QY3Y7SLXg=\",\"salt\":\"4Fd5FLOSfE52BT3EGjSfTw==\",\"additionalParameters\":{}}",
+          "credentialData": "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
         }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": ["eid-holder-natural-person"],
+      "notBefore": 0,
+      "groups": []
+    }
   ]
 }

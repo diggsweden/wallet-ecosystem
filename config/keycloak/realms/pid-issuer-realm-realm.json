@@ -69,15 +69,9 @@
         "description": "${role_default-roles}",
         "composite": true,
         "composites": {
-          "realm": [
-            "offline_access",
-            "uma_authorization"
-          ],
+          "realm": ["offline_access", "uma_authorization"],
           "client": {
-            "account": [
-              "manage-account",
-              "view-profile"
-            ]
+            "account": ["manage-account", "view-profile"]
           }
         },
         "clientRole": false,
@@ -90,15 +84,9 @@
         "description": "A natural person holding an eID",
         "composite": true,
         "composites": {
-          "realm": [
-            "offline_access",
-            "uma_authorization"
-          ],
+          "realm": ["offline_access", "uma_authorization"],
           "client": {
-            "account": [
-              "manage-account",
-              "view-profile"
-            ]
+            "account": ["manage-account", "view-profile"]
           }
         },
         "clientRole": false,
@@ -169,10 +157,7 @@
           "composite": true,
           "composites": {
             "client": {
-              "realm-management": [
-                "query-users",
-                "query-groups"
-              ]
+              "realm-management": ["query-users", "query-groups"]
             }
           },
           "clientRole": true,
@@ -282,9 +267,7 @@
           "composite": true,
           "composites": {
             "client": {
-              "realm-management": [
-                "query-clients"
-              ]
+              "realm-management": ["query-clients"]
             }
           },
           "clientRole": true,
@@ -362,9 +345,7 @@
           "composite": true,
           "composites": {
             "client": {
-              "account": [
-                "manage-account-links"
-              ]
+              "account": ["manage-account-links"]
             }
           },
           "clientRole": true,
@@ -423,9 +404,7 @@
           "composite": true,
           "composites": {
             "client": {
-              "account": [
-                "view-consent"
-              ]
+              "account": ["view-consent"]
             }
           },
           "clientRole": true,
@@ -444,9 +423,7 @@
     "clientRole": false,
     "containerId": "a5ab7927-1882-402a-b6ce-407bc3c76b20"
   },
-  "requiredCredentials": [
-    "password"
-  ],
+  "requiredCredentials": ["password"],
   "otpPolicyType": "totp",
   "otpPolicyAlgorithm": "HmacSHA1",
   "otpPolicyInitialCounter": 0,
@@ -460,11 +437,7 @@
     "totpAppGoogleName"
   ],
   "webAuthnPolicyRpEntityName": "https://localhost/idp",
-  "webAuthnPolicySignatureAlgorithms": [
-    "ES256",
-    "ES384",
-    "ES512"
-  ],
+  "webAuthnPolicySignatureAlgorithms": ["ES256", "ES384", "ES512"],
   "webAuthnPolicyRpId": "localhost",
   "webAuthnPolicyAttestationConveyancePreference": "not specified",
   "webAuthnPolicyAuthenticatorAttachment": "not specified",
@@ -475,11 +448,7 @@
   "webAuthnPolicyAcceptableAaguids": [],
   "webAuthnPolicyExtraOrigins": [],
   "webAuthnPolicyPasswordlessRpEntityName": "https://localhost/idp",
-  "webAuthnPolicyPasswordlessSignatureAlgorithms": [
-    "ES256",
-    "ES384",
-    "ES512"
-  ],
+  "webAuthnPolicyPasswordlessSignatureAlgorithms": ["ES256", "ES384", "ES512"],
   "webAuthnPolicyPasswordlessRpId": "localhost",
   "webAuthnPolicyPasswordlessAttestationConveyancePreference": "not specified",
   "webAuthnPolicyPasswordlessAuthenticatorAttachment": "not specified",
@@ -493,37 +462,26 @@
   "scopeMappings": [
     {
       "clientScope": "eu.europa.ec.eudi.pid_vc_sd_jwt",
-      "roles": [
-        "eid-holder-natural-person"
-      ]
+      "roles": ["eid-holder-natural-person"]
     },
     {
       "clientScope": "eu.europa.ec.eudi.pid_mso_mdoc",
-      "roles": [
-        "eid-holder-natural-person"
-      ]
+      "roles": ["eid-holder-natural-person"]
     },
     {
       "clientScope": "org.iso.18013.5.1.mDL",
-      "roles": [
-        "eid-holder-natural-person"
-      ]
+      "roles": ["eid-holder-natural-person"]
     },
     {
       "clientScope": "urn:eudi:ehic:1:dc+sd-jwt",
-      "roles": [
-        "eid-holder-natural-person"
-      ]
+      "roles": ["eid-holder-natural-person"]
     }
   ],
   "clientScopeMappings": {
     "account": [
       {
         "client": "account-console",
-        "roles": [
-          "manage-account",
-          "view-groups"
-        ]
+        "roles": ["manage-account", "view-groups"]
       }
     ]
   },
@@ -538,12 +496,8 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": [
-        "/realms/pid-issuer-realm/account/*"
-      ],
-      "webOrigins": [
-        "*"
-      ],
+      "redirectUris": ["/realms/pid-issuer-realm/account/*"],
+      "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -560,10 +514,7 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
-      "defaultClientScopes": [
-        "web-origins",
-        "roles"
-      ],
+      "defaultClientScopes": ["web-origins", "roles"],
       "optionalClientScopes": []
     },
     {
@@ -576,12 +527,8 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": [
-        "/realms/pid-issuer-realm/account/*"
-      ],
-      "webOrigins": [
-        "*"
-      ],
+      "redirectUris": ["/realms/pid-issuer-realm/account/*"],
+      "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -609,10 +556,7 @@
           "config": {}
         }
       ],
-      "defaultClientScopes": [
-        "web-origins",
-        "roles"
-      ],
+      "defaultClientScopes": ["web-origins", "roles"],
       "optionalClientScopes": []
     },
     {
@@ -624,9 +568,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [],
-      "webOrigins": [
-        "*"
-      ],
+      "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -643,10 +585,7 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
-      "defaultClientScopes": [
-        "web-origins",
-        "roles"
-      ],
+      "defaultClientScopes": ["web-origins", "roles"],
       "optionalClientScopes": []
     },
     {
@@ -658,9 +597,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [],
-      "webOrigins": [
-        "*"
-      ],
+      "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": true,
       "consentRequired": false,
@@ -677,10 +614,7 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
-      "defaultClientScopes": [
-        "web-origins",
-        "roles"
-      ],
+      "defaultClientScopes": ["web-origins", "roles"],
       "optionalClientScopes": []
     },
     {
@@ -702,9 +636,7 @@
         "eu.europa.ec.euidi://authorization",
         "wallet-app://authorize"
       ],
-      "webOrigins": [
-        "/*"
-      ],
+      "webOrigins": ["/*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -734,9 +666,7 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": [
-        "web-origins"
-      ],
+      "defaultClientScopes": ["web-origins"],
       "optionalClientScopes": [
         "eu.europa.ec.eudi.pid_vc_sd_jwt",
         "eu.europa.ec.eudi.pid_mso_mdoc",
@@ -757,12 +687,8 @@
       "alwaysDisplayInConsole": true,
       "clientAuthenticatorType": "client-secret",
       "secret": "zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2",
-      "redirectUris": [
-        "http://localhost:8080/*"
-      ],
-      "webOrigins": [
-        "http://localhost:8080"
-      ],
+      "redirectUris": ["http://localhost:8080/*"],
+      "webOrigins": ["http://localhost:8080"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -833,12 +759,8 @@
           }
         }
       ],
-      "defaultClientScopes": [
-        "web-origins"
-      ],
-      "optionalClientScopes": [
-        "roles"
-      ],
+      "defaultClientScopes": ["web-origins"],
+      "optionalClientScopes": ["roles"],
       "authorizationSettings": {
         "allowRemoteResourceManagement": false,
         "policyEnforcementMode": "ENFORCING",
@@ -850,9 +772,7 @@
             "displayName": "Credential issuance endpoint",
             "attributes": {},
             "_id": "fbece2f9-1ab1-4a79-8558-3e4c338f9ad4",
-            "uris": [
-              "/wallet/credentialEndpoint"
-            ],
+            "uris": ["/wallet/credentialEndpoint"],
             "icon_uri": ""
           }
         ],
@@ -917,9 +837,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [],
-      "webOrigins": [
-        "*"
-      ],
+      "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": true,
       "consentRequired": false,
@@ -936,10 +854,7 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
-      "defaultClientScopes": [
-        "web-origins",
-        "roles"
-      ],
+      "defaultClientScopes": ["web-origins", "roles"],
       "optionalClientScopes": []
     },
     {
@@ -952,12 +867,8 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": [
-        "/admin/pid-issuer-realm/console/*"
-      ],
-      "webOrigins": [
-        "+"
-      ],
+      "redirectUris": ["/admin/pid-issuer-realm/console/*"],
+      "webOrigins": ["+"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -992,10 +903,7 @@
           }
         }
       ],
-      "defaultClientScopes": [
-        "web-origins",
-        "roles"
-      ],
+      "defaultClientScopes": ["web-origins", "roles"],
       "optionalClientScopes": []
     },
     {
@@ -1017,9 +925,7 @@
         "eu.europa.ec.euidi://authorization",
         "wallet-app://authorize"
       ],
-      "webOrigins": [
-        "/*"
-      ],
+      "webOrigins": ["/*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -1043,9 +949,7 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": [
-        "web-origins"
-      ],
+      "defaultClientScopes": ["web-origins"],
       "optionalClientScopes": [
         "roles",
         "eu.europa.ec.eudi.pid_vc_sd_jwt",
@@ -1923,9 +1827,7 @@
       ]
     }
   ],
-  "defaultDefaultClientScopes": [
-    "web-origins"
-  ],
+  "defaultDefaultClientScopes": ["web-origins"],
   "defaultOptionalClientScopes": [
     "eu.europa.ec.eudi.pid_mso_mdoc",
     "eu.europa.ec.eudi.pid_vc_sd_jwt",
@@ -1944,9 +1846,7 @@
   },
   "smtpServer": {},
   "eventsEnabled": false,
-  "eventsListeners": [
-    "jboss-logging"
-  ],
+  "eventsListeners": ["jboss-logging"],
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
@@ -1996,9 +1896,7 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "allow-default-scopes": [
-            "true"
-          ]
+          "allow-default-scopes": ["true"]
         }
       },
       {
@@ -2008,12 +1906,8 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "host-sending-registration-request-must-match": [
-            "true"
-          ],
-          "client-uris-must-match": [
-            "true"
-          ]
+          "host-sending-registration-request-must-match": ["true"],
+          "client-uris-must-match": ["true"]
         }
       },
       {
@@ -2023,9 +1917,7 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "max-clients": [
-            "200"
-          ]
+          "max-clients": ["200"]
         }
       },
       {
@@ -2054,9 +1946,7 @@
         "subType": "authenticated",
         "subComponents": {},
         "config": {
-          "allow-default-scopes": [
-            "true"
-          ]
+          "allow-default-scopes": ["true"]
         }
       }
     ],
@@ -2079,15 +1969,9 @@
         "providerId": "aes-generated",
         "subComponents": {},
         "config": {
-          "kid": [
-            "64e56c01-dcac-406e-b8cd-5fb855c97fcb"
-          ],
-          "secret": [
-            "fI3YHYKi17Jea0vN-AhuOQ"
-          ],
-          "priority": [
-            "100"
-          ]
+          "kid": ["64e56c01-dcac-406e-b8cd-5fb855c97fcb"],
+          "secret": ["fI3YHYKi17Jea0vN-AhuOQ"],
+          "priority": ["100"]
         }
       },
       {
@@ -2096,18 +1980,12 @@
         "providerId": "hmac-generated",
         "subComponents": {},
         "config": {
-          "kid": [
-            "a50d92f3-6fdf-4e82-b89a-ae09e3eeaf6b"
-          ],
+          "kid": ["a50d92f3-6fdf-4e82-b89a-ae09e3eeaf6b"],
           "secret": [
             "PlfWYTBdiz0bN1vl4SVLnRSB78azeUgSiQHdR284D_b5sk8H7HxOspHDpLrwP5uV-aRGaS8QZdPhOqiJbSah_A"
           ],
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "HS256"
-          ]
+          "priority": ["100"],
+          "algorithm": ["HS256"]
         }
       },
       {
@@ -2119,15 +1997,11 @@
           "privateKey": [
             "MIIEogIBAAKCAQEAqIMTnddR8yxBzXe1ue1Fx7kfjgY9jzsWm5ge7UWv5GWlFEoKjtDrGmPhtSwFTden3DiM4XiIBZ+5AbX/8fdnGxNUON1/GFBnLQv6q0eea9NRM8gtu/avM4nlVzErpdW1LKVm7C3JjjfdlivBEu6XcUZA4bUKNPaj6nwuqQsKstrcuPG32WapVszLDksfSowEVUIc9p//U0aasrfz6jM83jTwq/phHgEwZKxzfw+i055X0Q+JdIs01I27JkiNp0KG5Va+KU9GJBhcTw3QgpifmRc7/9WzmiiSbkxqsTZQwnQbxyShQJYZc0TdBudd7C3mRhDUNh+gdflCk06vCb5sbwIDAQABAoIBAAO27/sYwKu1nAsQH9IQvZW2KlCSfqTmToybgS2weDzL/iRBBZPkXb+1LUfgcorRaC0zP0JxH756qN9gHbDocpNm4le75ONU/RFBzwLGOg3Hw2XQJyyaNtPSBFuJr/FLPAqB6Do96tAsbGwKXDUzS+SpVyDNQYOtXtZPv8+QzhQ8ibEHBK7hYyWnyRrTf4GCOWetZTlflc9yHdR95GICKD8KbC+aVuchk1n415aAASxqaJT2WNN/UwBoLxYbaBMmpsr5Z1fL4NHhvQ5YUoz3pTrVTc5bi5SVTPqc82BIqY4XBFXgzXnKWWypisceXJtXYHEgRmZ9/momxxt2qR3R5kECgYEA1lkaWLTwgfSjewlcEgM6Rvb3/s0gt9aksQyjQbM4IbxRyw8Lh2pMU/1arxvQ6xwJp2eS1FlYOhoYSWXnGAcIEMEhoNy3E6vg+yZgnZU5o7UDavw8CbIB+RtqHRHVrZ+ED9A8vT9/KUH33rUO4JpolWXCaWHa5XzbHd+r70uD2jECgYEAyUHTwr+t6LR0bidSlNaMLFCuIxsPMevt4lWt/9j3ooozYURbNZZS9YdMw+nfrSDp7KeUfX3vFMQNz54m8zk0F5TBhYS6lWRFRYAWxYqTKjvB9ArNp4V4MKu8B3etVfqNU/ycZfdu+GalGo4hEtBMB2zCvykFIX036QAcU3IWaJ8CgYA+6tat9SanrsyR3/RzoRjpHbM7yrBw5gNfqOr+7QFr/aAwr5Ddxdjzymlk/xA7AvbeeauCw1r/awt39/52chHvARHC6yaeEpSug9xWRSgvIoIHVFS3L9Yebeqe78498ZXNIn3BuzKzRJbie1kLmqdaOw1u63daZ2TWBwKr8gmY8QKBgBwiscIGHf/sSmKj6K2aGNqRJOcPf15RR15e8AZWhLgabfhpH/8r1skwcxDofzaq5UkKXH32vxe+GNgvme5izt+FElDiL1t3Ox/uOkC/kLdUx1agtAN5a0YSnCTHHFpqvptBM3Ql1UOwxeAigokoyZg4IjmrOGZoJQrT0yHvTyatAoGABkABu0qXQS2q9a3q0o986YevwV9ynGnKProW216L5khLbwdK0JBPRs1fweImiUR9OIpeg1eamTKODrL/4n38RZwIZcMRhfZI6uY2NTNl6ywYrLShDDsw9DfhEh0BWj+Lxw4/aPQ3ni32XCGqH44YqqBAUor4N8I7Xs8pLxoYc6Q="
           ],
-          "keyUse": [
-            "SIG"
-          ],
+          "keyUse": ["SIG"],
           "certificate": [
             "MIICrzCCAZcCBgGK8WCVpzANBgkqhkiG9w0BAQsFADAbMRkwFwYDVQQDDBBwaWQtaXNzdWVyLXJlYWxtMB4XDTIzMTAwMjE3MTA1M1oXDTMzMTAwMjE3MTIzM1owGzEZMBcGA1UEAwwQcGlkLWlzc3Vlci1yZWFsbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKiDE53XUfMsQc13tbntRce5H44GPY87FpuYHu1Fr+RlpRRKCo7Q6xpj4bUsBU3Xp9w4jOF4iAWfuQG1//H3ZxsTVDjdfxhQZy0L+qtHnmvTUTPILbv2rzOJ5VcxK6XVtSylZuwtyY433ZYrwRLul3FGQOG1CjT2o+p8LqkLCrLa3Ljxt9lmqVbMyw5LH0qMBFVCHPaf/1NGmrK38+ozPN408Kv6YR4BMGSsc38PotOeV9EPiXSLNNSNuyZIjadChuVWvilPRiQYXE8N0IKYn5kXO//Vs5ookm5MarE2UMJ0G8ckoUCWGXNE3QbnXewt5kYQ1DYfoHX5QpNOrwm+bG8CAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAg+H8Z/vQXxZ+kZZXupIOdZZCR3LuyLiZcselF2ldXaH44SUXBM2LbVvElLScg/DFak9Bp6+3fIrky56E9je/i8TpEtq0ey9sdncjAD070BmMHis7MIT5PdQkaESpCwJmN4HkVNrVFbsdiklnKIoSWmJ7IdARTPlYP3bDo6ts+0wxqc6dmFzePppVn+eMXr0HO4Il8ycctCaDr+iY4yvvi+OoOozm7yPBMzjFhYpLSV6Nisy5KABS3XTKJRmKelnC8jrqPl3lDWLXQx24PpIzxSRcRb6yPkClJWe7qFzckec7Zv5M7IRwLyxb0aWtK8m1xBlKXLNEWp+KXtrYGYHi0g=="
           ],
-          "priority": [
-            "100"
-          ]
+          "priority": ["100"]
         }
       },
       {
@@ -2139,27 +2013,19 @@
           "privateKey": [
             "MIIEowIBAAKCAQEAyhxYP0rWUCULP95b/7XjY3ZybeazMxSgCgwDHSQ4W6zjz7Vsk3YYRaG50AJQ0ZTXMX/0FFXzC5AWr3jJWVxCSLPkFv631lI8CrRMQhZkEWwBWPSxsO4M8td8Zz47YXlICXDFnkaaus2edpvQGSMmrS72HPKpLEyNv6RD2xu/12fCWBzM5bexrf1JFBz7562ExJCVeAci5vsUm3hVC/Ttv95YgaatZzY8x4U1GBTrNu62kh3Y+5zAAq/CudgEfA/NnDclWcPngtjuTFx8pL2+yFC7XAPV18jB5UqQ5R2EaQXWxCInmyhQLv8ek3p7QxVm+8rJYpd8dqwc7/x+M+whFwIDAQABAoIBABv7X6ZnpJNVBaEylncpRhGjuQUJPz8vuFabwiSbOqhKoAHGYwFphMPDN9gaMflKS57hUbgtDCjKKrHhnbLfCJhLO6WJX4dvPDvZKYOu2OzmkKsxuZY+5xEKD4G1xn/gzD3uXJXkvZBmXm2ade29BaJNkaqBWDW3ZZqmUfS4e0+FoUcHV0L+iIGETyCjKUoF5UX4e7k0iYIS7FPttuoFhxuk6W/UDdbTlOGjnXMZZSoPo/vJfWG6rQmRnSMt4QirPVzh/f74CtoUA9dXiQa/NpDfTKpTIyFSzaQPBFY/eERtDALrCtQ+LzgsJe1OqP09QAUOdsXNtEp0MbiFmNgrhqECgYEA+ktXcmVwi0z2qLhDu6NCYm7vrYb1+UaZ5IPYAQ6R9mtoT67Kbsk+VF4Fmlp4QBKM9TAT6G5XtIe9ZQvx5oXhYmSJgdvILAF//shUwNK6s+so9YMvTXSZXNPjQ4KfG7JLqr94DYRG3CEyhWEimiQwEYIjk7UHrs+ZflW+LR9iuKECgYEAzrfQrFrJioJaFFWFQowiItT+WGz5yAC36A1Mev0w035GEX4iRGBH2LDPPG3iLjKQnh4SbWSKh0pmdfo3pkpdQNKMlt4QrBxxlTToTpTvlH1Q7AReufJNfG7fRXL56l/RtEdjncUzX7OWrbk/B0+rz/GTzaGV5RgSAg0F8uiKZrcCgYEAwvtaXiWj7QDBzmHtcgkWt/PQBxByIgTb8ea7qOce0iaOFjUGQhPH2JV+K+Z6cv+Ai6kueQ0sidiMtGD/yyNUlv/XFzCN2ao5edO6IpSHGY4CVHAjs2U369as3nStWjglNhj+fxki0m2SG9G10PqL77e/21tVZtsWqhJFmoUutMECgYBuZcyTv4iS6DqjUWjxuVUhtQ6AuvJK1ddhnniR1lYVHQLepLY4PhMgrox+gVChy29ggj7lHSS+TAWcTB0cOerDi655g+7ze91NCgxmqzOn4aUt5seQFs86/RtQQ68kdDfSR63zvDVLjuWRsbTveqUPULzWvM0IpGo5nirnJzmC0QKBgBzSYF94rAeQMVVfJHSKI7SkH4HnaWuj+oUQANzwzBv1Mn8UH436wKVUTiLnUC6qwN5/ALoKU4lDxBEwDD74HLxV/8Y5d9K5DqoQwB8pb1NebUxvNWhnncMBGFEiZ0T4s3+hhLNlUmacWuMrurzZW2luafyE1rDDuq+0wcmcEo1E"
           ],
-          "keyUse": [
-            "ENC"
-          ],
+          "keyUse": ["ENC"],
           "certificate": [
             "MIICrzCCAZcCBgGK8WCXPDANBgkqhkiG9w0BAQsFADAbMRkwFwYDVQQDDBBwaWQtaXNzdWVyLXJlYWxtMB4XDTIzMTAwMjE3MTA1M1oXDTMzMTAwMjE3MTIzM1owGzEZMBcGA1UEAwwQcGlkLWlzc3Vlci1yZWFsbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMocWD9K1lAlCz/eW/+142N2cm3mszMUoAoMAx0kOFus48+1bJN2GEWhudACUNGU1zF/9BRV8wuQFq94yVlcQkiz5Bb+t9ZSPAq0TEIWZBFsAVj0sbDuDPLXfGc+O2F5SAlwxZ5GmrrNnnab0BkjJq0u9hzyqSxMjb+kQ9sbv9dnwlgczOW3sa39SRQc++ethMSQlXgHIub7FJt4VQv07b/eWIGmrWc2PMeFNRgU6zbutpId2PucwAKvwrnYBHwPzZw3JVnD54LY7kxcfKS9vshQu1wD1dfIweVKkOUdhGkF1sQiJ5soUC7/HpN6e0MVZvvKyWKXfHasHO/8fjPsIRcCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAEh+ci+BXfXbBBz8YEtMFvBS03a4Uv4bLuHnZbBNAO9jvfqofwbPFuX5aqRiqkHx3MAM0h8lrMtb9XIIlcBNgrS+RgHdCw54AXrmiMbpxHt77ZsVMMbXOqDQMnw/nA54sixjOV7W8ggmQN7tVRCWJaU6EmiYujvZt4bwC9HYg+7Wo3PgLPYLUipp6uredLpnfGt4D47sKWn8L60lTLFcBSDf9oXcA+zZ8B6V+orbVRaUrLhXgBDiowimSkaVq4P32Z6caJylU5gwjNtoIUqWtRaSDkl4HOHiLMDCOCiUdWLpqD0mwQ+3kHmMK6wraC3lVk9mL0J86fq2jLbPoqWxtHg=="
           ],
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "RSA-OAEP"
-          ]
+          "priority": ["100"],
+          "algorithm": ["RSA-OAEP"]
         }
       }
     ]
   },
   "internationalizationEnabled": true,
   "loginTheme": "custom",
-  "supportedLocales": [
-    "sv"
-  ],
+  "supportedLocales": ["sv"],
   "defaultLocale": "sv",
   "browserFlow": "browser",
   "directGrantFlow": "direct grant",
