@@ -21,7 +21,9 @@ jobs:
       contents: read
       packages: read
       security-events: write
-    secrets: inherit
+    # TODO: replace with explicit secrets once diggsweden/reusable-ci declares them in on.workflow_call.secrets
+    # (currently only SARIF_UPLOAD_TOKEN is needed for Code Scanning upload)
+    secrets: inherit # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
     with:
       reusable-ci-ref: v2.7.9
       project-type: meta

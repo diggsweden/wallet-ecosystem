@@ -3,6 +3,11 @@
   "extends": ["github>diggsweden/.github//renovate-base.json"],
   "packageRules": [
     {
+      "description": "Wait 7 days before auto-merging to avoid newly published malicious packages",
+      "matchPackagePatterns": ["*"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
       "description": "Group EU Digital Identity Wallet docker images",
       "matchDatasources": ["docker"],
       "matchPackagePatterns": ["^ghcr.io/eu-digital-identity-wallet/"],
