@@ -1,0 +1,8 @@
+{
+  "realm": "master",
+  "enabled": true,
+  "attributes": {
+    "frontendUrl": "https://localhost/idp-internal"
+  },
+  "requiredActions": []
+}
