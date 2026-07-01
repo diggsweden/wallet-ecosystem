@@ -13,7 +13,7 @@ volumes:
     driver: local
 
 x-kafka-common: &kafka-common
-  image: apache/kafka-native:latest@sha256:777f2dddec6970003f1f27922a8c317d87140567b0537e801d35669ad9a81faf
+  image: apache/kafka-native:latest@sha256:2885898ba17065023f1bd605f3a81efcfa986014f062b73b91ef5462485f9060
   environment: &kafka-env
     KAFKA_CLUSTER_ID: NjM0OUVDRTItMTg2Ni00QU
     KAFKA_PROCESS_ROLES: broker,controller
