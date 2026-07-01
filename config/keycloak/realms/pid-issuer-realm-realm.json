@@ -2032,6 +2032,7 @@
   "loginTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
+  "requiredActions": [],
   "browserFlow": "browser",
   "directGrantFlow": "direct grant",
   "resetCredentialsFlow": "reset credentials",
