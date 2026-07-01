@@ -29,6 +29,7 @@ jobs:
       actions: read
       security-events: write
       attestations: write
+    # TODO: replace with explicit secrets once diggsweden/reusable-ci declares them in on.workflow_call.secrets
     secrets: inherit
     with:
       reusable-ci-ref: v2.7.9
