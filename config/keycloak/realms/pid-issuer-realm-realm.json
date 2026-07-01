@@ -71,7 +71,7 @@
         "composites": {
           "realm": ["offline_access", "uma_authorization"],
           "client": {
-            "account": ["manage-account", "view-profile"]
+            "account": ["view-profile", "view-applications", "view-consent"]
           }
         },
         "clientRole": false,
@@ -86,7 +86,7 @@
         "composites": {
           "realm": ["offline_access", "uma_authorization"],
           "client": {
-            "account": ["manage-account", "view-profile"]
+            "account": ["view-profile", "view-applications", "view-consent"]
           }
         },
         "clientRole": false,
@@ -481,7 +481,12 @@
     "account": [
       {
         "client": "account-console",
-        "roles": ["manage-account", "view-groups"]
+        "roles": [
+          "view-profile",
+          "view-groups",
+          "view-applications",
+          "view-consent"
+        ]
       }
     ]
   },
@@ -2027,6 +2032,7 @@
   "loginTheme": "custom",
   "supportedLocales": ["sv"],
   "defaultLocale": "sv",
+  "requiredActions": [],
   "browserFlow": "browser",
   "directGrantFlow": "direct grant",
   "resetCredentialsFlow": "reset credentials",
