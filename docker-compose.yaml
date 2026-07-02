@@ -308,6 +308,8 @@ services:
     ports:
       - "8082:8080"
     depends_on:
+      wallet-bff:
+        condition: service_started
       wallet-provider:
         condition: service_started
       wallet-account:
