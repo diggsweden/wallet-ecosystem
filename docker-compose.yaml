@@ -52,6 +52,8 @@ services:
       VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
       JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
+    depends_on:
+      - trust-validator
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.refimpl-verifier-backend.rule=PathPrefix(`/refimpl-verifier-backend`)"
