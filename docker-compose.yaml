@@ -373,9 +373,6 @@ services:
       # Keycloak services
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
       - "traefik.http.services.keycloak-health.loadbalancer.server.port=9000"
-      # Path rewrite middleware for well-known discovery
-      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.regex=^/keycloak/.well-known/([a-zA-Z-]+)/idp/realms/([a-zA-Z-]+)/?"
-      - "traefik.http.middlewares.keycloak-replace-path.replacepathregex.replacement=/idp/realms/$2/.well-known/$1"
       # OAuth server discovery endpoint
       - "traefik.http.routers.well-known-oauth-server.rule=PathPrefix(`/.well-known/oauth-authorization-server`)"
       - "traefik.http.routers.well-known-oauth-server.entrypoints=websecure"
