@@ -348,6 +348,7 @@ services:
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
+      - KC_DB=dev-file
     healthcheck:
       test: "bash /opt/keycloak/health-check.sh"
       interval: 5s
