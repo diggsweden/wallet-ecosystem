@@ -335,7 +335,7 @@ services:
     image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak
     command:
-      - start-dev
+      - start
       - --import-realm
       - --features=dpop
     environment:
