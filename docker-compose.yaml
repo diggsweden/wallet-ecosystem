@@ -335,7 +335,7 @@ services:
     image: quay.io/keycloak/keycloak:26.3.4-0
     container_name: keycloak
     command:
-      - start-dev
+      - start
       - --import-realm
       - --features=dpop
     environment:
@@ -348,6 +348,7 @@ services:
       - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
+      - KC_DB=dev-file
     healthcheck:
       test: "bash /opt/keycloak/health-check.sh"
       interval: 5s
