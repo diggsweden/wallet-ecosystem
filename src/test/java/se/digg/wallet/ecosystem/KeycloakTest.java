@@ -33,11 +33,8 @@ class KeycloakTest {
       matches = "true")
   void isHealthy(String path) {
     keycloak.tryGetHealth(path)
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("status", equalTo("UP"));
+        .then().assertThat().statusCode(200)
+        .and().body("status", equalTo("UP"));
   }
 
   @Test
@@ -84,8 +81,7 @@ class KeycloakTest {
   @EnumSource(MetadataLocationStrategy.class)
   void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
     keycloak.tryGetOauthAuthorizationServerMetadata("pid-issuer-realm", strategy)
-        .then()
-        .assertThat().statusCode(200)
+        .then().assertThat().statusCode(200)
         .and().body("issuer", equalTo(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm").toString()))
         .and().body("token_endpoint", equalTo(KEYCLOAK.getResourceRoot().resolve(
@@ -95,8 +91,7 @@ class KeycloakTest {
   @Test
   void servesAccountConsoleForPidIssuerRealm() {
     keycloak.tryGetRealmAccount("pid-issuer-realm")
-        .then()
-        .assertThat().statusCode(200)
+        .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"));
   }
 
@@ -106,8 +101,7 @@ class KeycloakTest {
       "realms/pid-issuer-realm/protocol/openid-connect/3p-cookies/step2.html"
   })
   void servesOpenIdConnectResourcesForPidIssuerRealm(String path) {
-    given().when()
-        .get(KEYCLOAK.getResourceRoot().resolve(path))
+    given().when().get(KEYCLOAK.getResourceRoot().resolve(path))
         .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"));
   }
