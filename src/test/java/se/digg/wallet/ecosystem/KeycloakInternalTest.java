@@ -42,7 +42,7 @@ class KeycloakInternalTest {
   }
 
   @Test
-  void adminConsoleLoadsCorrectly() {
+  void servesMasterAdminConsole() {
     internalKeycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"))
@@ -53,7 +53,7 @@ class KeycloakInternalTest {
 
   @ParameterizedTest
   @MethodSource("masterAdminConsoleUrls")
-  void adminConsolePointsToInternalUrls(String url) {
+  void servesMasterAdminConsoleConfiguredForInternalRoute(String url) {
     assertThat(url, is(KEYCLOAK_INTERNAL.toString()));
   }
 
