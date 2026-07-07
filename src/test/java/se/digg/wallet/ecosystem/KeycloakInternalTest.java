@@ -34,14 +34,14 @@ class KeycloakInternalTest {
   @ValueSource(strings = {"pid-issuer-realm", "master"})
   void servesRealm(String name) {
     internalKeycloak.tryGetRealm(name)
-        .then().assertThat().statusCode(200)
+        .then().assertThat().statusCode(is(200))
         .and().body("realm", is(name));
   }
 
   @Test
   void servesMasterAdminConsole() {
     internalKeycloak.tryGetMasterAdminConsole()
-        .then().assertThat().statusCode(200)
+        .then().assertThat().statusCode(is(200))
         .and().contentType(containsString("text/html"))
         .and().body(containsString("<title>Keycloak Administration Console</title>"))
         .and().body(containsString("id=\"app\""))
@@ -57,7 +57,7 @@ class KeycloakInternalTest {
   private static Stream<Arguments.ArgumentSet> masterAdminConsoleUrls()
       throws JsonProcessingException {
     String environment = internalKeycloak.tryGetMasterAdminConsole()
-        .then().assertThat().statusCode(200)
+        .then().assertThat().statusCode(is(200))
         .extract().body().htmlPath().get("html.body.script.find { it.@id == 'environment' }");
 
     JsonNode root = new ObjectMapper().readTree(environment);

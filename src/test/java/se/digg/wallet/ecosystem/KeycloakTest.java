@@ -5,7 +5,6 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -33,14 +32,14 @@ class KeycloakTest {
       matches = "true")
   void isHealthy(String path) {
     keycloak.tryGetHealth(path)
-        .then().assertThat().statusCode(200)
-        .and().body("status", equalTo("UP"));
+        .then().assertThat().statusCode(is(200))
+        .and().body("status", is("UP"));
   }
 
   @Test
   void servesPidIssuerRealm() {
     keycloak.tryGetRealm("pid-issuer-realm")
-        .then().assertThat().statusCode(200)
+        .then().assertThat().statusCode(is(200))
         .and().body("realm", is("pid-issuer-realm"));
   }
 
@@ -81,17 +80,17 @@ class KeycloakTest {
   @EnumSource(MetadataLocationStrategy.class)
   void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
     keycloak.tryGetOauthAuthorizationServerMetadata("pid-issuer-realm", strategy)
-        .then().assertThat().statusCode(200)
-        .and().body("issuer", equalTo(KEYCLOAK.getResourceRoot().resolve(
+        .then().assertThat().statusCode(is(200))
+        .and().body("issuer", is(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm").toString()))
-        .and().body("token_endpoint", equalTo(KEYCLOAK.getResourceRoot().resolve(
+        .and().body("token_endpoint", is(KEYCLOAK.getResourceRoot().resolve(
             "realms/pid-issuer-realm/protocol/openid-connect/token").toString()));
   }
 
   @Test
   void servesAccountConsoleForPidIssuerRealm() {
     keycloak.tryGetRealmAccount("pid-issuer-realm")
-        .then().assertThat().statusCode(200)
+        .then().assertThat().statusCode(is(200))
         .and().contentType(containsString("text/html"));
   }
 
@@ -102,7 +101,7 @@ class KeycloakTest {
   })
   void servesOpenIdConnectResourcesForPidIssuerRealm(String path) {
     given().when().get(KEYCLOAK.getResourceRoot().resolve(path))
-        .then().assertThat().statusCode(200)
+        .then().assertThat().statusCode(is(200))
         .and().contentType(containsString("text/html"));
   }
 }
