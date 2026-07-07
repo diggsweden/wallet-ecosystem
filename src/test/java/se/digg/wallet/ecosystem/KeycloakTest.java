@@ -41,15 +41,17 @@ class KeycloakTest {
         .body("status", equalTo("UP"));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"pid-issuer-realm"})
-  void servesRealm(String name) {
-    keycloak.tryGetRealm(name)
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .body("realm", equalTo(name));
+  @Test
+  void servesPidIssuerRealm() {
+    keycloak.tryGetRealm("pid-issuer-realm")
+        .then().assertThat().statusCode(200)
+        .and().body("realm", is("pid-issuer-realm"));
+  }
+
+  @Test
+  void blocksMasterRealm() {
+    keycloak.tryGetRealm("master")
+        .then().assertThat().statusCode(is(404));
   }
 
   @Test

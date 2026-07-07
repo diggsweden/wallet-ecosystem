@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,6 +20,7 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @DisabledIfEnvironmentVariable(
     named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_INTERNAL",
@@ -33,17 +33,12 @@ class KeycloakInternalTest {
 
   private final KeycloakClient internalKeycloak = clientFor(KEYCLOAK_INTERNAL);
 
-  @Test
-  void pidIssuerRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL)
-        .tryGetRealm("pid-issuer-realm")
-        .then()
-        .assertThat().statusCode(anyOf(is(200)));
-  }
-
-  @Test
-  void masterRealmIsAccessibleInternally() {
-    clientFor(KEYCLOAK_INTERNAL).tryGetRealm("master").then().assertThat().statusCode(200);
+  @ParameterizedTest
+  @ValueSource(strings = {"pid-issuer-realm", "master"})
+  void servesRealm(String name) {
+    internalKeycloak.tryGetRealm(name)
+        .then().assertThat().statusCode(200)
+        .and().body("realm", is(name));
   }
 
   @Test
