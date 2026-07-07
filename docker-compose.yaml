@@ -391,14 +391,6 @@ services:
       # middleware
       - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.regex=^/idp-internal(.*)"
       - "traefik.http.middlewares.keycloak-internal-rewrite.replacepathregex.replacement=/idp$$1"
-      - "traefik.http.middlewares.keycloak-block-403.plugin.fail.statusCode=403"
-      # Blacklist: idp/admin/master/console because traefik dont hv authpolicy
-      - "traefik.http.routers.keycloak-block.priority=20"
-      - "traefik.http.routers.keycloak-block.rule=PathPrefix(`idp/admin/master/console`)"
-      - "traefik.http.routers.keycloak-block.entrypoints=websecure"
-      - "traefik.http.routers.keycloak-block.tls=true"
-      - "traefik.http.routers.keycloak-block.service=noop@internal"
-      - "traefik.http.middlewares.keycloak-block-admin=block-403"
 
     networks:
       - wallet-ecosystem-network
