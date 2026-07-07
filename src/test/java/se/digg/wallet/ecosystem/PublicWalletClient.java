@@ -38,7 +38,7 @@ public class PublicWalletClient implements WalletClient {
   public String createWalletUnitAttestation(ECKey bindingKey, String nonce) throws JOSEException {
     ECKey deviceKey =
         new ECKeyGenerator(Curve.P_256)
-            .keyID("device-key-123")
+            .keyID("device-key-" + java.util.UUID.randomUUID())
             .algorithm(Algorithm.NONE)
             .keyUse(KeyUse.SIGNATURE)
             .generate();

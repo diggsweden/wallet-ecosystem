@@ -7,7 +7,6 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesPattern;
-import static se.digg.wallet.ecosystem.PersonalIdentityNumberUtil.getRandomPersonalId;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.nimbusds.jose.Algorithm;
@@ -38,16 +37,7 @@ public class WalletAccountTest {
   @Test
   void createAccount_returnsAccountWithId() {
     given()
-        .contentType(ContentType.JSON).body(accountBody(getRandomPersonalId(), "device-kid"))
-        .when().post(BASE + "/v0/accounts")
-        .then().statusCode(201)
-        .body("id", matchesPattern(UUID_PATTERN));
-  }
-
-  @Test
-  void createAccountWithOnlyDeviceKey_returnsAccountWithId() {
-    given()
-        .contentType(ContentType.JSON).body(accountBodyWithOnlyDeviceKey("device-kid-only"))
+        .contentType(ContentType.JSON).body(accountBody(randomKid()))
         .when().post(BASE + "/v0/accounts")
         .then().statusCode(201)
         .body("id", matchesPattern(UUID_PATTERN))
@@ -58,21 +48,19 @@ public class WalletAccountTest {
 
   @Test
   void getAccount_returnsCreatedAccount() {
-    String pid = getRandomPersonalId();
-    String id = createAccount(pid, "device-kid");
+    String kid = randomKid();
+    String id = createAccount(kid);
 
     given()
         .when().get(BASE + "/v0/accounts/" + id)
         .then().statusCode(200)
         .body("id", equalTo(id))
-        .body("personalIdentityNumber", equalTo(pid))
-        .body("email", equalTo("test@hej.se"))
-        .body("deviceKey.kid", equalTo("device-kid"));
+        .body("deviceKey.kid", equalTo(kid));
   }
 
   @Test
   void addWalletKey_isReadableOnAccount() {
-    String id = createAccount(getRandomPersonalId(), "device-kid");
+    String id = createAccount(randomKid());
     String kid = "wallet-" + UUID.randomUUID();
 
     given()
@@ -88,7 +76,7 @@ public class WalletAccountTest {
 
   @Test
   void addSecurityEnvelope_isReadableOnAccount() {
-    String id = createAccount(getRandomPersonalId(), "device-kid");
+    String id = createAccount(randomKid());
     String content = "envelope-" + UUID.randomUUID();
 
     given()
@@ -107,25 +95,19 @@ public class WalletAccountTest {
         .body("items.content", hasItem(content));
   }
 
-  private static String createAccount(String pid, String kid) {
+  private static String createAccount(String kid) {
     return given()
-        .contentType(ContentType.JSON).body(accountBody(pid, kid))
+        .contentType(ContentType.JSON).body(accountBody(kid))
         .when().post(BASE + "/v0/accounts")
         .then().statusCode(201)
         .extract().jsonPath().getString("id");
   }
 
-  private static String accountBody(String pid, String kid) {
-    return """
-        {
-          "personalIdentityNumber": "%s",
-          "email": "test@hej.se",
-          "phoneNumber": "070-123 45 67",
-          "deviceKey": %s
-        }""".formatted(pid, keyBody(kid));
+  private static String randomKid() {
+    return "device-" + UUID.randomUUID();
   }
 
-  private static String accountBodyWithOnlyDeviceKey(String kid) {
+  private static String accountBody(String kid) {
     return """
         {
           "deviceKey": %s

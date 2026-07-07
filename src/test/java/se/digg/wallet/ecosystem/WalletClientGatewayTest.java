@@ -9,7 +9,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.fail;
-import static se.digg.wallet.ecosystem.PersonalIdentityNumberUtil.getRandomPersonalId;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
@@ -24,6 +23,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -38,14 +38,13 @@ public class WalletClientGatewayTest {
 
   private static final WalletClientGatewayClient walletClientGateway =
       new WalletClientGatewayClient();
-  private static final String KEY_ID = "123";
   private static String session;
 
   @BeforeAll
   static void beforeAll() throws Exception {
     var ecKey = generateKey();
     var accountId = createAccount(ecKey);
-    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
+    var nonce = walletClientGateway.initChallenge(accountId, ecKey.getKeyID());
     var signedJwt = createSignedJwt(ecKey, nonce);
     session = walletClientGateway.respondToChallenge(signedJwt);
   }
@@ -67,31 +66,6 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void createAccountv0_should_return_accountId() throws Exception {
-    var ecKey = generateKey();
-    var accountRequestBody = stubAccountV0Request(ecKey);
-    var accountId = walletClientGateway.createAccount(accountRequestBody);
-    assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
-  }
-
-  @Test
-  void createAccountv0WithNullPersonalIdentityNumber_should_return_accountId() throws Exception {
-    var ecKey = generateKey();
-    var accountRequestBody = stubAccountV0RequestWithNullPersonalIdentityNumber(ecKey);
-    var accountId =
-        walletClientGateway.createAccount(accountRequestBody);
-    assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
-  }
-
-  @Test
-  void createAccountv0WithOnlyDeviceKey_should_return_accountId() throws Exception {
-    var ecKey = generateKey();
-    var accountRequestBody = stubAccountV0RequestWithOnlyDeviceKey(ecKey);
-    var accountId = walletClientGateway.createAccount(accountRequestBody);
-    assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
-  }
-
-  @Test
   void addWalletKey_should_return_201() throws Exception {
     var walletKey = generateKey();
     walletClientGateway.addWalletKey(session, walletKey.toPublicJWK().toJSONString());
@@ -103,7 +77,7 @@ public class WalletClientGatewayTest {
   void createWalletUnitAttestation(String wuaNonce) throws Exception {
     var ecKey = generateKey();
     var accountId = createAccount(ecKey);
-    var nonce = walletClientGateway.initChallenge(accountId, KEY_ID);
+    var nonce = walletClientGateway.initChallenge(accountId, ecKey.getKeyID());
     var signedJwt = createSignedJwt(ecKey, nonce);
     var session = walletClientGateway.respondToChallenge(signedJwt);
     var walletKey = generateKey();
@@ -172,7 +146,7 @@ public class WalletClientGatewayTest {
   static ECKey generateKey() {
     try {
       return new ECKeyGenerator(Curve.P_256)
-          .keyID(KEY_ID)
+          .keyID(UUID.randomUUID().toString())
           .algorithm(Algorithm.NONE)
           .keyUse(KeyUse.SIGNATURE)
           .generate();
@@ -188,29 +162,16 @@ public class WalletClientGatewayTest {
   }
 
   private static String stubAccountV0Request(ECKey ecKey) {
-    var id = getRandomPersonalId();
     return """
         {
-          "personalIdentityNumber": "%s",
-          "emailAdress": "test@hej.se",
-          "telephoneNumber": "070123123123",
-          "deviceKey": %s
-        }""".formatted(id, ecKey.toPublicJWK().toJSONString());
+          "deviceKey": %s,
+          "personalIdentityNumber": "%s"
+        }""".formatted(ecKey.toPublicJWK().toJSONString(), randomPersonalIdentityNumber());
   }
 
-  private static String stubAccountV0RequestWithNullPersonalIdentityNumber(ECKey ecKey) {
-    return """
-        {
-          "personalIdentityNumber": null,
-          "deviceKey": %s
-        }""".formatted(ecKey.toPublicJWK().toJSONString());
-  }
-
-  private static String stubAccountV0RequestWithOnlyDeviceKey(ECKey ecKey) {
-    return """
-        {
-          "deviceKey": %s
-        }""".formatted(ecKey.toPublicJWK().toJSONString());
+  private static String randomPersonalIdentityNumber() {
+    return Long.toString(
+        ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L));
   }
 
   private static String createSignedJwt(ECKey ecJwk, String nonce)
