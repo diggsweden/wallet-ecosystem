@@ -27,11 +27,8 @@ import org.junit.jupiter.params.provider.ValueSource;
     matches = "true")
 class KeycloakInternalTest {
 
-  private static KeycloakClient clientFor(ServiceIdentifier serviceIdentifier) {
-    return new KeycloakClient(serviceIdentifier.getResourceRoot());
-  }
-
-  private final KeycloakClient internalKeycloak = clientFor(KEYCLOAK_INTERNAL);
+  private static final KeycloakClient internalKeycloak =
+      new KeycloakClient(KEYCLOAK_INTERNAL.getResourceRoot());
 
   @ParameterizedTest
   @ValueSource(strings = {"pid-issuer-realm", "master"})
@@ -59,7 +56,7 @@ class KeycloakInternalTest {
 
   private static Stream<Arguments.ArgumentSet> masterAdminConsoleUrls()
       throws JsonProcessingException {
-    String environment = clientFor(KEYCLOAK_INTERNAL).tryGetMasterAdminConsole()
+    String environment = internalKeycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(200)
         .extract().body().htmlPath().get("html.body.script.find { it.@id == 'environment' }");
 
