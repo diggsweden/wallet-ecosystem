@@ -6,7 +6,6 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.oneOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
@@ -105,6 +104,6 @@ class KeycloakTest {
   @Test
   void blocksMasterAdminConsole() {
     keycloak.tryGetMasterAdminConsole()
-        .then().assertThat().statusCode(is(oneOf(403, 404)));
+        .then().assertThat().statusCode(is(404));
   }
 }
