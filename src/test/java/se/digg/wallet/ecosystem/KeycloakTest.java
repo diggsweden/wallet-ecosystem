@@ -55,6 +55,12 @@ class KeycloakTest {
   }
 
   @Test
+  void blocksMasterAdminConsole() {
+    keycloak.tryGetMasterAdminConsole()
+        .then().assertThat().statusCode(is(404));
+  }
+
+  @Test
   void canGetDpopAccessTokenForClientCredentials() throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
@@ -122,15 +128,9 @@ class KeycloakTest {
         .then().assertThat().statusCode(anyOf(is(403), is(404)));
   }
 
-  @Test
-  void adminConsoleIsBlockedExternally() {
-    keycloak.tryGetMasterAdminConsole()
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
-  }
-
   @ParameterizedTest
   @ValueSource(
-      strings = {"realms/master/console/", "realms/admin/master/console", "admin/master/console/"})
+      strings = {"realms/master/console/", "realms/admin/master/console"})
   void masterRealmAndAdminConsoleIsBlockedExternally(String path) {
     given()
         .when().get(KEYCLOAK.getResourceRoot().resolve(path))
