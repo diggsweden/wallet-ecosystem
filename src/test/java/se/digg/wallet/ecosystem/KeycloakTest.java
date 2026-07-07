@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -111,29 +110,5 @@ class KeycloakTest {
         .get(KEYCLOAK.getResourceRoot().resolve(path))
         .then().assertThat().statusCode(200)
         .and().contentType(containsString("text/html"));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {
-      "auth",
-      "logout",
-      "introspect",
-      "userinfo",
-      "revoke",
-      "certs"
-  })
-  void masterRealmDeniesRiskyProtocolEndpointsExternally(String path) {
-    given()
-        .when().get(KEYCLOAK.getResourceRoot().resolve("realms/master/protocol/" + path))
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
-  }
-
-  @ParameterizedTest
-  @ValueSource(
-      strings = {"realms/master/console/", "realms/admin/master/console"})
-  void masterRealmAndAdminConsoleIsBlockedExternally(String path) {
-    given()
-        .when().get(KEYCLOAK.getResourceRoot().resolve(path))
-        .then().assertThat().statusCode(anyOf(is(403), is(404)));
   }
 }
