@@ -361,8 +361,8 @@ services:
       - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:
       - "traefik.enable=true"
-      # Whitelist: pid-issuer-realm (all subpaths), shared resources, js, and well-known endpoints
-      - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp/realms/pid-issuer-realm`) || PathPrefix(`/idp/resources`) || PathPrefix(`/idp/js`) || Path(`/idp/.well-known/openid-configuration`)"
+      # Whitelist: pid-issuer-realm and shared resources
+      - "traefik.http.routers.keycloak.rule=PathPrefix(`/idp/realms/pid-issuer-realm`) || PathPrefix(`/idp/resources`)"
       - "traefik.http.routers.keycloak.entrypoints=websecure"
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.service=keycloak"
