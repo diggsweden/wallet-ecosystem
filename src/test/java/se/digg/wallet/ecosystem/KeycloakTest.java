@@ -97,7 +97,7 @@ class KeycloakTest {
 
   @Test
   void servesAccountConsoleForPidIssuerRealm() {
-    keycloak.tryGetRealmAccount("pid-issuer-realm")
+    keycloak.tryGetAccountConsoleForRealm("pid-issuer-realm")
         .then().assertThat().statusCode(is(200))
         .and().contentType(containsString("text/html"));
   }
@@ -121,7 +121,7 @@ class KeycloakTest {
   }
 
   private static Stream<String> pidIssuerRealmAccountConsoleResources() {
-    return keycloak.tryGetRealmAccount("pid-issuer-realm")
+    return keycloak.tryGetAccountConsoleForRealm("pid-issuer-realm")
         .then().assertThat().statusCode(is(200))
         .extract().body().htmlPath().getList(
             "html.head.'*'.collectMany { [it.@href, it.@src] }",
@@ -138,7 +138,7 @@ class KeycloakTest {
 
   private static Stream<String> pidIssuerRealmAccountConsoleImports()
       throws JsonProcessingException {
-    String importMap = keycloak.tryGetRealmAccount("pid-issuer-realm")
+    String importMap = keycloak.tryGetAccountConsoleForRealm("pid-issuer-realm")
         .then().assertThat().statusCode(is(200))
         .extract().body().htmlPath().get("html.head.script.find { it.@type == 'importmap' }");
 
