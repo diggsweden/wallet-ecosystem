@@ -64,7 +64,7 @@ public class KeycloakClient {
     return given().when().get(base.resolve("realms/" + name));
   }
 
-  public Response tryGetRealmAccount(String realm) {
+  public Response tryGetAccountConsoleForRealm(String realm) {
     return given().when().get(base.resolve("realms/" + realm + "/account"));
   }
 
