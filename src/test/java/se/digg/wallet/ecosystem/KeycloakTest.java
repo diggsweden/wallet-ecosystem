@@ -6,24 +6,32 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class KeycloakTest {
 
-  private final KeycloakClient keycloak = new KeycloakClient();
+  private static final KeycloakClient keycloak = new KeycloakClient();
 
   @ParameterizedTest
   @ValueSource(strings = {"live", "ready", "started", ""})
@@ -103,5 +111,40 @@ class KeycloakTest {
     given().when().get(KEYCLOAK.getResourceRoot().resolve(path))
         .then().assertThat().statusCode(is(200))
         .and().contentType(containsString("text/html"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("pidIssuerRealmAccountConsoleResources")
+  void servesLinkedResourcesOfPidIssuerRealmAccountConsole(String reference) {
+    given().when().get(KEYCLOAK.getResourceRoot().resolve(reference))
+        .then().assertThat().statusCode(is(200));
+  }
+
+  private static Stream<String> pidIssuerRealmAccountConsoleResources() {
+    return keycloak.tryGetRealmAccount("pid-issuer-realm")
+        .then().assertThat().statusCode(is(200))
+        .extract().body().htmlPath().getList(
+            "html.head.'*'.collectMany { [it.@href, it.@src] }",
+            String.class)
+        .stream().filter(Objects::nonNull);
+  }
+
+  @ParameterizedTest
+  @MethodSource("pidIssuerRealmAccountConsoleImports")
+  void servesImportsOfPidIssuerRealmAccountConsole(String reference) {
+    given().when().get(KEYCLOAK.getResourceRoot().resolve(reference))
+        .then().assertThat().statusCode(is(200));
+  }
+
+  private static Stream<String> pidIssuerRealmAccountConsoleImports()
+      throws JsonProcessingException {
+    String importMap = keycloak.tryGetRealmAccount("pid-issuer-realm")
+        .then().assertThat().statusCode(is(200))
+        .extract().body().htmlPath().get("html.head.script.find { it.@type == 'importmap' }");
+
+    JsonNode root = new ObjectMapper().readTree(importMap);
+    assertThat(root.getNodeType(), is(JsonNodeType.OBJECT));
+    return root.get("imports").propertyStream()
+        .map(entry -> entry.getValue().asText());
   }
 }
