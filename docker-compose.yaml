@@ -49,7 +49,7 @@ services:
       VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
-      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust"
+      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust-validator/trust"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
       JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     depends_on:
@@ -71,6 +71,7 @@ services:
     volumes:
       - ./config/certificates/trust-validator/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
     environment:
+      SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
       TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
@@ -85,6 +86,13 @@ services:
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trust-validator.rule=PathPrefix(`/trust-validator`)"
+      - "traefik.http.routers.trust-validator.entrypoints=websecure"
+      - "traefik.http.routers.trust-validator.tls=true"
+      - "traefik.http.routers.trust-validator.service=trust-validator"
+      - "traefik.http.services.trust-validator.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
 
