@@ -17,6 +17,7 @@ public enum Property {
   UNTRUSTED_WALLET_PROVIDER_BASE_URI("https://localhost/untrusted-wallet-provider"),
   VERIFIER_BACKEND_BASE_URI("https://localhost/refimpl-verifier-backend"),
   VERIFIER_FRONTEND_BASE_URI("https://localhost/demo-verifier"),
+  TRUST_SOURCE_BASE_URI("https://localhost/trust-source"),
   WALLET_CLIENT_GATEWAY_BASE_URI("https://localhost/wallet-client-gateway"),
   WALLET_CLIENT_GATEWAY_API_KEY("apikey"),
   VERIFIER_AUDIENCE("x509_san_dns:localhost");

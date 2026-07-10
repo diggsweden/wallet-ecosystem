@@ -88,6 +88,25 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  trust-source:
+    image: nginx:1.31.2-alpine-slim@sha256:dd722b8ee8794f3c273bfaf8b5351b0652a68ccd73c17e5f0d029857a58f25ef
+    container_name: trust-source
+    hostname: trust-source
+    volumes:
+      - ./config/trust-source/:/usr/share/nginx/html/:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trust-source.rule=PathPrefix(`/trust-source`)"
+      - "traefik.http.routers.trust-source.entrypoints=websecure"
+      - "traefik.http.routers.trust-source.tls=true"
+      - "traefik.http.routers.trust-source.service=trust-source"
+      - "traefik.http.routers.trust-source.middlewares=trust-source-rewrite"
+      - "traefik.http.services.trust-source.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.trust-source-rewrite.replacepathregex.regex=^/trust-source/(.*)"
+      - "traefik.http.middlewares.trust-source-rewrite.replacepathregex.replacement=/$1"
+    networks:
+      - wallet-ecosystem-network
+
   wallet-provider:
     image: ghcr.io/diggsweden/wallet-provider:v0.0.22@sha256:8bdad47a0c116cc55918cf03875075aeda2d72600de29ec3a1a80bf6f470f9b8
     container_name: wallet-provider
