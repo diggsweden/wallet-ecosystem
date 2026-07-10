@@ -65,7 +65,7 @@ services:
       - wallet-ecosystem-network
 
   trust-validator:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:edge
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.2.1-alpha@sha256:cd5122779e13a11388a4e213f5e52437ae9422f3cb589d40199eeca4d433e2b4
     container_name: trust-validator
     hostname: trust-validator
     volumes:
