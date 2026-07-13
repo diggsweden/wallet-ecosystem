@@ -20,4 +20,13 @@ class TrustSourceTest {
         .and().contentType("text/xml")
         .and().body("xml", is("Hello world!"));
   }
+
+  @Test
+  void servesListOfTrustedPidIssuers() {
+    trustSource.tryGet("trusted-pid-issuers.xml")
+        .then()
+        .assertThat().statusCode(200)
+        .and().contentType("text/xml")
+        .and().body("TrustServiceStatusList.@Id", is("trusted-pid-issuers"));
+  }
 }
