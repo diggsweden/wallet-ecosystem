@@ -89,7 +89,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: ghcr.io/diggsweden/wallet-provider:v0.0.21@sha256:34f56d680dd7e0b3bb15be1996fcc8cfd97ba155b75c83941eb082b953ccf064
+    image: ghcr.io/diggsweden/wallet-provider:v0.0.22@sha256:8bdad47a0c116cc55918cf03875075aeda2d72600de29ec3a1a80bf6f470f9b8
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
