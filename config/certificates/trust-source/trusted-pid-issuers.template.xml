@@ -39,13 +39,10 @@ SPDX-License-Identifier: CC0-1.0
           />
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <DigestValue>OqYPHPB1m9hYEY5ffqS4+kg2q+M=</DigestValue>
+        <DigestValue />
       </Reference>
     </SignedInfo>
-    <SignatureValue>
-      MDkWRWanpCUmszLK7UY0b6mDfHlir50I8T3u/cNa/JolUJzMsyaSHnNP2UOkoOC5
-4pS1gvclZHTlKMnHSJDViQ==
-    </SignatureValue>
+    <SignatureValue />
     <KeyInfo>
       <KeyName>rsakey.pem</KeyName>
     </KeyInfo>

@@ -5,6 +5,7 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
 
 import org.junit.jupiter.api.Test;
 
@@ -28,5 +29,16 @@ class TrustSourceTest {
         .assertThat().statusCode(200)
         .and().contentType("text/xml")
         .and().body("TrustServiceStatusList.@Id", is("trusted-pid-issuers"));
+  }
+
+  @Test
+  void servesSignedListOfTrustedPidIssuers() {
+    trustSource.tryGet("trusted-pid-issuers.xml")
+        .then()
+        .assertThat().statusCode(200)
+        .and().contentType("text/xml")
+        .and().body(
+            "TrustServiceStatusList.Signature.SignatureValue",
+            matchesPattern("(\\s*[\\w/]+)+=*\\s*"));
   }
 }
