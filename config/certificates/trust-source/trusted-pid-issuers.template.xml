@@ -45,6 +45,7 @@ SPDX-License-Identifier: CC0-1.0
     <SignatureValue />
     <KeyInfo>
       <KeyName>rsakey.pem</KeyName>
+      <X509Data />
     </KeyInfo>
   </Signature>
 </TrustServiceStatusList>

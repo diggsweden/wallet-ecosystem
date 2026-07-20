@@ -39,6 +39,9 @@ class TrustSourceTest {
         .and().contentType("text/xml")
         .and().body(
             "TrustServiceStatusList.Signature.SignatureValue",
-            matchesPattern("(\\s*[\\w/]+)+=*\\s*"));
+            matchesPattern("(\\s*[\\w/]+)+=*\\s*"))
+        .and().body(
+            "TrustServiceStatusList.Signature.KeyInfo.X509Data.X509Certificate",
+            matchesPattern("(\\s*[\\w/+]+)+\\s*"));
   }
 }
