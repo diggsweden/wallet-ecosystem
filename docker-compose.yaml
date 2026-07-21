@@ -70,6 +70,7 @@ services:
     hostname: trust-validator
     volumes:
       - ./config/certificates/trust-validator/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
+      - ./config/certificates/trust-source/rsacert.p12:/opt/common/trust_source.p12:ro
     environment:
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
@@ -80,6 +81,9 @@ services:
       TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_PASSWORD: "pass1234"
       # Dummy LoTL configuration required by v0.2.x to enable the VerificationContexts
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_SIGNATURE_VERIFICATION_LOCATION: "file:///opt/common/trust_source.p12"
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_SIGNATURE_VERIFICATION_KEY_STORE_TYPE: "PKCS12"
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_SIGNATURE_VERIFICATION_PASSWORD: "pass1234"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
       # Also enable Wallet Providers for E2E tests
