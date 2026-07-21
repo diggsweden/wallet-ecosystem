@@ -237,7 +237,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account:
-    image: ghcr.io/diggsweden/wallet-account:v0.1.6
+    image: ghcr.io/diggsweden/wallet-account:v0.1.6@sha256:f86f835850a547c51016f143d497b83586b766a278c0d2cb3c2a2255ce27e7d3
     container_name: wallet-account
     hostname: wallet-account
     volumes:
@@ -396,7 +396,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-bff:
-    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639@sha256:fc63a91dd698ccb2114dcced589654a367651f21fd671862a6a127d23e3bc9e5
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -427,7 +427,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639@sha256:33533b4475dec3924b0d4af006f2ffc0eb8b7e34d40ece12b24c7582f808969f
     env_file:
       - .env.opaque
       - .env.softhsm
