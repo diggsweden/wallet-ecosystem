@@ -122,6 +122,15 @@ generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "
 # 5. Trust Source
 generate_service_cert_ec "trust-source" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source"
 
+# 6. Trust Validator
+echo "Creating trust_store.p12 for Trust Validator..."
+TRUST_VALIDATOR_TRUST_STORE="$CERT_DIR/trust-validator/trust_store.p12"
+mkdir -p "$CERT_DIR/trust-validator"
+rm -f "$TRUST_VALIDATOR_TRUST_STORE"
+keytool -importcert -noprompt -alias trust_source -file "$TMP_DIR/trust_source.crt.trust" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass pass1234 -storetype PKCS12
+keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass pass1234 -storetype PKCS12
+create_license "$TRUST_VALIDATOR_TRUST_STORE"
+
 # --- Finalization ---
 
 # License for serial file if it exists
