@@ -119,6 +119,9 @@ create_license "$TRUST_P12"
 # 4. Wallet Provider
 generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "pass1234" "Wallet Provider (Ecosystem)" "DNS.1:localhost,DNS.2:wallet-provider"
 
+# 5. Trust Source
+generate_service_cert_ec "trust-source" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source"
+
 # --- Finalization ---
 
 # License for serial file if it exists
