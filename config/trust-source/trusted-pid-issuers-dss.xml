@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+
+SPDX-License-Identifier: CC0-1.0
+-->
+<TrustServiceStatusList
+  xmlns="http://uri.etsi.org/02231/v2#"
+  Id="trusted-pid-issuers"
+  TSLTag="https://uri.etsi.org/19612/TSLTag"
+  schemaLocation="https://uri.etsi.org/02231/v3.1.2/ts_102231v030102_xsd.xsd "
+>
+  <SchemeInformation>
+    <TSLVersionIdentifier>0</TSLVersionIdentifier>
+    <TSLSequenceNumber>0</TSLSequenceNumber>
+    <TSLType>http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric</TSLType>
+    <SchemeOperatorName>
+      <Name xml:lang="en">Digg - Agency for Digital Government</Name>
+      <Name xml:lang="sv">Digg - Myndigheten för digital förvaltning</Name>
+    </SchemeOperatorName>
+    <SchemeName>
+      <Name xml:lang="en">
+        A made up trusted list intended only for testing in the local wallet
+        ecosystem. This is not for production use.
+      </Name>
+    </SchemeName>
+  </SchemeInformation>
+  <TrustServiceProviderList />
+  <ds:Signature
+    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+    Id="id-5af498b379e0e6b56640c1c7ab6d11ac"
+  >
+    <ds:SignedInfo>
+      <ds:CanonicalizationMethod
+        Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"
+      />
+      <ds:SignatureMethod
+        Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+      />
+      <ds:Reference Id="r-id-5af498b379e0e6b56640c1c7ab6d11ac-1" URI="">
+        <ds:Transforms>
+          <ds:Transform Algorithm="http://www.w3.org/2002/06/xmldsig-filter2">
+            <dsig-filter2:XPath
+              xmlns:dsig-filter2="http://www.w3.org/2002/06/xmldsig-filter2"
+              Filter="subtract"
+            >
+              /descendant::ds:Signature
+            </dsig-filter2:XPath>
+          </ds:Transform>
+          <ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
+        </ds:Transforms>
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <ds:DigestValue>
+          C0Xi6qyuYY/zMfnMm5Mqg+/pwapU98K8FKVj6tXXotg=
+        </ds:DigestValue>
+      </ds:Reference>
+      <ds:Reference
+        Type="http://uri.etsi.org/01903#SignedProperties"
+        URI="#xades-id-5af498b379e0e6b56640c1c7ab6d11ac"
+      >
+        <ds:Transforms>
+          <ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
+        </ds:Transforms>
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <ds:DigestValue>
+          l2BLt/i1xfGm8CsiPS+me4M7g63NtxrktlG5FjYrXik=
+        </ds:DigestValue>
+      </ds:Reference>
+    </ds:SignedInfo>
+    <ds:SignatureValue Id="value-id-5af498b379e0e6b56640c1c7ab6d11ac">
+      IjELILisdZGz4qBZ6SFEQ+w7u3PyPrJbq3bnL+EjHFEGxTYp3hgOPLj+Pr5OaQRadb7i9yChf5K6Qmk+MudcMQ==
+    </ds:SignatureValue>
+    <ds:KeyInfo>
+      <ds:X509Data>
+        <ds:X509Certificate>
+          MIIDpzCCA1GgAwIBAgIJAK+ii7kzrdqvMA0GCSqGSIb3DQEBBQUAMIGcMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTE9MDsGA1UEChM0WE1MIFNlY3VyaXR5IExpYnJhcnkgKGh0dHA6Ly93d3cuYWxla3NleS5jb20veG1sc2VjKTEWMBQGA1UEAxMNQWxla3NleSBTYW5pbjEhMB8GCSqGSIb3DQEJARYSeG1sc2VjQGFsZWtzZXkuY29tMCAXDTE0MDUyMzE3NTUzNFoYDzIxMTQwNDI5MTc1NTM0WjCBxzELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExPTA7BgNVBAoTNFhNTCBTZWN1cml0eSBMaWJyYXJ5IChodHRwOi8vd3d3LmFsZWtzZXkuY29tL3htbHNlYykxKTAnBgNVBAsTIFRlc3QgVGhpcmQgTGV2ZWwgUlNBIENlcnRpZmljYXRlMRYwFAYDVQQDEw1BbGVrc2V5IFNhbmluMSEwHwYJKoZIhvcNAQkBFhJ4bWxzZWNAYWxla3NleS5jb20wXDANBgkqhkiG9w0BAQEFAANLADBIAkEA09BtD3aeVt6DVDkk0dI7Vh7LjqdnsYmW0tbDVxxK+nume+Z9Sb4znbUKkWl+vgQATdRUEyhT2P+Gqrd0UBzYfQIDAQABo4IBRTCCAUEwDAYDVR0TBAUwAwEB/zAsBglghkgBhvhCAQ0EHxYdT3BlblNTTCBHZW5lcmF0ZWQgQ2VydGlmaWNhdGUwHQYDVR0OBBYEFNf0xkZ3zjcEI60pVPuwDqTMQygZMIHjBgNVHSMEgdswgdiAFP7k7FMk8JWVxxC14US1XTllWuN+oYG0pIGxMIGuMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTE9MDsGA1UEChM0WE1MIFNlY3VyaXR5IExpYnJhcnkgKGh0dHA6Ly93d3cuYWxla3NleS5jb20veG1sc2VjKTEQMA4GA1UECxMHUm9vdCBDQTEWMBQGA1UEAxMNQWxla3NleSBTYW5pbjEhMB8GCSqGSIb3DQEJARYSeG1sc2VjQGFsZWtzZXkuY29tggkAr6KLuTOt2q0wDQYJKoZIhvcNAQEFBQADQQAOXBj0yICp1RmHXqnUlsppryLCW3pKBD1dkb4HWarO7RjA1yJJfBjXssrERn05kpBcrRfzou4r3DCgQFPhjxga
+        </ds:X509Certificate>
+      </ds:X509Data>
+    </ds:KeyInfo>
+    <ds:Object>
+      <xades:QualifyingProperties
+        xmlns:xades="http://uri.etsi.org/01903/v1.3.2#"
+        Target="#id-5af498b379e0e6b56640c1c7ab6d11ac"
+      >
+        <xades:SignedProperties Id="xades-id-5af498b379e0e6b56640c1c7ab6d11ac">
+          <xades:SignedSignatureProperties>
+            <xades:SigningTime>2026-07-22T08:35:37Z</xades:SigningTime>
+            <xades:SigningCertificateV2>
+              <xades:Cert>
+                <xades:CertDigest>
+                  <ds:DigestMethod
+                    Algorithm="http://www.w3.org/2001/04/xmlenc#sha512"
+                  />
+                  <ds:DigestValue>
+                    Bu3P/IRl1NSLAfQkgmDE+YX2pNOTfFeqVcTzUvrVsVCtntyYGwmLabwpcwOh3UXz/Kw6V8lbVUPkLpH2FNabXw==
+                  </ds:DigestValue>
+                </xades:CertDigest>
+                <xades:IssuerSerialV2>
+                  MIGwMIGipIGfMIGcMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTE9MDsGA1UEChM0WE1MIFNlY3VyaXR5IExpYnJhcnkgKGh0dHA6Ly93d3cuYWxla3NleS5jb20veG1sc2VjKTEWMBQGA1UEAxMNQWxla3NleSBTYW5pbjEhMB8GCSqGSIb3DQEJARYSeG1sc2VjQGFsZWtzZXkuY29tAgkAr6KLuTOt2q8=
+                </xades:IssuerSerialV2>
+              </xades:Cert>
+            </xades:SigningCertificateV2>
+          </xades:SignedSignatureProperties>
+          <xades:SignedDataObjectProperties>
+            <xades:DataObjectFormat
+              ObjectReference="#r-id-5af498b379e0e6b56640c1c7ab6d11ac-1"
+            >
+              <xades:MimeType>text/xml</xades:MimeType>
+            </xades:DataObjectFormat>
+          </xades:SignedDataObjectProperties>
+        </xades:SignedProperties>
+      </xades:QualifyingProperties>
+    </ds:Object>
+  </ds:Signature>
+</TrustServiceStatusList>
