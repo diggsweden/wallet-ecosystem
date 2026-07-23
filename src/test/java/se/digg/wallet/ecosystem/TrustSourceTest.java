@@ -9,6 +9,8 @@ import static org.hamcrest.Matchers.matchesPattern;
 
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class TrustSourceTest {
 
@@ -35,9 +37,13 @@ class TrustSourceTest {
         .and().body("TrustServiceStatusList.@Id", is("trusted-pid-issuers"));
   }
 
-  @Test
-  void servesSignedListOfTrustedPidIssuers() {
-    trustSource.tryGet("trusted-pid-issuers.xml")
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "trusted-pid-issuers.xml",
+      "trusted-pid-issuers-dss.xml"
+  })
+  void servesSignedListOfTrustedPidIssuers(String path) {
+    trustSource.tryGet(path)
         .then()
         .assertThat().statusCode(200)
         .and().contentType("text/xml")
