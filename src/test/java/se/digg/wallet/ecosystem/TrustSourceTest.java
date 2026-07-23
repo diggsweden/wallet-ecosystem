@@ -7,9 +7,13 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
 
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class TrustSourceTest {
+
+  private static final Pattern BASE_64 =
+      Pattern.compile("(\\s*[a-zA-Z0-9/+]+)+={0,2}\\s*");
 
   private final TrustSourceClient trustSource = new TrustSourceClient();
 
@@ -39,9 +43,9 @@ class TrustSourceTest {
         .and().contentType("text/xml")
         .and().body(
             "TrustServiceStatusList.Signature.SignatureValue",
-            matchesPattern("(\\s*[\\w/]+)+=*\\s*"))
+            matchesPattern(BASE_64))
         .and().body(
             "TrustServiceStatusList.Signature.KeyInfo.X509Data.X509Certificate",
-            matchesPattern("(\\s*[\\w/+]+)+\\s*"));
+            matchesPattern(BASE_64));
   }
 }
