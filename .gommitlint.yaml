@@ -5,3 +5,5 @@
 gommitlint:
   crypto_signature:
     required: true
+  repo:
+    max_commits_ahead: 20
