@@ -11,6 +11,7 @@
 
 # It is expected to 'leak' secrets to our local environment in our test code
 /src/test/java
+/src/test/resources
 
 # secrets: inherit is intentional here — reusable-ci does not yet declare
 # explicit secrets in on.workflow_call.secrets, so it cannot be enumerated.
