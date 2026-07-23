@@ -50,7 +50,7 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void appActuatorHealth_status_shouldReturnUP() {
+  void appActuatorHealth_status_shouldReturnUp() {
     walletClientGateway.tryGetHealth()
         .then()
         .assertThat().statusCode(200)

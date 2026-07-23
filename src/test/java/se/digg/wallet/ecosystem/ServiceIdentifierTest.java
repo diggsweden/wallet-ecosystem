@@ -15,7 +15,7 @@ class ServiceIdentifierTest {
 
   @ParameterizedTest
   @EnumSource(ServiceIdentifier.class)
-  void isValidURI(ServiceIdentifier s) {
+  void isValidUri(ServiceIdentifier s) {
     assertThat(s.toUri(), is(notNullValue()));
   }
 }
