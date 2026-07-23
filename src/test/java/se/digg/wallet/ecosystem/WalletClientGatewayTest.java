@@ -66,7 +66,7 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void addWalletKey_should_return_201() throws Exception {
+  void addWalletKey_should_succeed() throws Exception {
     var walletKey = generateKey();
     walletClientGateway.addWalletKey(session, walletKey.toPublicJWK().toJSONString());
   }
