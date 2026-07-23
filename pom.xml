@@ -190,6 +190,9 @@ SPDX-License-Identifier: CC0-1.0
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>${checkstyle-maven-plugin.version}</version>
         <configuration>
+          <propertyExpansion>
+            org.checkstyle.google.severity=ERROR
+          </propertyExpansion>
           <configLocation>
             ${project.basedir}/development/lint/google_checks.xml
           </configLocation>
