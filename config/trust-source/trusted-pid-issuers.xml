@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+
+SPDX-License-Identifier: CC0-1.0
+-->
+<TrustServiceStatusList
+  xmlns="http://uri.etsi.org/02231/v2#"
+  Id="trusted-pid-issuers"
+  TSLTag="https://uri.etsi.org/19612/TSLTag"
+  schemaLocation="https://uri.etsi.org/02231/v3.1.2/ts_102231v030102_xsd.xsd "
+>
+  <SchemeInformation>
+    <TSLVersionIdentifier>0</TSLVersionIdentifier>
+    <TSLSequenceNumber>0</TSLSequenceNumber>
+    <TSLType>http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric</TSLType>
+    <SchemeOperatorName>
+      <Name xml:lang="en">Digg - Agency for Digital Government</Name>
+      <Name xml:lang="sv">Digg - Myndigheten för digital förvaltning</Name>
+    </SchemeOperatorName>
+    <SchemeName>
+      <Name xml:lang="en">
+        A made up trusted list intended only for testing in the local wallet
+        ecosystem. This is not for production use.
+      </Name>
+    </SchemeName>
+  </SchemeInformation>
+  <TrustServiceProviderList />
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod
+        Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+      />
+      <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" />
+      <Reference URI="">
+        <Transforms>
+          <Transform
+            Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"
+          />
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <DigestValue>OqYPHPB1m9hYEY5ffqS4+kg2q+M=</DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue>
+      MDkWRWanpCUmszLK7UY0b6mDfHlir50I8T3u/cNa/JolUJzMsyaSHnNP2UOkoOC5
+4pS1gvclZHTlKMnHSJDViQ==
+    </SignatureValue>
+    <KeyInfo>
+      <KeyName>rsakey.pem</KeyName>
+      <X509Data>
+        <X509Certificate>
+          MIIDpzCCA1GgAwIBAgIJAK+ii7kzrdqvMA0GCSqGSIb3DQEBBQUAMIGcMQswCQYD
+VQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTE9MDsGA1UEChM0WE1MIFNlY3Vy
+aXR5IExpYnJhcnkgKGh0dHA6Ly93d3cuYWxla3NleS5jb20veG1sc2VjKTEWMBQG
+A1UEAxMNQWxla3NleSBTYW5pbjEhMB8GCSqGSIb3DQEJARYSeG1sc2VjQGFsZWtz
+ZXkuY29tMCAXDTE0MDUyMzE3NTUzNFoYDzIxMTQwNDI5MTc1NTM0WjCBxzELMAkG
+A1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExPTA7BgNVBAoTNFhNTCBTZWN1
+cml0eSBMaWJyYXJ5IChodHRwOi8vd3d3LmFsZWtzZXkuY29tL3htbHNlYykxKTAn
+BgNVBAsTIFRlc3QgVGhpcmQgTGV2ZWwgUlNBIENlcnRpZmljYXRlMRYwFAYDVQQD
+Ew1BbGVrc2V5IFNhbmluMSEwHwYJKoZIhvcNAQkBFhJ4bWxzZWNAYWxla3NleS5j
+b20wXDANBgkqhkiG9w0BAQEFAANLADBIAkEA09BtD3aeVt6DVDkk0dI7Vh7Ljqdn
+sYmW0tbDVxxK+nume+Z9Sb4znbUKkWl+vgQATdRUEyhT2P+Gqrd0UBzYfQIDAQAB
+o4IBRTCCAUEwDAYDVR0TBAUwAwEB/zAsBglghkgBhvhCAQ0EHxYdT3BlblNTTCBH
+ZW5lcmF0ZWQgQ2VydGlmaWNhdGUwHQYDVR0OBBYEFNf0xkZ3zjcEI60pVPuwDqTM
+QygZMIHjBgNVHSMEgdswgdiAFP7k7FMk8JWVxxC14US1XTllWuN+oYG0pIGxMIGu
+MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTE9MDsGA1UEChM0WE1M
+IFNlY3VyaXR5IExpYnJhcnkgKGh0dHA6Ly93d3cuYWxla3NleS5jb20veG1sc2Vj
+KTEQMA4GA1UECxMHUm9vdCBDQTEWMBQGA1UEAxMNQWxla3NleSBTYW5pbjEhMB8G
+CSqGSIb3DQEJARYSeG1sc2VjQGFsZWtzZXkuY29tggkAr6KLuTOt2q0wDQYJKoZI
+hvcNAQEFBQADQQAOXBj0yICp1RmHXqnUlsppryLCW3pKBD1dkb4HWarO7RjA1yJJ
+fBjXssrERn05kpBcrRfzou4r3DCgQFPhjxga
+        </X509Certificate>
+      </X509Data>
+    </KeyInfo>
+  </Signature>
+</TrustServiceStatusList>

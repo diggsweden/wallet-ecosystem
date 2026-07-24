@@ -16,6 +16,8 @@ public enum ServiceIdentifier {
   UNTRUSTED_WALLET_PROVIDER,
   VERIFIER_BACKEND,
   VERIFIER_FRONTEND,
+  TRUST_VALIDATOR,
+  TRUST_SOURCE,
   WALLET_CLIENT_GATEWAY;
 
   private String getValue() {
