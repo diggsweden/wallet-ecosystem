@@ -20,17 +20,17 @@ class TrustSourceTest {
   private final TrustSourceClient trustSource = new TrustSourceClient();
 
   @Test
-  void isHealthy() {
-    trustSource.tryGet("dummy.xml")
+  void servesListOfTrustedLists() {
+    trustSource.tryGet("signed/lotl.xml")
         .then()
         .assertThat().statusCode(200)
         .and().contentType("text/xml")
-        .and().body("xml", is("Hello world!"));
+        .and().body("TrustServiceStatusList.@Id", is("lotl"));
   }
 
   @Test
   void servesListOfTrustedPidIssuers() {
-    trustSource.tryGet("trusted-pid-issuers.xml")
+    trustSource.tryGet("signed/trusted-pid-issuers.xml")
         .then()
         .assertThat().statusCode(200)
         .and().contentType("text/xml")
@@ -39,8 +39,7 @@ class TrustSourceTest {
 
   @ParameterizedTest
   @ValueSource(strings = {
-      "trusted-pid-issuers.xml",
-      "trusted-pid-issuers-dss.xml"
+      "signed/trusted-pid-issuers.xml"
   })
   void servesSignedListOfTrustedPidIssuers(String path) {
     trustSource.tryGet(path)
@@ -51,7 +50,7 @@ class TrustSourceTest {
             "TrustServiceStatusList.Signature.SignatureValue",
             matchesPattern(BASE_64))
         .and().body(
-            "TrustServiceStatusList.Signature.KeyInfo.X509Data.X509Certificate",
+            "TrustServiceStatusList.Signature.KeyInfo.X509Data.X509Certificate[0]",
             matchesPattern(BASE_64));
   }
 }

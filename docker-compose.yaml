@@ -65,7 +65,7 @@ services:
       - wallet-ecosystem-network
 
   trust-validator:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.2.1-alpha@sha256:cd5122779e13a11388a4e213f5e52437ae9422f3cb589d40199eeca4d433e2b4
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.2.2-alpha
     container_name: trust-validator
     hostname: trust-validator
     volumes:
@@ -79,17 +79,18 @@ services:
       TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_LOCATION: "file:///opt/common/trusted_issuers.p12"
       TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_KEY_STORE_TYPE: "PKCS12"
       TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_PASSWORD: "pass1234"
-      # Dummy LoTL configuration required by v0.2.x to enable the VerificationContexts
-      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
+      TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_LOCATION: "http://trust-source/signed/lotl.xml"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_SIGNATURE_VERIFICATION_LOCATION: "file:///opt/common/trust_store.p12"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_SIGNATURE_VERIFICATION_KEY_STORE_TYPE: "PKCS12"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_SIGNATURE_VERIFICATION_PASSWORD: "pass1234"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
+
       # Also enable Wallet Providers for E2E tests
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_LOCATION: "http://localhost/dummy.xml"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTL_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
+      LOGGING_LEVEL_EU_EUROPA_ESIG: "DEBUG"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.trust-validator.rule=PathPrefix(`/trust-validator`)"
@@ -384,8 +385,8 @@ services:
       test: "bash /opt/keycloak/health-check.sh"
       interval: 5s
       timeout: 10s
-      retries: 12
-      start_period: 30s
+      retries: 24
+      start_period: 120s
     volumes:
       - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/themes/:/opt/keycloak/themes
@@ -526,6 +527,18 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092
     networks:
       - wallet-ecosystem-network
+
+  wallet-dss-cli:
+    image: ghcr.io/diggsweden/wallet-dss-cli:0.1.1
+    profiles:
+      - cli
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    entrypoint:
+      - java
+      - -jar
+      - /app/wallet-dss-cli.jar
 
   traefik:
     image: traefik:v3.6
