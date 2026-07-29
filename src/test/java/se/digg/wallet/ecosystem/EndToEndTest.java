@@ -61,9 +61,10 @@ public class EndToEndTest {
     String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
 
     // 3. Get credential
+    String uniqueKid = UUID.randomUUID().toString();
     ECKey bindingKey =
         new ECKeyGenerator(Curve.P_256)
-            .keyID("binding-key")
+            .keyID(uniqueKid)
             .algorithm(JWSAlgorithm.ES256)
             .keyUse(KeyUse.SIGNATURE)
             .generate();
