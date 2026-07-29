@@ -2,7 +2,8 @@
 set -e
 
 # Base directories
-CERT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+CERT_DIR="$SCRIPT_DIR/.."
 TMP_DIR="$CERT_DIR/tmp"
 
 # Cleanup temporary files on exit
@@ -28,14 +29,25 @@ ROOT_PEM="$ROOTCA_DIR/rootca.pem"
 if [ ! -f "$ROOT_KEY" ] || [ ! -f "$ROOT_PEM" ]; then
   echo "Generating EC Root CA (P-256)..."
   openssl ecparam -name prime256v1 -genkey -noout -out "$ROOT_KEY"
+  cp "$SCRIPT_DIR/templates/root.cnf" "$TMP_DIR/root.cnf"
   openssl req -x509 -new -nodes -key "$ROOT_KEY" \
     -sha256 -days 3650 \
     -out "$ROOT_PEM" \
-    -subj "/C=SE/O=DIGG/CN=DIGG Wallet Ecosystem Root CA"
+    -config "$TMP_DIR/root.cnf"
   create_license "$ROOT_KEY"
   create_license "$ROOT_PEM"
 else
   echo "Using existing Root CA found in $ROOTCA_DIR"
+fi
+
+if [ ! -f "$ROOTCA_DIR/revocation-list.pem" ]; then
+  echo "Generating empty Certificate Revocation List (CRL)..."
+  export TMP_DIR ROOT_PEM ROOT_KEY
+  envsubst <"$SCRIPT_DIR/templates/ca.cnf" >"$TMP_DIR/ca.cnf"
+  touch "$TMP_DIR/index.txt"
+  echo "01" >"$TMP_DIR/crlnumber"
+  openssl ca -gencrl -config "$TMP_DIR/ca.cnf" -out "$ROOTCA_DIR/revocation-list.pem"
+  create_license "$ROOTCA_DIR/revocation-list.pem"
 fi
 
 function generate_service_cert_ec() {
@@ -53,20 +65,8 @@ function generate_service_cert_ec() {
 
   # Create temporary config for CSR
   local cnf_file="$TMP_DIR/$cert_name.cnf"
-  cat >"$cnf_file" <<EOF
-[req]
-distinguished_name = req_distinguished_name
-req_extensions = v3_req
-prompt = no
-
-[req_distinguished_name]
-C = SE
-O = DIGG
-CN = $cn
-
-[v3_req]
-subjectAltName = $sans
-EOF
+  export cn sans
+  envsubst <"$SCRIPT_DIR/templates/service.cnf" >"$cnf_file"
 
   local key_file="$TMP_DIR/$cert_name.key"
   local csr_file="$TMP_DIR/$cert_name.csr"
@@ -119,6 +119,18 @@ create_license "$TRUST_P12"
 # 4. Wallet Provider
 generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "pass1234" "Wallet Provider (Ecosystem)" "DNS.1:localhost,DNS.2:wallet-provider"
 
+# 5. Trust Source
+generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source"
+
+# 6. Trust Validator
+echo "Creating trust_store.p12 for Trust Validator..."
+TRUST_VALIDATOR_TRUST_STORE="$CERT_DIR/trust-validator/trust_store.p12"
+mkdir -p "$CERT_DIR/trust-validator"
+rm -f "$TRUST_VALIDATOR_TRUST_STORE"
+keytool -importcert -noprompt -alias trust_source -file "$TMP_DIR/trust_source.crt.trust" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass pass1234 -storetype PKCS12
+keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass pass1234 -storetype PKCS12
+create_license "$TRUST_VALIDATOR_TRUST_STORE"
+
 # --- Finalization ---
 
 # License for serial file if it exists
@@ -127,5 +139,8 @@ generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "
 # Ensure container readability
 find "$CERT_DIR" -name "*.p12" -exec chmod 644 {} +
 find "$CERT_DIR" -name "*.pem" -exec chmod 644 {} +
+
+# Copy CRL to trust-source to be hosted by Nginx
+cp "$ROOTCA_DIR/revocation-list.pem" "config/trust-source/revocation-list.pem"
 
 echo "Done! All certificates and licenses in config/certificates updated for Ecosystem."

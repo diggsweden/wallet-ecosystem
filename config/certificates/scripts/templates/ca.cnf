@@ -1,0 +1,10 @@
+[ca]
+default_ca = CA_default
+
+[CA_default]
+database = ${TMP_DIR}/index.txt
+crlnumber = ${TMP_DIR}/crlnumber
+default_md = sha256
+default_crl_days = 3650
+certificate = ${ROOT_PEM}
+private_key = ${ROOT_KEY}
