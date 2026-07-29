@@ -385,8 +385,8 @@ services:
       test: "bash /opt/keycloak/health-check.sh"
       interval: 5s
       timeout: 10s
-      retries: 24
-      start_period: 120s
+      retries: 12
+      start_period: 30s
     volumes:
       - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/themes/:/opt/keycloak/themes
