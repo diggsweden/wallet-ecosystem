@@ -94,9 +94,11 @@ public class IssuanceAgent {
   }
 
   private String createProof(ECKey jwk, String wua, String nonce) throws JOSEException {
+    System.out.println("WUA: " + wua);
     JWSHeader header =
         new JWSHeader.Builder(JWSAlgorithm.ES256)
             .type(new JOSEObjectType("openid4vci-proof+jwt"))
+            .keyID("0")
             .customParam("key_attestation", wua)
             .build();
 

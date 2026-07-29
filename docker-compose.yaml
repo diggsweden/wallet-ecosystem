@@ -163,7 +163,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.9.1
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.10.2
     container_name: pid-issuer
     depends_on:
       keycloak:
@@ -202,6 +202,18 @@ services:
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY=LoadFromKeystore
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_ALIAS=pid_issuer
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_PASSWORD=pass1234
+      - ISSUER_NONCE_ENCRYPTION_KEY_ALIAS=nonce-encryption
+      - ISSUER_NONCE_ENCRYPTION_KEY_PASSWORD=pass1234
+      - ISSUER_ACCESS_CERTIFICATE_ALIAS=pid_issuer
+      - ISSUER_ACCESS_CERTIFICATE_PASSWORD=pass1234
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_ALIAS=request-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_PASSWORD=pass1234
+      - SPRING_R2DBC_URL=r2dbc:pool:postgresql://wallet-account-db:5432/wallet-account
+      - SPRING_R2DBC_USERNAME=wallet-account
+      - SPRING_R2DBC_PASSWORD=pass
+      - ISSUER_STATUSLIST_SERVICE_GENERATE_URI=http://status-list:5000/token_status_list/take
+      - ISSUER_STATUSLIST_SERVICE_REVOKE_URI=http://status-list:5000/token_status_list/take
+      - ISSUER_STATUSLIST_SERVICE_APIKEY=aaa-bbb-ccc
       - ISSUER_METADATA_SIGNED_METADATA_ENABLED=false
       - ISSUER_KEYCLOAK_SERVER_URL=http://keycloak:8080/idp
       - ISSUER_KEYCLOAK_AUTHENTICATION_REALM=master
@@ -255,6 +267,8 @@ services:
       POSTGRES_USER: wallet-account
       POSTGRES_PASSWORD: pass
       POSTGRES_DATABASE: wallet-account
+    volumes:
+      - ./config/db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wallet-account -d wallet-account"]
       interval: 5s

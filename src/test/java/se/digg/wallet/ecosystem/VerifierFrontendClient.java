@@ -50,8 +50,7 @@ public class VerifierFrontendClient {
                   "options": [["query_0"]]
                 }]
               },
-              "nonce": "nonce",
-              "type": "vp_token"
+              "nonce": "nonce"
             }
             """)
         .when()

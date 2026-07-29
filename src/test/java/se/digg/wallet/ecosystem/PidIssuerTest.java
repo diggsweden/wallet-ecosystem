@@ -17,6 +17,9 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import io.restassured.path.json.JsonPath;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -59,35 +62,45 @@ public class PidIssuerTest {
   @MethodSource("usefulLinks")
   @MethodSource("authorizationServers")
   void linkWorks(String labelNotUsedInTestButIncludedInDisplayName, String link) {
-    given().when().get(link).then().assertThat().statusCode(200);
+    given().urlEncodingEnabled(false).when().get(link).then().assertThat().statusCode(200);
   }
 
   @ParameterizedTest
   @EnumSource(MetadataLocationStrategy.class)
   void servesCredentialIssuerMetadata(MetadataLocationStrategy strategy) {
-    pidIssuer.tryGetOpenIdCredentialIssuerMetadata(strategy)
+    String response = pidIssuer.tryGetOpenIdCredentialIssuerMetadata(strategy)
         .then()
         .assertThat().statusCode(200)
-        .and().body(
-            "credential_issuer",
-            is(IDENTIFIER.toString()))
-        .and().body(
-            "credential_request_encryption.jwks.keys",
-            not(empty()))
-        .and().body(
-            "authorization_servers",
-            hasItem(ServiceIdentifier.KEYCLOAK.getResourceRoot().resolve(
-                "realms/pid-issuer-realm").toString()));
+        .extract().asString();
+
+    if (response.split("\\.").length == 3) {
+      response = new String(Base64.getUrlDecoder().decode(response.split("\\.")[1]),
+          StandardCharsets.UTF_8);
+    }
+
+    JsonPath jp = new JsonPath(response);
+    assertThat(jp.getString("credential_issuer"), is(IDENTIFIER.toString()));
+    assertThat(jp.getList("credential_request_encryption.jwks.keys"), is(not(empty())));
+    assertThat(jp.getList("authorization_servers"), hasItem(ServiceIdentifier.KEYCLOAK
+        .getResourceRoot().resolve("realms/pid-issuer-realm").toString()));
   }
 
   @Test
   void servesMetadataWithLogo() {
-    var uri =
+    String response =
         pidIssuer.tryGetOpenIdCredentialIssuerMetadata(MetadataLocationStrategy.OID4VCI_COMPLIANT)
             .then()
             .assertThat().statusCode(200)
-            .and().body("display", hasSize(1))
-            .extract().jsonPath().getString("display[0].logo.uri");
+            .extract().asString();
+
+    if (response.split("\\.").length == 3) {
+      response = new String(Base64.getUrlDecoder().decode(response.split("\\.")[1]),
+          StandardCharsets.UTF_8);
+    }
+
+    JsonPath jp = new JsonPath(response);
+    assertThat(jp.getList("display"), hasSize(1));
+    var uri = jp.getString("display[0].logo.uri");
 
     given().get(uri).then().statusCode(200);
   }

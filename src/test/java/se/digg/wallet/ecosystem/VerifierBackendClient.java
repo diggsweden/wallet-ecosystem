@@ -63,9 +63,8 @@ public class VerifierBackendClient {
                     }]
                 },
                 "nonce": "%s",
-                "vp_token_type": "sd-jwt",
-                "type": "vp_token",
-                "jar_mode": "by_value"
+                "jar_mode": "by_value",
+                "intended_use_id": "1"
             }
             """,
         dcqlId, dcqlId, UUID.randomUUID());
@@ -94,9 +93,8 @@ public class VerifierBackendClient {
                     }]
                 },
                 "nonce": "%s",
-                "vp_token_type": "sd-jwt",
-                "type": "vp_token",
-                "jar_mode": "by_reference"
+                "jar_mode": "by_reference",
+                "intended_use_id": "1"
             }
             """,
         dcqlId, dcqlId, nonce);

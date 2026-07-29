@@ -951,6 +951,23 @@
         "require.pushed.authorization.requests": "true",
         "pkce.code.challenge.method": "S256"
       },
+      "protocolMappers": [
+        {
+          "id": "client-status-mapper",
+          "name": "client_status",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.value": "{\"status\": {\"status_list\": {\"idx\": 0, \"uri\": \"https://localhost/status-list\"}}, \"exp\": 1893456000}",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "client_status",
+            "jsonType.label": "JSON"
+          }
+        }
+      ],
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
