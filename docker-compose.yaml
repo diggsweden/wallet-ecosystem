@@ -373,7 +373,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.4-0
+    image: quay.io/keycloak/keycloak:26.6.2-2
     container_name: keycloak
     command:
       - start
@@ -391,13 +391,12 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
       - KC_DB=dev-file
     healthcheck:
-      test: "bash /opt/keycloak/health-check.sh"
+      test: ["CMD-SHELL", "{ printf 'HEAD /idp/health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000"]
       interval: 5s
       timeout: 10s
       retries: 12
       start_period: 30s
     volumes:
-      - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/themes/:/opt/keycloak/themes
       - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:
