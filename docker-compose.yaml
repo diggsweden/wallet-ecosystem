@@ -141,7 +141,7 @@ services:
       - wallet-ecosystem-network
 
   demo-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.9@sha256:948c9518de8993cffdafde6631a5e767528bef5ede7d5bd97a3e5ef2b3aeba94
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:local
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
@@ -159,10 +159,6 @@ services:
       - "traefik.http.routers.demo-verifier.entrypoints=websecure"
       - "traefik.http.routers.demo-verifier.tls=true"
       - "traefik.http.services.demo-verifier.loadbalancer.server.port=3002"
-    volumes:
-      - ./config/demo-verifier/vaccincentralen-request.post.mjs:/app/server/chunks/routes/api/vaccincentralen-request.post.mjs:ro
-      - ./config/demo-verifier/matcentralen-request.post.mjs:/app/server/chunks/routes/api/matcentralen-request.post.mjs:ro
-      - ./config/demo-verifier/biocentralen-request.post.mjs:/app/server/chunks/routes/api/biocentralen-request.post.mjs:ro
     restart: on-failure
     networks:
       - wallet-ecosystem-network
