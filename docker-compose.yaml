@@ -32,7 +32,7 @@ x-kafka-common: &kafka-common
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.2
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
@@ -51,7 +51,7 @@ services:
       VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
-      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust-validator/trust"
+      VERIFIER_TRUST_VALIDATOR_SERVICE_URL: "http://trust-validator:8080/trust-validator/trust"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
       JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     depends_on:
@@ -72,9 +72,10 @@ services:
     hostname: trust-validator
     environment:
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
-      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
+      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "DEBUG"
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "DEBUG"
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP: "DEBUG"
+      LOGGING_LEVEL_EU_EUROPA_ESIG_DSS: "TRACE"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
       TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"

@@ -10,11 +10,9 @@ SPDX-License-Identifier: CC0-1.0
   TSLTag="https://uri.etsi.org/19612/TSLTag"
 >
   <SchemeInformation>
-    <TSLVersionIdentifier>0</TSLVersionIdentifier>
-    <TSLSequenceNumber>0</TSLSequenceNumber>
-    <TSLType>
-      http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUlistofthelists
-    </TSLType>
+    <TSLVersionIdentifier>2</TSLVersionIdentifier>
+    <TSLSequenceNumber>2</TSLSequenceNumber>
+    <TSLType>http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUlistofthelists</TSLType>
     <SchemeOperatorName>
       <Name xml:lang="en">Digg LOTL Operator</Name>
     </SchemeOperatorName>
@@ -23,14 +21,10 @@ SPDX-License-Identifier: CC0-1.0
     </SchemeName>
     <PointersToOtherTSL>
       <OtherTSLPointer>
-        <TSLLocation>
-          http://trust-source/signed/trusted-pid-issuers.xml
-        </TSLLocation>
+        <TSLLocation>http://trust-source/signed/trusted-pid-issuers.xml</TSLLocation>
         <AdditionalInformation>
           <OtherInformation>
-            <TSLType>
-              http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric
-            </TSLType>
+            <TSLType>http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric</TSLType>
           </OtherInformation>
           <OtherInformation>
             <SchemeTerritory>SE</SchemeTerritory>
@@ -40,7 +34,7 @@ SPDX-License-Identifier: CC0-1.0
           <ServiceDigitalIdentity>
             <DigitalId>
               <X509Certificate>
-                MIICiTCCAi6gAwIBAgIUNsg6EFZjfbTcklzHJ04l0tYyqJEwCgYIKoZIzj0EAwIwRDELMAkGA1UEBhMCU0UxDTALBgNVBAoMBERJR0cxJjAkBgNVBAMMHURJR0cgV2FsbGV0IEVjb3N5c3RlbSBSb290IENBMB4XDTI2MDcyNzEzMDE1MFoXDTI4MTAyOTEzMDE1MFowPzELMAkGA1UEBhMCU0UxDTALBgNVBAoMBERJR0cxITAfBgNVBAMMGFRydXN0IFNvdXJjZSAoRWNvc3lzdGVtKTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABG0A+48C0htB0FhhH9g7trDgMLH4vxqOPbg2oD5httjjE8YKXCIRDWT1qhcEaAXv1TqazQOlX+7404yoCnz90FmjggEBMIH+MCIGA1UdEQQbMBmCCWxvY2FsaG9zdIIMdHJ1c3Qtc291cmNlMCwGA1UdHwQlMCMwIaAfoB2GG2h0dHA6Ly90cnVzdC1zb3VyY2UvY3JsLnBlbTAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIGwDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwLQYIKwYBBQUHAQMEITAfMAgGBgQAjkYBATATBgYEAI5GAQYwCQYHBACORgEGAjAdBgNVHQ4EFgQU3OlGImmGh1Kkqp1/KNrtDyzRUOswHwYDVR0jBBgwFoAUB2h8vYiDNQttbyUqghJfZvucc1MwCgYIKoZIzj0EAwIDSQAwRgIhAJZ1iiTdfIgG8QgkbTdVUTPQbYW9YfqKNF65chkYooR+AiEAo9U66oUCtxG9XIkpvQpOc7I0JxMByplpr/F4LFaayzo=
+                MIICdDCCAhqgAwIBAgIUNsg6EFZjfbTcklzHJ04l0tYyqKEwCgYIKoZIzj0EAwIwRDELMAkGA1UEBhMCU0UxDTALBgNVBAoMBERJR0cxJjAkBgNVBAMMHURJR0cgV2FsbGV0IEVjb3N5c3RlbSBSb290IENBMB4XDTI2MDczMTA3NTgyMloXDTI4MTEwMjA3NTgyMlowPzELMAkGA1UEBhMCU0UxDTALBgNVBAoMBERJR0cxITAfBgNVBAMMGFRydXN0IFNvdXJjZSAoRWNvc3lzdGVtKTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABH4WnsPlgSPcAHpBUTXAZWi0XKRTfA/ob27A72FjWIdkJaJsAY8PDRcYHzPGJBove19C8rTTZ9ugWXyny22nCtmjge4wgeswIgYDVR0RBBswGYIJbG9jYWxob3N0ggx0cnVzdC1zb3VyY2UwOAYDVR0fBDEwLzAtoCugKYYnaHR0cDovL3RydXN0LXNvdXJjZS9yZXZvY2F0aW9uLWxpc3QucGVtMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgbAMC0GCCsGAQUFBwEDBCEwHzAIBgYEAI5GAQEwEwYGBACORgEGMAkGBwQAjkYBBgIwHQYDVR0OBBYEFI33hsg85snuD7odjISo6JX59FfUMB8GA1UdIwQYMBaAFAdofL2IgzULbW8lKoISX2b7nHNTMAoGCCqGSM49BAMCA0gAMEUCIEJxxbBgwhbwQxfaIYA+HN/6irgRPWg+TIMB6CrgCzA6AiEAkNjdGQjOgg6o2LeukdK4XCLGyt6MhD2NkfzUbA81kIM=
               </X509Certificate>
             </DigitalId>
           </ServiceDigitalIdentity>

@@ -57,6 +57,7 @@ function generate_service_cert_ec() {
   local password="$4"
   local cn="$5"
   local sans="$6"
+  local template_name="${7:-service.cnf}"
 
   local target_dir="$CERT_DIR/$target_subdir"
   mkdir -p "$target_dir"
@@ -66,7 +67,7 @@ function generate_service_cert_ec() {
   # Create temporary config for CSR
   local cnf_file="$TMP_DIR/$cert_name.cnf"
   export cn sans
-  envsubst <"$SCRIPT_DIR/templates/service.cnf" >"$cnf_file"
+  envsubst <"$SCRIPT_DIR/templates/$template_name" >"$cnf_file"
 
   local key_file="$TMP_DIR/$cert_name.key"
   local csr_file="$TMP_DIR/$cert_name.csr"
@@ -103,6 +104,7 @@ function generate_service_cert_ec() {
 
 # 1. PID Issuer
 generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "DNS.1:localhost,DNS.2:pid-issuer"
+cp "$TMP_DIR/pid_issuer.crt" "$CERT_DIR/issuer/pid_issuer_cert.pem"
 
 # 2. Verifier Backend
 generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "DNS.1:localhost,DNS.2:verifier-backend,DNS.3:refimpl-verifier-backend,DNS.4:10.0.2.2"
@@ -120,7 +122,9 @@ create_license "$TRUST_P12"
 generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "pass1234" "Wallet Provider (Ecosystem)" "DNS.1:localhost,DNS.2:wallet-provider"
 
 # 5. Trust Source
-generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source"
+generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source" "signer.cnf"
+cp "$TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
+cp "$TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
 
 # 6. Trust Validator
 echo "Creating trust_store.p12 for Trust Validator..."
