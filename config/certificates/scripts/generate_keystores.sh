@@ -106,6 +106,14 @@ function generate_service_cert_ec() {
 generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "DNS.1:localhost,DNS.2:pid-issuer"
 cp "$TMP_DIR/pid_issuer.crt" "$CERT_DIR/issuer/pid_issuer_cert.pem"
 
+# Add nonce-encryption and request-encryption keys to pid_issuer.p12
+generate_service_cert_ec "issuer" "nonce" "nonce-encryption" "pass1234" "nonce-encryption" "DNS.1:localhost" "encryption.cnf"
+generate_service_cert_ec "issuer" "request" "request-encryption" "pass1234" "request-encryption" "DNS.1:localhost" "encryption.cnf"
+
+keytool -importkeystore -srckeystore "$CERT_DIR/issuer/nonce.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
+keytool -importkeystore -srckeystore "$CERT_DIR/issuer/request.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
+rm -f "$CERT_DIR/issuer/nonce.p12" "$CERT_DIR/issuer/request.p12"
+
 # 2. Verifier Backend
 generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "DNS.1:localhost,DNS.2:verifier-backend,DNS.3:refimpl-verifier-backend,DNS.4:10.0.2.2"
 

@@ -78,7 +78,7 @@ public class EndToEndTest {
     // 5. Post wallet response
     String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
     Response postWalletResponse =
-        given()
+        given().log().all()
             .baseUri(responseUri)
             .contentType(ContentType.URLENC)
             .formParam("state", state)
@@ -86,6 +86,7 @@ public class EndToEndTest {
             .when()
             .post()
             .then()
+            .log().all()
             .extract()
             .response();
 

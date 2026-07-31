@@ -67,11 +67,10 @@ public class IssuanceAgent {
             .keyUse(KeyUse.ENCRYPTION)
             .generate();
 
-    ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();
     String accessToken =
         keycloak.getDpopAccessToken(
             "pid-issuer-realm",
-            userJwk,
+            bindingKey,
             Map.of(
                 "grant_type", "password",
                 "client_id", "wallet-dev",
@@ -80,14 +79,15 @@ public class IssuanceAgent {
                 "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
                 "role", "user"));
 
-    String nonce = pidIssuer.getNonce(accessToken, userJwk);
+    String nonce = pidIssuer.getNonce(accessToken, bindingKey);
     String walletAttestation = wallet.createWalletUnitAttestation(bindingKey, nonce);
     String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =
         pidIssuer
             .issueCredentials(
-                accessToken, userJwk, encryptionKey, proof, pidIssuerCredentialRequestEncryptionKey)
+                accessToken, bindingKey, encryptionKey, proof,
+                pidIssuerCredentialRequestEncryptionKey)
             .toJSONObject();
 
     return extractSdJwtVc(payloadJson);
@@ -104,7 +104,7 @@ public class IssuanceAgent {
 
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
-            .issuer(jwk.toPublicJWK().toString())
+            .issuer("wallet-dev")
             .audience(audience)
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
@@ -112,7 +112,9 @@ public class IssuanceAgent {
 
     SignedJWT jwt = new SignedJWT(header, claims);
     jwt.sign(new ECDSASigner(jwk));
-    return jwt.serialize();
+    String proofJwt = jwt.serialize();
+    System.out.println("PROOF: " + proofJwt);
+    return proofJwt;
   }
 
   private String extractSdJwtVc(Map<String, Object> payloadJson) {

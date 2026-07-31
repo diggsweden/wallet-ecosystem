@@ -12,7 +12,9 @@ SPDX-License-Identifier: CC0-1.0
   <SchemeInformation>
     <TSLVersionIdentifier>2</TSLVersionIdentifier>
     <TSLSequenceNumber>2</TSLSequenceNumber>
-    <TSLType>http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUlistofthelists</TSLType>
+    <TSLType>
+      http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUlistofthelists
+    </TSLType>
     <SchemeOperatorName>
       <Name xml:lang="en">Digg LOTL Operator</Name>
     </SchemeOperatorName>
@@ -21,10 +23,14 @@ SPDX-License-Identifier: CC0-1.0
     </SchemeName>
     <PointersToOtherTSL>
       <OtherTSLPointer>
-        <TSLLocation>http://trust-source/signed/trusted-pid-issuers.xml</TSLLocation>
+        <TSLLocation>
+          http://trust-source/signed/trusted-pid-issuers.xml
+        </TSLLocation>
         <AdditionalInformation>
           <OtherInformation>
-            <TSLType>http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric</TSLType>
+            <TSLType>
+              http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric
+            </TSLType>
           </OtherInformation>
           <OtherInformation>
             <SchemeTerritory>SE</SchemeTerritory>

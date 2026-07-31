@@ -5,14 +5,14 @@
 # SPDX-License-Identifier: EUPL-1.2
 
 if [ x"${WALLET_DSS_COMMAND:-}" == "x" ]; then
-  # Fallback to podman compose if not set
-  WALLET_DSS_COMMAND="podman compose run --rm wallet-dss-cli"
+  # Fallback to docker compose if not set
+  WALLET_DSS_COMMAND="docker compose run --rm wallet-dss-cli"
 fi
 
 set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-ROOT_DIR="$SCRIPT_DIR/../.."
+ROOT_DIR="$SCRIPT_DIR/../../.."
 
 cd "$ROOT_DIR"
 

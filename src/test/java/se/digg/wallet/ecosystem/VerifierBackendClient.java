@@ -64,6 +64,7 @@ public class VerifierBackendClient {
                 },
                 "nonce": "%s",
                 "jar_mode": "by_value",
+                "response_mode": "direct_post",
                 "intended_use_id": "1"
             }
             """,
@@ -94,6 +95,7 @@ public class VerifierBackendClient {
                 },
                 "nonce": "%s",
                 "jar_mode": "by_reference",
+                "response_mode": "direct_post",
                 "intended_use_id": "1"
             }
             """,

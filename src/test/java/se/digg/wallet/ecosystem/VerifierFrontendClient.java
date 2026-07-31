@@ -50,7 +50,9 @@ public class VerifierFrontendClient {
                   "options": [["query_0"]]
                 }]
               },
-              "nonce": "nonce"
+              "nonce": "nonce",
+              "jar_mode": "by_value",
+              "intended_use_id": "1"
             }
             """)
         .when()

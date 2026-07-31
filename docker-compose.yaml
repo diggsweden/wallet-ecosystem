@@ -159,6 +159,10 @@ services:
       - "traefik.http.routers.demo-verifier.entrypoints=websecure"
       - "traefik.http.routers.demo-verifier.tls=true"
       - "traefik.http.services.demo-verifier.loadbalancer.server.port=3002"
+    volumes:
+      - ./config/demo-verifier/vaccincentralen-request.post.mjs:/app/server/chunks/routes/api/vaccincentralen-request.post.mjs:ro
+      - ./config/demo-verifier/matcentralen-request.post.mjs:/app/server/chunks/routes/api/matcentralen-request.post.mjs:ro
+      - ./config/demo-verifier/biocentralen-request.post.mjs:/app/server/chunks/routes/api/biocentralen-request.post.mjs:ro
     restart: on-failure
     networks:
       - wallet-ecosystem-network
@@ -204,11 +208,11 @@ services:
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_ALIAS=pid_issuer
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_PASSWORD=pass1234
       - ISSUER_NONCE_ENCRYPTION_KEY_ALIAS=nonce-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_ALIAS=nonce-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_PASSWORD=pass1234
       - ISSUER_NONCE_ENCRYPTION_KEY_PASSWORD=pass1234
       - ISSUER_ACCESS_CERTIFICATE_ALIAS=pid_issuer
       - ISSUER_ACCESS_CERTIFICATE_PASSWORD=pass1234
-      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_ALIAS=request-encryption
-      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_PASSWORD=pass1234
       - SPRING_R2DBC_URL=r2dbc:pool:postgresql://wallet-account-db:5432/wallet-account
       - SPRING_R2DBC_USERNAME=wallet-account
       - SPRING_R2DBC_PASSWORD=pass
