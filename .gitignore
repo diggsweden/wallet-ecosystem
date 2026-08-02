@@ -51,4 +51,3 @@ pnpm-debug.log*
 node_modules
 **/megalinter-reports
 config/certificates/scripts/__pycache__/
-config/trust-source/signed/wallet-providers.json
