@@ -50,4 +50,3 @@ pnpm-debug.log*
 .npm
 node_modules
 **/megalinter-reports
-config/certificates/scripts/__pycache__/
