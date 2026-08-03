@@ -74,9 +74,6 @@ services:
     image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.2.2-alpha@sha256:9a828e2c0149ccd9fbd9ed98cb3f49fcc1ac92bbd827d3d4a35dca28598b2e70
     container_name: trust-validator
     hostname: trust-validator
-    volumes:
-      - ./config/certificates/trust-validator/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
-      - ./config/certificates/trust-validator/trust_store.p12:/opt/common/trust_store.p12:ro
     environment:
       HTTP_PROXY: ""
       HTTPS_PROXY: ""
@@ -84,11 +81,10 @@ services:
       https_proxy: ""
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "DEBUG"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP: "DEBUG"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
       TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
-      TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_LOCATION: "file:///opt/common/trusted_issuers.p12"
-      TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_KEY_STORE_TYPE: "PKCS12"
-      TRUST_VALIDATOR_TRUST_SOURCES_KEY_STORE_PASSWORD: "pass1234"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/wallet-providers.json"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_SIGNATURE_VERIFICATION_LOCATION: "file:///opt/common/trust_store.p12"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_SIGNATURE_VERIFICATION_KEY_STORE_TYPE: "PKCS12"
@@ -287,10 +283,6 @@ services:
     container_name: wallet-account-db
     restart: always
     environment:
-      HTTP_PROXY: ""
-      HTTPS_PROXY: ""
-      http_proxy: ""
-      https_proxy: ""
       POSTGRES_USER: wallet-account
       POSTGRES_PASSWORD: pass
       POSTGRES_DATABASE: wallet-account
