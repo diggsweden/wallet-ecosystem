@@ -10,7 +10,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CERT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-OUTPUT_FILE="$CERT_DIR/../trust-source/signed/wallet-providers.json"
+OUTPUT_FILE="$CERT_DIR/../trust-source/signed/trusted-entities.json"
 
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
