@@ -8,7 +8,7 @@ title = "Wallet Ecosystem Gitleaks configuration"
 useDefault = true
 
 [[allowlists]]
-targetRules = ["generic-api-key", "private-key"]
+targetRules = ["generic-api-key", "private-key", "jwt"]
 description = "We accept 'secrets' in our local docker configuration and our tests"
 paths = [
     '^config/',

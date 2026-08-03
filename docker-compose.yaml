@@ -38,6 +38,10 @@ services:
     volumes:
       - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "${BASE_URL}/refimpl-verifier-backend"
       VERIFIER_ORIGINALCLIENTID: "${VERIFIER_CLIENT_ID:-localhost}"
@@ -74,6 +78,10 @@ services:
       - ./config/certificates/trust-validator/trusted_issuers.p12:/opt/common/trusted_issuers.p12:ro
       - ./config/certificates/trust-validator/trust_store.p12:/opt/common/trust_store.p12:ro
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
@@ -107,6 +115,11 @@ services:
       - wallet-ecosystem-network
 
   trust-source:
+    environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
     image: nginx:1.31.2-alpine-slim@sha256:dd722b8ee8794f3c273bfaf8b5351b0652a68ccd73c17e5f0d029857a58f25ef
     container_name: trust-source
     hostname: trust-source
@@ -132,6 +145,10 @@ services:
     volumes:
       - ./config/certificates/wallet-provider/wallet_provider.p12:/opt/common/wallet_provider.p12
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-provider"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
@@ -154,6 +171,10 @@ services:
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       HOST_API: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend"
       PORT: "3002"
       NITRO_PORT: "3002"
@@ -179,6 +200,10 @@ services:
       keycloak:
         condition: service_healthy
     environment:
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
       - SPRING_PROFILES_ACTIVE=insecure
       - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
       - SERVER_PORT=8080
@@ -262,6 +287,10 @@ services:
     container_name: wallet-account-db
     restart: always
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       POSTGRES_USER: wallet-account
       POSTGRES_PASSWORD: pass
       POSTGRES_DATABASE: wallet-account
@@ -280,6 +309,10 @@ services:
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-account"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
@@ -309,6 +342,11 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway-valkey:
+    environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
     image: "valkey/valkey:9.1.1-alpine@sha256:ee91f7a174ac4d6a6b0685b3a60e321f0a9dbbb691f9b0e285be2ba1d1be8328"
     container_name: wallet-client-gateway-valkey
     restart: always
@@ -329,6 +367,10 @@ services:
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
       SPRING_PROFILES_ACTIVE: "prod"
@@ -376,6 +418,10 @@ services:
       - --import-realm
       - --features=dpop
     environment:
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
       - KC_HTTP_RELATIVE_PATH=/idp
@@ -444,6 +490,10 @@ services:
       kafka-1:
         condition: service_healthy
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092"
       KAFKA_BROKER_ADDRESS_FAMILY: "v4"
       KAFKA_GROUP_ID: "r2ps-rest-api-group"
@@ -469,6 +519,10 @@ services:
       - .env.opaque
       - .env.softhsm
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       RUST_LOG: info
       KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092"
     volumes:
@@ -485,6 +539,10 @@ services:
     ports:
       - "9092:9092"
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       !!merge <<: *kafka-env
       KAFKA_NODE_ID: 1
       KAFKA_LISTENERS: PLAINTEXT://:19092,CONTROLLER://:9093,EXTERNAL://:9092
@@ -505,6 +563,10 @@ services:
         condition: service_healthy
     entrypoint: ["/bin/sh", "-e", "/tmp/init-kafka-topics.sh"]
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092"
       WALLET_STATE_TOPIC: "wallet-state"
       REQUEST_TOPICS: "hsm-requests,state-init-requests"
@@ -528,12 +590,21 @@ services:
     ports:
       - "8084:8080"
     environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
       KAFKA_CLUSTERS_0_NAME: wallet-local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092
     networks:
       - wallet-ecosystem-network
 
   wallet-dss-cli:
+    environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
     image: ghcr.io/diggsweden/wallet-dss-cli:0.1.1
     profiles:
       - cli
@@ -546,6 +617,11 @@ services:
       - /app/wallet-dss-cli.jar
 
   traefik:
+    environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
     image: traefik:v3.6
     container_name: traefik
     restart: unless-stopped
