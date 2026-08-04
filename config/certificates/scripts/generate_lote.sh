@@ -27,17 +27,17 @@ base64url_encode() {
 # Extract the client (leaf) certificate from a PKCS#12 as DER-encoded base64
 get_clcert_base64() {
   local p12="$1" pass="$2"
-  openssl pkcs12 -in "$p12" -passin "pass:$pass" -nokeys -clcerts 2>/dev/null \
-    | openssl x509 -outform DER 2>/dev/null \
-    | base64 -w0
+  openssl pkcs12 -in "$p12" -passin "pass:$pass" -nokeys -clcerts 2>/dev/null |
+    openssl x509 -outform DER 2>/dev/null |
+    base64 -w0
 }
 
 # Extract the CA certificate from a PKCS#12 as DER-encoded base64
 get_cacert_base64() {
   local p12="$1" pass="$2"
-  openssl pkcs12 -in "$p12" -passin "pass:$pass" -nokeys -cacerts 2>/dev/null \
-    | openssl x509 -outform DER 2>/dev/null \
-    | base64 -w0
+  openssl pkcs12 -in "$p12" -passin "pass:$pass" -nokeys -cacerts 2>/dev/null |
+    openssl x509 -outform DER 2>/dev/null |
+    base64 -w0
 }
 
 # Convert a PEM certificate to DER-encoded base64
@@ -79,8 +79,8 @@ sign_jwt() {
   signing_input="${header_b64}.${payload_b64}"
 
   # ECDSA-SHA256 sign
-  printf '%s' "$signing_input" \
-    | openssl dgst -sha256 -sign "$key_pem" -out "$TMP_DIR/sig.der" 2>/dev/null
+  printf '%s' "$signing_input" |
+    openssl dgst -sha256 -sign "$key_pem" -out "$TMP_DIR/sig.der" 2>/dev/null
 
   sig_b64=$(der_sig_to_raw "$TMP_DIR/sig.der" | base64url_encode)
 
@@ -188,7 +188,7 @@ EOF
   token=$(sign_jwt "$header" "$payload" "$CERT_DIR/trust-list-signer/trust_source_key.pem")
 
   mkdir -p "$(dirname "$OUTPUT_FILE")"
-  printf '%s' "$token" > "$OUTPUT_FILE"
+  printf '%s' "$token" >"$OUTPUT_FILE"
   echo "Successfully wrote LoTE to $OUTPUT_FILE"
 }
 
