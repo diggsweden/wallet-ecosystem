@@ -1,31 +1,47 @@
 [req]
 distinguished_name = req_distinguished_name
-req_extensions = v3_req
+req_extensions = req_ext
 prompt = no
+
+[req_ext]
+subjectAltName = ${sans}
 
 [req_distinguished_name]
 C = SE
 O = DIGG
+organizationIdentifier = VATSE-12345678
 CN = ${cn}
 
 [v3_req]
 subjectAltName = ${sans}
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+authorityInfoAccess = caIssuers;URI:http://trust-source/rootca.crt
 crlDistributionPoints = URI:http://trust-source/revocation-list.pem
+certificatePolicies = 0.4.0.2042.1.2
 basicConstraints = critical, CA:FALSE
 keyUsage = critical, digitalSignature, nonRepudiation
 extendedKeyUsage = serverAuth, clientAuth
 1.3.6.1.5.5.7.1.3 = ASN1:SEQUENCE:qc_statements
 
 [qc_statements]
-statement1 = SEQUENCE:qc_statement_1
-statement2 = SEQUENCE:qc_statement_6
+statement1 = SEQUENCE:qc_statement_compliance
+statement2 = SEQUENCE:qc_statement_type_pid
+statement3 = SEQUENCE:qc_statement_type_wal
 
-[qc_statement_1]
+[qc_statement_compliance]
 statementId = OID:0.4.0.1862.1.1
 
-[qc_statement_6]
+[qc_statement_type_pid]
 statementId = OID:0.4.0.1862.1.6
-statementInfo = SEQUENCE:qc_type_eseal
+statementInfo = SEQUENCE:qc_type_pid
 
-[qc_type_eseal]
-type = OID:0.4.0.1862.1.6.2
+[qc_type_pid]
+type = OID:0.4.0.194126.1.1
+
+[qc_statement_type_wal]
+statementId = OID:0.4.0.1862.1.6
+statementInfo = SEQUENCE:qc_type_wal
+
+[qc_type_wal]
+type = OID:0.4.0.194126.1.2
