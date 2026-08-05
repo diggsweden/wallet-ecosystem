@@ -48,7 +48,17 @@ public class InternalWalletClient implements WalletClient {
           (java.util.Map<String, Object>) parsed.getJWTClaimsSet().getClaim("status");
 
       java.util.Map<String, Object> keyStorageStatusMap = new java.util.HashMap<>();
-      keyStorageStatusMap.put("status", statusObj);
+      if (statusObj != null) {
+        java.util.Map<String, Object> newStatusObj = new java.util.HashMap<>(statusObj);
+        java.util.Map<String, Object> sl =
+            (java.util.Map<String, Object>) newStatusObj.get("status_list");
+        if (sl != null) {
+          java.util.Map<String, Object> newSl = new java.util.HashMap<>(sl);
+          newSl.put("uri", "http://trust-source/signed/status-list.jwt");
+          newStatusObj.put("status_list", newSl);
+        }
+        keyStorageStatusMap.put("status", newStatusObj);
+      }
       keyStorageStatusMap.put("exp", (System.currentTimeMillis() / 1000) + (10 * 365 * 24 * 3600L));
       builder.claim("key_storage_status", keyStorageStatusMap);
 

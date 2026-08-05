@@ -134,6 +134,35 @@ generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass
 cp "$TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
 cp "$TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
 
+echo "Generating status-list.jwt for Trust Source..."
+python3 - <<EOF
+import jwt
+import os
+
+key_path = "${CERT_DIR}/trust-list-signer/trust_source_key.pem"
+cert_path = "${CERT_DIR}/trust-list-signer/trust_source_cert.pem"
+jwt_path = "${CERT_DIR}/../trust-source/signed/status-list.jwt"
+
+with open(key_path) as f:
+    key = f.read()
+with open(cert_path) as f:
+    cert = "".join([l.strip() for l in f.readlines() if "---" not in l])
+payload = {
+  "iss": "https://example.com",
+  "sub": "https://example.com/status-list.jwt",
+  "iat": 1700000000,
+  "exp": 1893456000,
+  "status_list": {
+    "bits": 1,
+    "lst": "e30"
+  }
+}
+token = jwt.encode(payload, key, algorithm="ES256", headers={"x5c": [cert], "typ": "statuslist+jwt"})
+os.makedirs(os.path.dirname(jwt_path), exist_ok=True)
+with open(jwt_path, "w") as f:
+    f.write(token)
+EOF
+
 # 6. Trust Validator
 echo "Creating trust_store.p12 for Trust Validator..."
 TRUST_VALIDATOR_TRUST_STORE="$CERT_DIR/trust-validator/trust_store.p12"

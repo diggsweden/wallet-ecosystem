@@ -969,7 +969,7 @@
           "protocolMapper": "oidc-hardcoded-claim-mapper",
           "consentRequired": false,
           "config": {
-            "claim.value": "{\"status\":{\"status_list\":{\"idx\":0,\"uri\":\"https://example.com/status-list.jwt\"}},\"exp\":1893456000}",
+            "claim.value": "{\"status\":{\"status_list\":{\"idx\":0,\"uri\":\"http://trust-source/signed/status-list.jwt\"}},\"exp\":1893456000}",
             "claim.name": "client_status",
             "jsonType.label": "JSON",
             "access.token.claim": "true",

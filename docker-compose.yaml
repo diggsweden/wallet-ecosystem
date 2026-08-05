@@ -164,7 +164,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.10.2
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.0
     container_name: pid-issuer
     depends_on:
       keycloak:
@@ -232,6 +232,7 @@ services:
       - ISSUER_ACCESS_TOKEN_TYPE=BearerAndDPoPIfAvailable
       - ISSUER_METADATA_DISPLAY_0_LOGO_URI=https://dela.digg.se/img/sr-logo-color.png
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
+      - ISSUER_WRPRC=${ISSUER_WRPRC}
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,loggers,httpexchanges
       - SPRING_CODEC_LOG_REQUEST_DETAILS=true
       - LOGGING_LEVEL_EU_EUROPA_EC_EUDI=DEBUG
