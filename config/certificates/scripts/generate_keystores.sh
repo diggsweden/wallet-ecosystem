@@ -153,6 +153,6 @@ find "$CERT_DIR" -name "*.p12" -exec chmod 644 {} +
 find "$CERT_DIR" -name "*.pem" -exec chmod 644 {} +
 
 # Copy CRL to trust-source to be hosted by Nginx
-cp "$ROOTCA_DIR/revocation-list.pem" "../trust-source/revocation-list.pem"
+cp "$ROOTCA_DIR/revocation-list.pem" "$CERT_DIR/../trust-source/revocation-list.pem"
 
 echo "Done! All certificates and licenses in config/certificates updated for Ecosystem."
