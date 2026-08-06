@@ -14,6 +14,7 @@ import java.util.UUID;
 public class VerifierBackendClient {
 
   public static final String VERIFIER_AUDIENCE = Property.VERIFIER_AUDIENCE.getValue();
+  public static final String DEFAULT_INTENDED_USE_ID = "1";
 
   private final URI base;
 
@@ -65,10 +66,10 @@ public class VerifierBackendClient {
                 "nonce": "%s",
                 "jar_mode": "by_value",
                 "response_mode": "direct_post",
-                "intended_use_id": "1"
+                "intended_use_id": "%s"
             }
             """,
-        dcqlId, dcqlId, UUID.randomUUID());
+        dcqlId, dcqlId, UUID.randomUUID(), DEFAULT_INTENDED_USE_ID);
   }
 
   public VerifierPresentationResponse createPresentationRequestByReference(
@@ -96,10 +97,10 @@ public class VerifierBackendClient {
                 "nonce": "%s",
                 "jar_mode": "by_reference",
                 "response_mode": "direct_post",
-                "intended_use_id": "1"
+                "intended_use_id": "%s"
             }
             """,
-        dcqlId, dcqlId, nonce);
+        dcqlId, dcqlId, nonce, DEFAULT_INTENDED_USE_ID);
   }
 
   public Response validateSdJwtVc(String sdJwtVc, String nonce) {

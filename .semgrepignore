@@ -9,6 +9,7 @@
 # These certificates and signed artifacts are used in the local ecosystem only
 /config/certificates/
 /config/trust-source/signed/
+/config/pid-issuer/
 
 # It is expected to 'leak' secrets to our local environment in our test code
 /src/test/java

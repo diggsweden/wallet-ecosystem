@@ -12,6 +12,8 @@ import java.net.URI;
 
 public class VerifierFrontendClient {
 
+  public static final String DEFAULT_INTENDED_USE_ID = "1";
+
   private final URI base;
 
   public VerifierFrontendClient() {
@@ -52,9 +54,9 @@ public class VerifierFrontendClient {
               },
               "nonce": "nonce",
               "jar_mode": "by_value",
-              "intended_use_id": "1"
+              "intended_use_id": "%s"
             }
-            """)
+            """.formatted(DEFAULT_INTENDED_USE_ID))
         .when()
         .post("api/{sitename}-request", siteName)
         .then()
