@@ -105,6 +105,7 @@ jobs:
             -days 1 -nodes -subj "/CN=localhost"
 
       - name: Start Ecosystem
+        timeout-minutes: 10
         run: |
           cd wallet-ecosystem
           podman compose up -d
