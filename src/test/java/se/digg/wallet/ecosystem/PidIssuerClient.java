@@ -77,7 +77,7 @@ public class PidIssuerClient {
         .auth()
         .oauth2(accessToken)
         .header("DPoP",
-            DpopUtil.createDpopProof(key, nonceEndpoint.toString(), "POST"))
+            DpopUtil.createDpopProof(key, nonceEndpoint.toString(), "POST", accessToken))
         .when()
         .post(nonceEndpoint)
         .then()
@@ -103,6 +103,7 @@ public class PidIssuerClient {
 
   private ValidatableResponse getCredentialIssuerMetadata() {
     return given()
+        .header("Accept", "application/json")
         .when()
         .get(this.base.resolve(".well-known/openid-credential-issuer"))
         .then().statusCode(200);
@@ -135,10 +136,9 @@ public class PidIssuerClient {
         this.base.resolve("wallet/credentialEndpoint").toString();
     String responsePayload =
         given()
-            .auth()
-            .oauth2(accessToken)
+            .header("Authorization", "DPoP " + accessToken)
             .header("DPoP", DpopUtil.createDpopProof(userJwk,
-                credentialsEndpoint, "POST"))
+                credentialsEndpoint, "POST", accessToken))
             .when()
             .contentType("application/jwt")
             .body(requestPayload)

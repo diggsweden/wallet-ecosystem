@@ -1,0 +1,16 @@
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+C = SE
+O = DIGG
+CN = ${cn}
+
+[v3_req]
+subjectAltName = ${sans}
+crlDistributionPoints = URI:http://trust-source/revocation-list.pem
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, keyEncipherment, dataEncipherment, keyAgreement
+extendedKeyUsage = serverAuth, clientAuth

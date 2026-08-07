@@ -1,0 +1,30 @@
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+C = SE
+O = DIGG
+CN = ${cn}
+
+[v3_req]
+subjectAltName = ${sans}
+crlDistributionPoints = URI:http://trust-source/revocation-list.pem
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, digitalSignature, nonRepudiation
+1.3.6.1.5.5.7.1.3 = ASN1:SEQUENCE:qc_statements
+
+[qc_statements]
+statement1 = SEQUENCE:qc_statement_1
+statement2 = SEQUENCE:qc_statement_6
+
+[qc_statement_1]
+statementId = OID:0.4.0.1862.1.1
+
+[qc_statement_6]
+statementId = OID:0.4.0.1862.1.6
+statementInfo = SEQUENCE:qc_type_eseal
+
+[qc_type_eseal]
+type = OID:0.4.0.1862.1.6.2
