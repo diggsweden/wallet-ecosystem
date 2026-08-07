@@ -50,6 +50,7 @@ jobs:
           echo "PODMAN_SOCK=$XDG_RUNTIME_DIR/podman/podman.sock" >> "$GITHUB_ENV"
 
       - name: Up with podman compose
+        timeout-minutes: 10
         run: podman compose up -d; sleep 2s
 
       - name: Run tests
