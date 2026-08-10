@@ -1,4 +1,6 @@
 # Digg Wallet Local Development Environment
+[![License: EUPL 1.2](https://img.shields.io/badge/License-European%20Union%20Public%20Licence%201.2-library?style=for-the-badge&&color=lightblue)](LICENSE)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/diggsweden/wallet-ecosystem/badge)](https://securityscorecards.dev/viewer/?uri=github.com/diggsweden/wallet-ecosystem)
 
 Podman Compose scripts for starting the Digg Wallet environment services locally.
 
