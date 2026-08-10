@@ -90,7 +90,8 @@ public class WalletClientGatewayClient {
     RequestSpecification request = given()
         .when()
         .contentType(ContentType.JSON)
-        .header("session", sessionId);
+        .header("session", sessionId)
+        .header("X-API-KEY", API_KEY);
 
     if (nonce != null) {
       request.queryParam("nonce", nonce);

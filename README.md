@@ -143,7 +143,7 @@ must be published before it can be pulled and used locally.
 
 Note this is not officially supported, but it might be possible. Override
 `PODMAN_SOCK` in your `.env` file to point to the Docker socket before running
-compose:
+Note this is not officially supported but it might be possible to: Override `PODMAN_SOCK` in your `.env` file to point to the Docker socket before running compose:
 
 ```env
 PODMAN_SOCK=/var/run/docker.sock
