@@ -523,18 +523,6 @@ services:
     networks:
       - wallet-ecosystem-network
 
-  wallet-dss-cli:
-    image: ghcr.io/diggsweden/wallet-dss-cli:0.1.1
-    profiles:
-      - cli
-    volumes:
-      - .:/workspace
-    working_dir: /workspace
-    entrypoint:
-      - java
-      - -jar
-      - /app/wallet-dss-cli.jar
-
   traefik:
     image: traefik:v3.6
     container_name: traefik

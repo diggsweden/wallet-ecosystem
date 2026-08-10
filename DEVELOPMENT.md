@@ -360,15 +360,3 @@ just lint-java-fmt-fix  # Fix Java formatting
 **Note:** Integration tests are NOT run in CI since they require the full
 docker-compose stack. Run tests locally before submitting PRs that affect
 service integration.
-
-## Trust List Signing (LOTL)
-
-If you modify the mock certificates or edit any of the Trust List XML templates in `config/certificates/trust-list-signer/*.template.xml`, you must manually run the signing script to generate the finalized XML files before running `just up`.
-
-To sign the Trust Lists:
-
-```bash
-./config/certificates/scripts/sign_trust_list_using_dss.sh
-```
-
-This runs the `wallet-dss-cli` Docker container to cryptographically sign the XML templates with the `trust_source_key.pem` and deposits the finalized XMLs into `config/trust-source/signed/`.
