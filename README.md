@@ -1,16 +1,22 @@
 # Digg Wallet Local Development Environment
 
-Podman Compose scripts for starting the Digg Wallet environment services locally.
+[![License: EUPL 1.2](https://img.shields.io/badge/License-European%20Union%20Public%20Licence%201.2-library?style=for-the-badge&&color=lightblue)](LICENSE)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/diggsweden/wallet-ecosystem/badge)](https://securityscorecards.dev/viewer/?uri=github.com/diggsweden/wallet-ecosystem)
+
+Podman Compose scripts for starting the Digg Wallet environment services
+locally.
 
 ---
 
 ## Prerequisites
 
-Before running the local environment, ensure the following prerequisites are in place.
+Before running the local environment, ensure the following prerequisites are in
+place.
 
 ### 1. Podman
 
-*Note:* For local development we recomend docker compose v2 as compose provider to podman. <https://docs.docker.com/compose/install/linux/> .
+*Note:* For local development we recomend docker compose v2 as compose provider
+to podman. <https://docs.docker.com/compose/install/linux/>.
 
 * **option 1**: Podman desktop <https://podman-desktop.io/>
 * **option 2**: Headless: <https://github.com/containers/podman-compose>
@@ -23,7 +29,8 @@ sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
 
 ### 2. Install mkcert
 
-mkcert is required to generate trusted local TLS certificates for the Traefik reverse proxy.
+mkcert is required to generate trusted local TLS certificates for the Traefik
+reverse proxy.
 
 #### Debian/Ubuntu
 
@@ -40,7 +47,8 @@ brew install nss  # Required for Firefox
 
 ### 3. Trust the mkcert CA
 
-Install the local CA in the system trust store so that browsers and tools trust the generated certificates:
+Install the local CA in the system trust store so that browsers and tools trust
+the generated certificates:
 
 ```sh
 mkcert -install
@@ -62,7 +70,8 @@ mkcert \
 
 ## Setup
 
-Follow these steps in order to configure the environment before starting the services.
+Follow these steps in order to configure the environment before starting the
+services.
 
 ### 1. Copy the Environment File
 
@@ -70,13 +79,18 @@ Follow these steps in order to configure the environment before starting the ser
 cp .env.example .env
 ```
 
-Review the variables in `.env` and update them as needed for your local setup. The key variable is `BASE_URL`, which defines the root URL used by all cluster services and defaults to `https://localhost`.
+Review the variables in `.env` and update them as needed for your local setup.
+The key variable is `BASE_URL`, which defines the root URL used by all cluster
+services and defaults to `https://localhost`.
 
 > **Android emulator note:** Android emulators cannot reach `localhost` on the host machine. If you are developing for Android, set `BASE_URL=https://10.0.2.2` so the emulator can resolve requests to the running services.
 
 ### 2. Corporate Proxy Note
 
- **Corporate proxy note:** If you are behind a corporate proxy, you may need to add the container network ranges to Podman's configuration to prevent proxy errors. Edit `~/.config/containers/containers.conf` and restart Podman (Also possible through podman UI):
+If you are behind a corporate proxy, you may need to add the container network
+ranges to Podman's configuration to prevent proxy errors. Edit
+`~/.config/containers/containers.conf` and restart Podman (also possible
+through Podman UI):
 >
 > ```toml
 > [engine]
@@ -122,10 +136,13 @@ podman compose up
 
 ## Building Images
 
-If you need to add a new application to the Docker Compose setup, its image must be published before it can be pulled and used locally.
+If you need to add a new application to the Docker Compose setup, its image
+must be published before it can be pulled and used locally.
 
 ## Using Docker (Not officially supported)
 
+Note this is not officially supported, but it might be possible. Override
+`PODMAN_SOCK` in your `.env` file to point to the Docker socket before running
 Note this is not officially supported but it might be possible to: Override `PODMAN_SOCK` in your `.env` file to point to the Docker socket before running compose:
 
 ```env

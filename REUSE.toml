@@ -11,6 +11,7 @@ path = [
   ".gommitlint.yaml",
   "renovate.json",
   "config/certificates/README.md",
+  "SECURITY.md",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Digg - Agency for Digital Government"
