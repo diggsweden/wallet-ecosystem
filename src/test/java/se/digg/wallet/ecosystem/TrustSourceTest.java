@@ -4,53 +4,38 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class TrustSourceTest {
 
-  private static final Pattern BASE_64 =
-      Pattern.compile("(\\s*[a-zA-Z0-9/+]+)+={0,2}\\s*");
+  private static final Pattern JWT_PATTERN =
+      Pattern.compile("^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$");
 
   private final TrustSourceClient trustSource = new TrustSourceClient();
 
   @Test
-  void servesListOfTrustedLists() {
-    trustSource.tryGet("signed/lotl.xml")
+  void servesRevocationList() {
+    String body = trustSource.tryGet("revocation-list.pem")
         .then()
         .assertThat().statusCode(200)
-        .and().contentType("text/xml")
-        .and().body("TrustServiceStatusList.@Id", is("lotl"));
+        .extract().body().asString();
+
+    assertThat(body, containsString("BEGIN X509 CRL"));
   }
 
   @Test
-  void servesListOfTrustedPidIssuers() {
-    trustSource.tryGet("signed/trusted-pid-issuers.xml")
+  void servesTrustedEntitiesJson() {
+    String body = trustSource.tryGet("signed/trusted-entities.json")
         .then()
         .assertThat().statusCode(200)
-        .and().contentType("text/xml")
-        .and().body("TrustServiceStatusList.@Id", is("trusted-pid-issuers"));
-  }
+        .extract().body().asString();
 
-  @ParameterizedTest
-  @ValueSource(strings = {
-      "signed/trusted-pid-issuers.xml"
-  })
-  void servesSignedListOfTrustedPidIssuers(String path) {
-    trustSource.tryGet(path)
-        .then()
-        .assertThat().statusCode(200)
-        .and().contentType("text/xml")
-        .and().body(
-            "TrustServiceStatusList.Signature.SignatureValue",
-            matchesPattern(BASE_64))
-        .and().body(
-            "TrustServiceStatusList.Signature.KeyInfo.X509Data.X509Certificate[0]",
-            matchesPattern(BASE_64));
+    // The JSON is actually just a raw JWT string
+    assertThat(body.trim(), matchesPattern(JWT_PATTERN));
   }
 }
