@@ -32,7 +32,7 @@ x-kafka-common: &kafka-common
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.2
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
@@ -51,7 +51,7 @@ services:
       VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
-      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust-validator/trust"
+      VERIFIER_TRUST_VALIDATOR_SERVICE_URL: "http://trust-validator:8080/trust-validator/trust"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
       JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     depends_on:
@@ -72,9 +72,10 @@ services:
     hostname: trust-validator
     environment:
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
-      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "DEBUG"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP: "DEBUG"
+      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "DEBUG"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "TRACE"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP: "TRACE"
+      LOGGING_LEVEL_EU_EUROPA_ESIG_DSS: "TRACE"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
       TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
@@ -116,7 +117,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: ghcr.io/diggsweden/wallet-provider:v0.0.23@sha256:a10414a20ce4918da0b89c4c20f2087699ca601024c655225370b20007b25f2b
+    image: ghcr.io/diggsweden/wallet-provider@sha256:26e06546fd8b2d624d6bf29c24749f23185d06ca3497bf5dc6ae9ba0fb6f4410
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
@@ -129,6 +130,7 @@ services:
       WUA_KEYSTORE_PATH: "file:///opt/common/wallet_provider.p12"
       WUA_KEYSTORE_PASSWORD: "pass1234"
       WUA_KEYSTORE_ALIAS: "wallet_provider"
+      WALLET_PROVIDER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wallet-provider.rule=PathPrefix(`/wallet-provider`)"
@@ -140,7 +142,7 @@ services:
       - wallet-ecosystem-network
 
   demo-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.9@sha256:948c9518de8993cffdafde6631a5e767528bef5ede7d5bd97a3e5ef2b3aeba94
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.10
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
@@ -163,7 +165,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.9.1
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.0
     container_name: pid-issuer
     depends_on:
       keycloak:
@@ -202,6 +204,18 @@ services:
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY=LoadFromKeystore
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_ALIAS=pid_issuer
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_PASSWORD=pass1234
+      - ISSUER_NONCE_ENCRYPTION_KEY_ALIAS=nonce-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_ALIAS=nonce-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_PASSWORD=pass1234
+      - ISSUER_NONCE_ENCRYPTION_KEY_PASSWORD=pass1234
+      - ISSUER_ACCESS_CERTIFICATE_ALIAS=pid_issuer
+      - ISSUER_ACCESS_CERTIFICATE_PASSWORD=pass1234
+      - SPRING_R2DBC_URL=r2dbc:pool:postgresql://wallet-account-db:5432/wallet-account
+      - SPRING_R2DBC_USERNAME=wallet-account
+      - SPRING_R2DBC_PASSWORD=pass
+      - ISSUER_STATUSLIST_SERVICE_GENERATE_URI=http://status-list:5000/token_status_list/take
+      - ISSUER_STATUSLIST_SERVICE_REVOKE_URI=http://status-list:5000/token_status_list/take
+      - ISSUER_STATUSLIST_SERVICE_APIKEY=aaa-bbb-ccc
       - ISSUER_METADATA_SIGNED_METADATA_ENABLED=false
       - ISSUER_KEYCLOAK_SERVER_URL=http://keycloak:8080/idp
       - ISSUER_KEYCLOAK_AUTHENTICATION_REALM=master
@@ -219,6 +233,7 @@ services:
       - ISSUER_ACCESS_TOKEN_TYPE=BearerAndDPoPIfAvailable
       - ISSUER_METADATA_DISPLAY_0_LOGO_URI=https://dela.digg.se/img/sr-logo-color.png
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
+      - SPRING_CONFIG_IMPORT=configtree:/opt/common/configtree/
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,loggers,httpexchanges
       - SPRING_CODEC_LOG_REQUEST_DETAILS=true
       - LOGGING_LEVEL_EU_EUROPA_EC_EUDI=DEBUG
@@ -230,6 +245,7 @@ services:
       - JAVA_OPTS="-XX:MaxDirectMemorySize=128M"
     volumes:
       - ./config/certificates/issuer/pid_issuer.p12:/opt/common/pid_issuer.p12:ro
+      - ./config/pid-issuer/issuer_wrprc.jwt:/opt/common/configtree/issuer.wrprc:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
@@ -255,6 +271,8 @@ services:
       POSTGRES_USER: wallet-account
       POSTGRES_PASSWORD: pass
       POSTGRES_DATABASE: wallet-account
+    volumes:
+      - ./config/db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wallet-account -d wallet-account"]
       interval: 5s
@@ -359,7 +377,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.4-0
+    image: quay.io/keycloak/keycloak:26.6.2-2
     container_name: keycloak
     command:
       - start
@@ -377,13 +395,12 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
       - KC_DB=dev-file
     healthcheck:
-      test: "bash /opt/keycloak/health-check.sh"
+      test: ["CMD-SHELL", "{ printf 'HEAD /idp/health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000"]
       interval: 5s
       timeout: 10s
       retries: 12
       start_period: 30s
     volumes:
-      - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/themes/:/opt/keycloak/themes
       - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:

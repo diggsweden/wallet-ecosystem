@@ -961,6 +961,34 @@
         "eu.europa.ec.eudi.pid_mso_mdoc",
         "org.iso.18013.5.1.mDL",
         "urn:eudi:ehic:1:dc+sd-jwt"
+      ],
+      "protocolMappers": [
+        {
+          "name": "client-status-hardcoded",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.value": "{\"status\":{\"status_list\":{\"idx\":0,\"uri\":\"http://trust-source/signed/status-list.jwt\"}},\"exp\":1893456000}",
+            "claim.name": "client_status",
+            "jsonType.label": "JSON",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "false"
+          }
+        },
+        {
+          "name": "aud-pid-issuer-srv",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "pid-issuer-srv",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
       ]
     }
   ],

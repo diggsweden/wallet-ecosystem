@@ -24,8 +24,10 @@ import com.nimbusds.jwt.EncryptedJWT;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.ECPrivateKey;
 import java.text.ParseException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,6 +51,19 @@ public class PidIssuerClient {
     return given().when().get(strategy.applyTo(
         ServiceIdentifier.PID_ISSUER.toUri(),
         "/.well-known/openid-credential-issuer"));
+  }
+
+  public String getDecodedOpenIdCredentialIssuerMetadata(MetadataLocationStrategy strategy) {
+    String response = tryGetOpenIdCredentialIssuerMetadata(strategy)
+        .then()
+        .assertThat().statusCode(200)
+        .extract().asString();
+
+    if (response.split("\\.").length == 3) {
+      return new String(Base64.getUrlDecoder().decode(response.split("\\.")[1]),
+          StandardCharsets.UTF_8);
+    }
+    return response;
   }
 
   public Response tryGetJwtVcIssuerMetadata(MetadataLocationStrategy strategy) {
@@ -77,7 +92,7 @@ public class PidIssuerClient {
         .auth()
         .oauth2(accessToken)
         .header("DPoP",
-            DpopUtil.createDpopProof(key, nonceEndpoint.toString(), "POST"))
+            DpopUtil.createDpopProof(key, nonceEndpoint.toString(), "POST", accessToken))
         .when()
         .post(nonceEndpoint)
         .then()
@@ -103,6 +118,7 @@ public class PidIssuerClient {
 
   private ValidatableResponse getCredentialIssuerMetadata() {
     return given()
+        .header("Accept", "application/json")
         .when()
         .get(this.base.resolve(".well-known/openid-credential-issuer"))
         .then().statusCode(200);
@@ -135,10 +151,9 @@ public class PidIssuerClient {
         this.base.resolve("wallet/credentialEndpoint").toString();
     String responsePayload =
         given()
-            .auth()
-            .oauth2(accessToken)
+            .header("Authorization", "DPoP " + accessToken)
             .header("DPoP", DpopUtil.createDpopProof(userJwk,
-                credentialsEndpoint, "POST"))
+                credentialsEndpoint, "POST", accessToken))
             .when()
             .contentType("application/jwt")
             .body(requestPayload)

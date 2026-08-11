@@ -6,6 +6,11 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 CERT_DIR="$SCRIPT_DIR/.."
 TMP_DIR="$CERT_DIR/tmp"
 
+# Configuration
+export crl_dp="${CRL_DP:-URI:http://trust-source/revocation-list.pem}"
+export status_list_url="${STATUS_LIST_URL:-http://trust-source/signed/status-list.jwt}"
+export aia_url="${AIA_URL:-URI:http://trust-source/rootca.crt}"
+
 # Cleanup temporary files on exit
 trap 'rm -rf "$TMP_DIR"' EXIT
 mkdir -p "$TMP_DIR"
@@ -57,6 +62,7 @@ function generate_service_cert_ec() {
   local password="$4"
   local cn="$5"
   local sans="$6"
+  local template_name="${7:-service.cnf}"
 
   local target_dir="$CERT_DIR/$target_subdir"
   mkdir -p "$target_dir"
@@ -66,7 +72,7 @@ function generate_service_cert_ec() {
   # Create temporary config for CSR
   local cnf_file="$TMP_DIR/$cert_name.cnf"
   export cn sans
-  envsubst <"$SCRIPT_DIR/templates/service.cnf" >"$cnf_file"
+  envsubst <"$SCRIPT_DIR/templates/$template_name" >"$cnf_file"
 
   local key_file="$TMP_DIR/$cert_name.key"
   local csr_file="$TMP_DIR/$cert_name.csr"
@@ -103,6 +109,68 @@ function generate_service_cert_ec() {
 
 # 1. PID Issuer
 generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "DNS.1:localhost,DNS.2:pid-issuer"
+cp "$TMP_DIR/pid_issuer.crt" "$CERT_DIR/issuer/pid_issuer_cert.pem"
+
+# Add nonce-encryption and request-encryption keys to pid_issuer.p12
+generate_service_cert_ec "issuer" "nonce" "nonce-encryption" "pass1234" "nonce-encryption" "DNS.1:localhost" "encryption.cnf"
+generate_service_cert_ec "issuer" "request" "request-encryption" "pass1234" "request-encryption" "DNS.1:localhost" "encryption.cnf"
+
+keytool -importkeystore -srckeystore "$CERT_DIR/issuer/nonce.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
+keytool -importkeystore -srckeystore "$CERT_DIR/issuer/request.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
+rm -f "$CERT_DIR/issuer/nonce.p12" "$CERT_DIR/issuer/request.p12"
+
+echo "Generating issuer_wrprc.jwt for PID Issuer (using bash)..."
+
+# Define target paths
+JWT_PATH="${CERT_DIR}/../pid-issuer/issuer_wrprc.jwt"
+PRE_JWT_PATH="${CERT_DIR}/../pid-issuer/issuer_wrprc.json"
+
+# Extract cert body, removing headers/footers and newlines
+CERT_B64=$(grep -v -- '---' "${TMP_DIR}/pid_issuer.crt" | tr -d '\n')
+
+# Create JSON payload and header
+read -r -d '' HEADER_JSON <<EOF || true
+{"typ":"rc-wrp+jwt","alg":"ES256","x5c":["${CERT_B64}"]}
+EOF
+
+read -r -d '' PAYLOAD_JSON <<EOF || true
+{"iss":"did:web:localhost","sub":"did:web:localhost"}
+EOF
+
+# Base64url encode
+B64_HEADER=$(echo -n "$HEADER_JSON" | base64 -w0 | tr '+/' '-_' | tr -d '=')
+B64_PAYLOAD=$(echo -n "$PAYLOAD_JSON" | base64 -w0 | tr '+/' '-_' | tr -d '=')
+SIGNING_INPUT="${B64_HEADER}.${B64_PAYLOAD}"
+
+# Sign with openssl
+echo -n "$SIGNING_INPUT" | openssl dgst -sha256 -sign "${TMP_DIR}/pid_issuer.key" -out "${TMP_DIR}/sig.der"
+
+# Convert DER signature to Raw R||S
+PARSED=$(openssl asn1parse -inform DER -in "${TMP_DIR}/sig.der" 2>/dev/null)
+R_HEX=$(echo "$PARSED" | awk 'NR==2 { sub(/.*:/, ""); print }')
+S_HEX=$(echo "$PARSED" | awk 'NR==3 { sub(/.*:/, ""); print }')
+
+# Strip leading padding
+while [[ ${#R_HEX} -gt 64 && "${R_HEX:0:2}" == "00" ]]; do R_HEX="${R_HEX:2}"; done
+while [[ ${#S_HEX} -gt 64 && "${S_HEX:0:2}" == "00" ]]; do S_HEX="${S_HEX:2}"; done
+# Left-pad to exactly 32 bytes (64 hex chars)
+while [[ ${#R_HEX} -lt 64 ]]; do R_HEX="0${R_HEX}"; done
+while [[ ${#S_HEX} -lt 64 ]]; do S_HEX="0${S_HEX}"; done
+
+SIG_B64=$(echo -n "${R_HEX}${S_HEX}" | xxd -r -p | base64 -w0 | tr '+/' '-_' | tr -d '=')
+
+# Write outputs
+echo -n "${SIGNING_INPUT}.${SIG_B64}" >"$JWT_PATH"
+cat >"$PRE_JWT_PATH" <<EOF
+{
+  "headers": $HEADER_JSON,
+  "payload": $PAYLOAD_JSON
+}
+EOF
+jq . "$PRE_JWT_PATH" >"${PRE_JWT_PATH}.tmp" && mv "${PRE_JWT_PATH}.tmp" "$PRE_JWT_PATH"
+
+create_license "$JWT_PATH"
+create_license "$PRE_JWT_PATH"
 
 # 2. Verifier Backend
 generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "DNS.1:localhost,DNS.2:verifier-backend,DNS.3:refimpl-verifier-backend,DNS.4:10.0.2.2"
@@ -120,7 +188,49 @@ create_license "$TRUST_P12"
 generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "pass1234" "Wallet Provider (Ecosystem)" "DNS.1:localhost,DNS.2:wallet-provider"
 
 # 5. Trust Source
-generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source"
+generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source" "signer.cnf"
+cp "$TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
+cp "$TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
+
+echo "Generating status-list.jwt for Trust Source..."
+# Extract cert body, removing headers/footers and newlines
+STATUS_CERT_B64=$(grep -v -- '---' "${CERT_DIR}/trust-list-signer/trust_source_cert.pem" | tr -d '\n')
+
+read -r -d '' STATUS_HEADER_JSON <<EOF || true
+{"typ":"statuslist+jwt","alg":"ES256","x5c":["${STATUS_CERT_B64}"]}
+EOF
+
+STATUS_PAYLOAD='{"iss":"'"${status_list_url}"'","sub":"'"${status_list_url}"'","iat":1700000000,"exp":1893456000,"status_list":{"bits":1,"lst":"eJxjYBgFo2AUjFQAAAQAAAE"}}'
+
+STATUS_B64_HEADER=$(echo -n "$STATUS_HEADER_JSON" | base64 -w0 | tr '+/' '-_' | tr -d '=')
+STATUS_B64_PAYLOAD=$(echo -n "$STATUS_PAYLOAD" | base64 -w0 | tr '+/' '-_' | tr -d '=')
+STATUS_SIGNING_INPUT="${STATUS_B64_HEADER}.${STATUS_B64_PAYLOAD}"
+
+echo -n "$STATUS_SIGNING_INPUT" | openssl dgst -sha256 -sign "${CERT_DIR}/trust-list-signer/trust_source_key.pem" -out "${TMP_DIR}/status_sig.der"
+
+STATUS_PARSED=$(openssl asn1parse -inform DER -in "${TMP_DIR}/status_sig.der" 2>/dev/null)
+STATUS_R_HEX=$(echo "$STATUS_PARSED" | awk 'NR==2 { sub(/.*:/, ""); print }')
+STATUS_S_HEX=$(echo "$STATUS_PARSED" | awk 'NR==3 { sub(/.*:/, ""); print }')
+
+while [[ ${#STATUS_R_HEX} -gt 64 && "${STATUS_R_HEX:0:2}" == "00" ]]; do STATUS_R_HEX="${STATUS_R_HEX:2}"; done
+while [[ ${#STATUS_S_HEX} -gt 64 && "${STATUS_S_HEX:0:2}" == "00" ]]; do STATUS_S_HEX="${STATUS_S_HEX:2}"; done
+while [[ ${#STATUS_R_HEX} -lt 64 ]]; do STATUS_R_HEX="0${STATUS_R_HEX}"; done
+while [[ ${#STATUS_S_HEX} -lt 64 ]]; do STATUS_S_HEX="0${STATUS_S_HEX}"; done
+
+STATUS_SIG_B64=$(echo -n "${STATUS_R_HEX}${STATUS_S_HEX}" | xxd -r -p | base64 -w0 | tr '+/' '-_' | tr -d '=')
+
+mkdir -p "${CERT_DIR}/../trust-source/signed"
+echo -n "${STATUS_SIGNING_INPUT}.${STATUS_SIG_B64}" >"${CERT_DIR}/../trust-source/signed/status-list.jwt"
+cat >"${CERT_DIR}/../trust-source/signed/status-list.json" <<EOF
+{
+  "headers": $STATUS_HEADER_JSON,
+  "payload": $STATUS_PAYLOAD
+}
+EOF
+jq . "${CERT_DIR}/../trust-source/signed/status-list.json" >"${CERT_DIR}/../trust-source/signed/status-list.json.tmp" && mv "${CERT_DIR}/../trust-source/signed/status-list.json.tmp" "${CERT_DIR}/../trust-source/signed/status-list.json"
+
+create_license "${CERT_DIR}/../trust-source/signed/status-list.jwt"
+create_license "${CERT_DIR}/../trust-source/signed/status-list.json"
 
 # 6. Trust Validator
 echo "Creating trust_store.p12 for Trust Validator..."
@@ -141,6 +251,6 @@ find "$CERT_DIR" -name "*.p12" -exec chmod 644 {} +
 find "$CERT_DIR" -name "*.pem" -exec chmod 644 {} +
 
 # Copy CRL to trust-source to be hosted by Nginx
-cp "$ROOTCA_DIR/revocation-list.pem" "../trust-source/revocation-list.pem"
+cp "$ROOTCA_DIR/revocation-list.pem" "$CERT_DIR/../trust-source/revocation-list.pem"
 
 echo "Done! All certificates and licenses in config/certificates updated for Ecosystem."
