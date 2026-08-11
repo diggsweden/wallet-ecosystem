@@ -117,7 +117,7 @@ generate_service_cert_ec "issuer" "request" "request-encryption" "pass1234" "req
 
 keytool -importkeystore -srckeystore "$CERT_DIR/issuer/nonce.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
 keytool -importkeystore -srckeystore "$CERT_DIR/issuer/request.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
-rm -f "$CERT_DIR/issuer/nonce.p12" "$CERT_DIR/issuer/request.p12"
+rm -f "$CERT_DIR/issuer/nonce.p12" "$CERT_DIR/issuer/request.p12" "$CERT_DIR/issuer/nonce.p12.license" "$CERT_DIR/issuer/request.p12.license"
 
 echo "Generating issuer_wrprc.jwt for PID Issuer (using bash)..."
 

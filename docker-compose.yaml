@@ -32,7 +32,7 @@ x-kafka-common: &kafka-common
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0@sha256:2f2772b1df39a529f3683c7e82d10d03221b475e67da7b2d8cb1b9aebe6f71f9
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
@@ -98,7 +98,7 @@ services:
       - wallet-ecosystem-network
 
   trust-source:
-    image: nginx:1.31.2-alpine-slim@sha256:dd722b8ee8794f3c273bfaf8b5351b0652a68ccd73c17e5f0d029857a58f25ef
+    image: nginx:1.31.3-alpine-slim@sha256:45b82ed5f285b90d63df07ba70430fdd8f25624b416617d9e6dc93412b2006dc
     container_name: trust-source
     hostname: trust-source
     volumes:
@@ -142,7 +142,7 @@ services:
       - wallet-ecosystem-network
 
   demo-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.10
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.10@sha256:6e3750d6633d4091e05bc696d4a9ef749583a730a759a6042466e7739ea9903a
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
@@ -165,7 +165,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.0
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.0@sha256:90a8d77a27e3dca9fa83386d75400b30f53508c0cc59f7af08f1a44c4c3c394c
     container_name: pid-issuer
     depends_on:
       keycloak:
@@ -257,7 +257,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account-db:
-    image: "postgres:16"
+    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
     container_name: wallet-account-db
     restart: always
     environment:
@@ -370,7 +370,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.6.2-2
+    image: quay.io/keycloak/keycloak:26.6.2-2@sha256:f9ba7b2af90db8dc749a57ca9aedca51e840cb9224441ab546a968da941da900
     container_name: keycloak
     command:
       - start
@@ -433,7 +433,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-bff:
-    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639@sha256:fc63a91dd698ccb2114dcced589654a367651f21fd671862a6a127d23e3bc9e5
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -464,7 +464,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639@sha256:33533b4475dec3924b0d4af006f2ffc0eb8b7e34d40ece12b24c7582f808969f
     env_file:
       - .env.opaque
       - .env.softhsm
@@ -534,7 +534,7 @@ services:
       - wallet-ecosystem-network
 
   traefik:
-    image: traefik:v3.6
+    image: traefik:v3.6@sha256:31267173a15b4944e797a76ffd9c419707c8d8b32fe5b610f80cd0cfa05f372d
     container_name: traefik
     restart: unless-stopped
     ports:
