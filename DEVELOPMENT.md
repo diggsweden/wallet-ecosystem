@@ -161,6 +161,31 @@ just logs keycloak  # View specific service logs
 just status    # Show service status
 ```
 
+### Managing Certificates and Trust Lists
+
+If you need to regenerate the certificates and trust lists for the ecosystem (e.g., when they expire or when setting up a fresh environment), you must run the following scripts in this specific order:
+
+1. **Generate Keystores:** This script generates all the necessary keys, certificates, and the signed `status-list.jwt`.
+
+   ```shell
+   bash config/certificates/scripts/generate_keystores.sh
+   ```
+
+2. **Generate Trust List (LoTE):** This script generates the List of Trusted Entities (`trusted-entities.json`) using the newly generated keys. **It must be run after the keystores are generated.**
+
+   ```shell
+   bash config/certificates/scripts/generate_lote.sh
+   ```
+
+After updating the certificates, restart the ecosystem and run the tests to verify the changes:
+
+```shell
+just down
+just pull
+just up
+just test
+```
+
 ### Automated Tests
 
 We have [an automated test suite](./src/test/java/) for the Wallet ecosystem.
@@ -280,8 +305,9 @@ so that they are not trusted by the verifier.
 # Remove the root CA so that a new one is generated
 rm config/certificates/rootca/*
 
-# Generate new keystores for all services
-config/certificates/generate_keystores.sh
+# Generate new keystores and trust lists for all services
+bash config/certificates/scripts/generate_keystores.sh
+bash config/certificates/scripts/generate_lote.sh
 
 # Use the existing trusted issuers instead of the newly generated ones
 git checkout config/certificates/verifier/trusted_issuers.p12
