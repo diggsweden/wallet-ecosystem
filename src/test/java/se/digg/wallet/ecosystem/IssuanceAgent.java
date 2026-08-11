@@ -111,9 +111,7 @@ public class IssuanceAgent {
 
     SignedJWT jwt = new SignedJWT(header, claims);
     jwt.sign(new ECDSASigner(jwk));
-    String proofJwt = jwt.serialize();
-    System.out.println("PROOF: " + proofJwt);
-    return proofJwt;
+    return jwt.serialize();
   }
 
   private String extractSdJwtVc(Map<String, Object> payloadJson) {
