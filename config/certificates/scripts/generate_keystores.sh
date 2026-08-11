@@ -1,15 +1,29 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+set -euo pipefail
 
 # Base directories
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 CERT_DIR="$SCRIPT_DIR/.."
 TMP_DIR="$CERT_DIR/tmp"
 
-# Configuration
-export crl_dp="${CRL_DP:-URI:http://trust-source/revocation-list.pem}"
-export status_list_url="${STATUS_LIST_URL:-http://trust-source/signed/status-list.jwt}"
-export aia_url="${AIA_URL:-URI:http://trust-source/rootca.crt}"
+# Configuration (Must be provided by wrapper script)
+: "${CRL_DP:?Environment variable CRL_DP is not set}"
+: "${STATUS_LIST_URL:?Environment variable STATUS_LIST_URL is not set}"
+: "${AIA_URL:?Environment variable AIA_URL is not set}"
+: "${PID_ISSUER_OUT:?Environment variable PID_ISSUER_OUT is not set}"
+: "${TRUST_SOURCE_OUT:?Environment variable TRUST_SOURCE_OUT is not set}"
+: "${VERIFIER_SANS:?Environment variable VERIFIER_SANS is not set}"
+: "${PROVIDER_SANS:?Environment variable PROVIDER_SANS is not set}"
+: "${ISSUER_SANS:?Environment variable ISSUER_SANS is not set}"
+: "${TRUST_SOURCE_SANS:?Environment variable TRUST_SOURCE_SANS is not set}"
+
+export crl_dp="$CRL_DP"
+export status_list_url="$STATUS_LIST_URL"
+export aia_url="$AIA_URL"
 
 # Cleanup temporary files on exit
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -108,7 +122,7 @@ function generate_service_cert_ec() {
 # --- Service Certificates ---
 
 # 1. PID Issuer
-generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "DNS.1:localhost,DNS.2:pid-issuer"
+generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "$ISSUER_SANS"
 cp "$TMP_DIR/pid_issuer.crt" "$CERT_DIR/issuer/pid_issuer_cert.pem"
 
 # Add nonce-encryption and request-encryption keys to pid_issuer.p12
@@ -122,8 +136,8 @@ rm -f "$CERT_DIR/issuer/nonce.p12" "$CERT_DIR/issuer/request.p12" "$CERT_DIR/iss
 echo "Generating issuer_wrprc.jwt for PID Issuer (using bash)..."
 
 # Define target paths
-JWT_PATH="${CERT_DIR}/../pid-issuer/issuer_wrprc.jwt"
-PRE_JWT_PATH="${CERT_DIR}/../pid-issuer/issuer_wrprc.json"
+JWT_PATH="${PID_ISSUER_OUT}/issuer_wrprc.jwt"
+PRE_JWT_PATH="${PID_ISSUER_OUT}/issuer_wrprc.json"
 
 # Extract cert body, removing headers/footers and newlines
 CERT_B64=$(grep -v -- '---' "${TMP_DIR}/pid_issuer.crt" | tr -d '\n')
@@ -173,7 +187,7 @@ create_license "$JWT_PATH"
 create_license "$PRE_JWT_PATH"
 
 # 2. Verifier Backend
-generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "DNS.1:localhost,DNS.2:verifier-backend,DNS.3:refimpl-verifier-backend,DNS.4:10.0.2.2"
+generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS"
 
 # 3. Verifier Trust Store
 echo "Creating trusted_issuers.p12 for Verifier..."
@@ -185,10 +199,10 @@ keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST
 create_license "$TRUST_P12"
 
 # 4. Wallet Provider
-generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "pass1234" "Wallet Provider (Ecosystem)" "DNS.1:localhost,DNS.2:wallet-provider"
+generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "pass1234" "Wallet Provider (Ecosystem)" "$PROVIDER_SANS"
 
 # 5. Trust Source
-generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "DNS.1:localhost,DNS.2:trust-source" "signer.cnf"
+generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "$TRUST_SOURCE_SANS" "signer.cnf"
 cp "$TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
 cp "$TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
 
@@ -219,18 +233,18 @@ while [[ ${#STATUS_S_HEX} -lt 64 ]]; do STATUS_S_HEX="0${STATUS_S_HEX}"; done
 
 STATUS_SIG_B64=$(echo -n "${STATUS_R_HEX}${STATUS_S_HEX}" | xxd -r -p | base64 -w0 | tr '+/' '-_' | tr -d '=')
 
-mkdir -p "${CERT_DIR}/../trust-source/signed"
-echo -n "${STATUS_SIGNING_INPUT}.${STATUS_SIG_B64}" >"${CERT_DIR}/../trust-source/signed/status-list.jwt"
-cat >"${CERT_DIR}/../trust-source/signed/status-list.json" <<EOF
+mkdir -p "${TRUST_SOURCE_OUT}/signed"
+echo -n "${STATUS_SIGNING_INPUT}.${STATUS_SIG_B64}" >"${TRUST_SOURCE_OUT}/signed/status-list.jwt"
+cat >"${TRUST_SOURCE_OUT}/signed/status-list.json" <<EOF
 {
   "headers": $STATUS_HEADER_JSON,
   "payload": $STATUS_PAYLOAD
 }
 EOF
-jq . "${CERT_DIR}/../trust-source/signed/status-list.json" >"${CERT_DIR}/../trust-source/signed/status-list.json.tmp" && mv "${CERT_DIR}/../trust-source/signed/status-list.json.tmp" "${CERT_DIR}/../trust-source/signed/status-list.json"
+jq . "${TRUST_SOURCE_OUT}/signed/status-list.json" >"${TRUST_SOURCE_OUT}/signed/status-list.json.tmp" && mv "${TRUST_SOURCE_OUT}/signed/status-list.json.tmp" "${TRUST_SOURCE_OUT}/signed/status-list.json"
 
-create_license "${CERT_DIR}/../trust-source/signed/status-list.jwt"
-create_license "${CERT_DIR}/../trust-source/signed/status-list.json"
+create_license "${TRUST_SOURCE_OUT}/signed/status-list.jwt"
+create_license "${TRUST_SOURCE_OUT}/signed/status-list.json"
 
 # 6. Trust Validator
 echo "Creating trust_store.p12 for Trust Validator..."
@@ -251,6 +265,6 @@ find "$CERT_DIR" -name "*.p12" -exec chmod 644 {} +
 find "$CERT_DIR" -name "*.pem" -exec chmod 644 {} +
 
 # Copy CRL to trust-source to be hosted by Nginx
-cp "$ROOTCA_DIR/revocation-list.pem" "$CERT_DIR/../trust-source/revocation-list.pem"
+cp "$ROOTCA_DIR/revocation-list.pem" "${TRUST_SOURCE_OUT}/revocation-list.pem"
 
 echo "Done! All certificates and licenses in config/certificates updated for Ecosystem."
