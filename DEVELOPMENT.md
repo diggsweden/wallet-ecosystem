@@ -163,19 +163,11 @@ just status    # Show service status
 
 ### Managing Certificates and Trust Lists
 
-If you need to regenerate the certificates and trust lists for the ecosystem (e.g., when they expire or when setting up a fresh environment), you must run the following scripts in this specific order:
+If you need to regenerate the certificates and trust lists for the ecosystem (e.g., when they expire or when setting up a fresh environment), you can run the following wrapper script:
 
-1. **Generate Keystores:** This script generates all the necessary keys, certificates, and the signed `status-list.jwt`.
-
-   ```shell
-   bash config/certificates/scripts/generate_keystores.sh
-   ```
-
-2. **Generate Trust List (LoTE):** This script generates the List of Trusted Entities (`trusted-entities.json`) using the newly generated keys. **It must be run after the keystores are generated.**
-
-   ```shell
-   bash config/certificates/scripts/generate_lote.sh
-   ```
+```shell
+bash config/certificates/generate_ecosystem_certs.sh
+```
 
 After updating the certificates, restart the ecosystem and run the tests to verify the changes:
 
@@ -306,8 +298,7 @@ so that they are not trusted by the verifier.
 rm config/certificates/rootca/*
 
 # Generate new keystores and trust lists for all services
-bash config/certificates/scripts/generate_keystores.sh
-bash config/certificates/scripts/generate_lote.sh
+bash config/certificates/generate_ecosystem_certs.sh
 
 # Use the existing trusted issuers instead of the newly generated ones
 git checkout config/certificates/verifier/trusted_issuers.p12
