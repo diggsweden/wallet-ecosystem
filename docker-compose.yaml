@@ -313,7 +313,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.6@sha256:5e793dc7b18d40fb92b94f714f12a4ce449388dbb03a427becc135be441a2f13
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.7@sha256:1e3e93801e212c556d84f14c24c8eb6db957dcef0fdb9f7b5c0805e17c7f6b5e
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
@@ -325,7 +325,8 @@ services:
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
       SERVER_PORT: "8080"
-      PROPERTIES_APISECRET: "apikey"
+      PROPERTIES_APISECRET: "new-apikey"
+      PROPERTIES_OLDAPISECRET: "apikey"
       PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
       PROPERTIES_WALLETR2PS_BASEURL: "http://wallet-bff:8088"
