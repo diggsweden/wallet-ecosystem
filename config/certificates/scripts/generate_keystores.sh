@@ -76,7 +76,7 @@ function generate_service_cert_ec() {
   local password="$4"
   local cn="$5"
   local sans="$6"
-  local template_name="${7:-service.cnf}"
+  local service_cnf_file="${7:-service.cnf}"
 
   local target_dir="$CERT_DIR/$target_subdir"
   mkdir -p "$target_dir"
@@ -86,7 +86,7 @@ function generate_service_cert_ec() {
   # Create temporary config for CSR
   local cnf_file="$TMP_DIR/$cert_name.cnf"
   export cn sans
-  envsubst <"$SCRIPT_DIR/templates/$template_name" >"$cnf_file"
+  envsubst <"$SCRIPT_DIR/templates/$service_cnf_file" >"$cnf_file"
 
   local key_file="$TMP_DIR/$cert_name.key"
   local csr_file="$TMP_DIR/$cert_name.csr"
