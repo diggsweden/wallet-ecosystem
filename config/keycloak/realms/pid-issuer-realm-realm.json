@@ -2080,7 +2080,7 @@
     "cibaInterval": "5",
     "realmReusableOtpCode": "false"
   },
-  "keycloakVersion": "22.0.3",
+  "keycloakVersion": "26.7.1",
   "userManagedAccessAllowed": false,
   "clientProfiles": {
     "profiles": []

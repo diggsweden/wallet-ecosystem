@@ -71,4 +71,8 @@ public class KeycloakClient {
   public Response tryGetMasterAdminConsole() {
     return given().when().get(base.resolve("admin/master/console/"));
   }
+
+  public Response tryGetAdminRoot() {
+    return given().when().get(base.resolve("admin/"));
+  }
 }
