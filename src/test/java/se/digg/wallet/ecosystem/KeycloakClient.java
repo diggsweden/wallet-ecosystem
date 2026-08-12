@@ -56,6 +56,35 @@ public class KeycloakClient {
         .path("access_token");
   }
 
+  public String getAccessToken(String realm, Map<String, String> parameters) {
+    URI tokenEndpoint = base.resolve("realms/" + realm + "/protocol/openid-connect/token");
+
+    return given()
+        .when()
+        .contentType(ContentType.URLENC)
+        .formParams(parameters)
+        .post(tokenEndpoint)
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .body("access_token", notNullValue())
+        .extract()
+        .path("access_token");
+  }
+
+  public Response introspectToken(String realm, String token, String clientId,
+      String clientSecret) {
+    URI introspectionEndpoint =
+        base.resolve("realms/" + realm + "/protocol/openid-connect/token/introspect");
+    return given()
+        .auth().preemptive().basic(clientId, clientSecret)
+        .when()
+        .contentType(ContentType.URLENC)
+        .formParam("token", token)
+        .post(introspectionEndpoint);
+  }
+
   public Response tryGetHealth(String path) {
     return given().when().get(base.resolve("health/" + path));
   }

@@ -84,6 +84,24 @@ class KeycloakTest {
         "password", "password")));
   }
 
+  @Test
+  void successfullyIntrospectsAccessToken() {
+    String accessToken = keycloak.getAccessToken("pid-issuer-realm", Map.of(
+        "grant_type", "password",
+        "client_id", "wallet-dev",
+        "username", "tneal",
+        "password", "password"));
+
+    keycloak
+        .introspectToken("pid-issuer-realm", accessToken, "pid-issuer-srv",
+            "zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2")
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .body("active", is(true));
+  }
+
   @ParameterizedTest
   @EnumSource(MetadataLocationStrategy.class)
   void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
