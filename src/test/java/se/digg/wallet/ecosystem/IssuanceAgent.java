@@ -23,6 +23,8 @@ import java.util.Map;
 
 public class IssuanceAgent {
 
+  private static final String DEFAULT_WUA_KEY_ID = "0";
+
   static IssuanceAgent untrusted() {
     return new IssuanceAgent(
         new InternalWalletClient(
@@ -97,7 +99,7 @@ public class IssuanceAgent {
     JWSHeader header =
         new JWSHeader.Builder(JWSAlgorithm.ES256)
             .type(new JOSEObjectType("openid4vci-proof+jwt"))
-            .keyID("0")
+            .keyID(DEFAULT_WUA_KEY_ID)
             .customParam("key_attestation", wua)
             .build();
 

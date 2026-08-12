@@ -72,10 +72,6 @@ services:
     hostname: trust-validator
     environment:
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
-      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "DEBUG"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "TRACE"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP: "TRACE"
-      LOGGING_LEVEL_EU_EUROPA_ESIG_DSS: "TRACE"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
       TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
@@ -86,7 +82,6 @@ services:
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Revocation"
-      LOGGING_LEVEL_EU_EUROPA_ESIG: "DEBUG"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.trust-validator.rule=PathPrefix(`/trust-validator`)"
@@ -201,7 +196,7 @@ services:
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_ALIAS=pid_issuer
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_PASSWORD=pass1234
       - ISSUER_NONCE_ENCRYPTION_KEY_ALIAS=nonce-encryption
-      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_ALIAS=nonce-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_ALIAS=request-encryption
       - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_PASSWORD=pass1234
       - ISSUER_NONCE_ENCRYPTION_KEY_PASSWORD=pass1234
       - ISSUER_ACCESS_CERTIFICATE_ALIAS=pid_issuer
