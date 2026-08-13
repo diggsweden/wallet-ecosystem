@@ -12,7 +12,8 @@ import java.net.URI;
 
 public class VerifierFrontendClient {
 
-  public static final String DEFAULT_INTENDED_USE_ID = "1";
+  public static final String DEFAULT_INTENDED_USE_ID =
+      VerifierBackendClient.DEFAULT_INTENDED_USE_ID;
 
   private final URI base;
 

@@ -382,6 +382,8 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
       - KC_DB=dev-file
     healthcheck:
+      # This is the recommended way to perform the healthcheck without curl, as per:
+      # https://www.keycloak.org/observability/health#_healthcheck
       test: ["CMD-SHELL", "{ printf 'HEAD /idp/health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000"]
       interval: 5s
       timeout: 10s

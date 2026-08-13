@@ -123,7 +123,6 @@ function generate_service_cert_ec() {
 
 # 1. PID Issuer
 generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "$ISSUER_SANS"
-cp "$TMP_DIR/pid_issuer.crt" "$CERT_DIR/issuer/pid_issuer_cert.pem"
 
 # Add nonce-encryption and request-encryption keys to pid_issuer.p12
 generate_service_cert_ec "issuer" "nonce" "nonce-encryption" "pass1234" "nonce-encryption" "DNS.1:localhost" "encryption.cnf"

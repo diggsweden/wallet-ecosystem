@@ -166,8 +166,6 @@ just status    # Show service status
 When running the ecosystem locally via `just up`, the Keycloak Admin Console is available at:
 [https://localhost/idp-internal/admin/master/console/](https://localhost/idp-internal/admin/master/console/)
 
-**Note:** Keycloak 26 removed the automatic `/admin` redirect in production mode. You must navigate to the exact full path above, otherwise you will receive a 404 error.
-
 **Default Login Credentials:**
 
 - **Username:** `admin`

@@ -49,7 +49,7 @@ class KeycloakInternalTest {
   }
 
   @Test
-  void adminRedirectIsDisabledInKeycloak26() {
+  void doesNotServeUrlSlashAdmin() {
     internalKeycloak.tryGetAdminRoot()
         .then().assertThat().statusCode(is(404));
   }
