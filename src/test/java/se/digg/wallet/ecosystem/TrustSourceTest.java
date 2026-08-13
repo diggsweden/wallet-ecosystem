@@ -38,4 +38,18 @@ class TrustSourceTest {
     // The JSON is actually just a raw JWT string
     assertThat(body.trim(), matchesPattern(JWT_PATTERN));
   }
+
+  @Test
+  void servesStatusListJwt() throws Exception {
+    String body = trustSource.tryGet("signed/status-list.jwt")
+        .then()
+        .assertThat().statusCode(200)
+        .extract().body().asString();
+
+    // Verify it's a valid JWT structurally
+    assertThat(body.trim(), matchesPattern(JWT_PATTERN));
+
+    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(body.trim());
+    org.junit.jupiter.api.Assertions.assertNotNull(jwt.getJWTClaimsSet().getSubject());
+  }
 }

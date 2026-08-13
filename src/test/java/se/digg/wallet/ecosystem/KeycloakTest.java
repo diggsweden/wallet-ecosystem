@@ -102,6 +102,20 @@ class KeycloakTest {
         .body("active", is(true));
   }
 
+  @Test
+  void accessTokenContainsClientStatusClaim() throws Exception {
+    String accessToken = keycloak.getAccessToken("pid-issuer-realm", Map.of(
+        "grant_type", "password",
+        "client_id", "wallet-dev",
+        "username", "tneal",
+        "password", "password"));
+
+    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(accessToken);
+    org.junit.jupiter.api.Assertions.assertNotNull(
+        jwt.getJWTClaimsSet().getClaim("client_status"),
+        "Access token must contain the 'client_status' claim from the protocol mapper");
+  }
+
   @ParameterizedTest
   @EnumSource(MetadataLocationStrategy.class)
   void servesMetadataForPidIssuerRealm(MetadataLocationStrategy strategy) {
