@@ -214,4 +214,35 @@ public class PidIssuerTest {
         .assertThat()
         .statusCode(400);
   }
+
+  @Test
+  void rejectsPlainBearerToken() throws Exception {
+    ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();
+
+    String accessToken =
+        keycloak.getDpopAccessToken(
+            "pid-issuer-realm",
+            userJwk,
+            Map.of(
+                "grant_type", "password",
+                "client_id", "wallet-dev",
+                "username", "tneal",
+                "password", "password",
+                "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                "role", "user"));
+
+    String credentialsEndpoint =
+        IDENTIFIER.getResourceRoot().resolve("wallet/credentialEndpoint").toString();
+
+    // The endpoint should enforce DPoP and reject standard Bearer tokens
+    given()
+        .header("Authorization", "Bearer " + accessToken)
+        .contentType("application/json")
+        .body("{}")
+        .when()
+        .post(credentialsEndpoint)
+        .then()
+        .assertThat()
+        .statusCode(401);
+  }
 }

@@ -54,16 +54,53 @@ public class PidIssuerClient {
   }
 
   public String getDecodedOpenIdCredentialIssuerMetadata(MetadataLocationStrategy strategy) {
-    String response = tryGetOpenIdCredentialIssuerMetadata(strategy)
+    var response = tryGetOpenIdCredentialIssuerMetadata(strategy)
         .then()
         .assertThat().statusCode(200)
-        .extract().asString();
+        .extract();
 
-    if (response.split("\\.").length == 3) {
-      return new String(Base64.getUrlDecoder().decode(response.split("\\.")[1]),
-          StandardCharsets.UTF_8);
+    String contentType = response.contentType();
+    String body = response.asString();
+
+    if (contentType != null && contentType.startsWith("application/jwt")) {
+      try {
+        com.nimbusds.jwt.SignedJWT signedJWT = com.nimbusds.jwt.SignedJWT.parse(body);
+
+        // Verify signature against the embedded x5c certificate
+        java.util.List<com.nimbusds.jose.util.Base64> x5c =
+            signedJWT.getHeader().getX509CertChain();
+        org.junit.jupiter.api.Assertions.assertNotNull(x5c,
+            "Signed metadata must contain x5c header");
+        org.junit.jupiter.api.Assertions.assertFalse(x5c.isEmpty(), "x5c header must not be empty");
+
+        java.security.cert.CertificateFactory cf =
+            java.security.cert.CertificateFactory.getInstance("X.509");
+        java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate) cf
+            .generateCertificate(new java.io.ByteArrayInputStream(x5c.get(0).decode()));
+        java.security.PublicKey publicKey = cert.getPublicKey();
+
+        com.nimbusds.jose.JWSVerifier verifier;
+        if (publicKey instanceof java.security.interfaces.ECPublicKey) {
+          verifier = new com.nimbusds.jose.crypto.ECDSAVerifier(
+              (java.security.interfaces.ECPublicKey) publicKey);
+        } else if (publicKey instanceof java.security.interfaces.RSAPublicKey) {
+          verifier = new com.nimbusds.jose.crypto.RSASSAVerifier(
+              (java.security.interfaces.RSAPublicKey) publicKey);
+        } else {
+          throw new IllegalArgumentException(
+              "Unsupported public key type: " + publicKey.getAlgorithm());
+        }
+
+        org.junit.jupiter.api.Assertions.assertTrue(signedJWT.verify(verifier),
+            "Metadata JWT signature verification failed");
+
+        return signedJWT.getPayload().toString();
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to verify signed metadata", e);
+      }
     }
-    return response;
+
+    return body;
   }
 
   public Response tryGetJwtVcIssuerMetadata(MetadataLocationStrategy strategy) {
