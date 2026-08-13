@@ -254,6 +254,8 @@ services:
     image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
     container_name: wallet-account-db
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: wallet-account
       POSTGRES_PASSWORD: pass

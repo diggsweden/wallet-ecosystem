@@ -19,6 +19,8 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -110,9 +112,9 @@ class KeycloakTest {
         "username", "tneal",
         "password", "password"));
 
-    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(accessToken);
-    org.junit.jupiter.api.Assertions.assertNotNull(
-        jwt.getJWTClaimsSet().getClaim("client_status"),
+    SignedJWT jwt = SignedJWT.parse(accessToken);
+    JWTClaimsSet claims = jwt.getJWTClaimsSet();
+    assertNotNull(claims.getClaim("client_status"),
         "Access token must contain the 'client_status' claim from the protocol mapper");
   }
 

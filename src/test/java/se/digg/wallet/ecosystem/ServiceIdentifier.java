@@ -18,7 +18,8 @@ public enum ServiceIdentifier {
   VERIFIER_FRONTEND,
   TRUST_VALIDATOR,
   TRUST_SOURCE,
-  WALLET_CLIENT_GATEWAY;
+  WALLET_CLIENT_GATEWAY,
+  WALLET_ACCOUNT_DB;
 
   private String getValue() {
     return Enum.valueOf(Property.class, name() + "_BASE_URI").getValue();

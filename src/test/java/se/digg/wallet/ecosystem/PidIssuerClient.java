@@ -21,13 +21,17 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.EncryptedJWT;
+import com.nimbusds.jwt.SignedJWT;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,37 +68,35 @@ public class PidIssuerClient {
 
     if (contentType != null && contentType.startsWith("application/jwt")) {
       try {
-        com.nimbusds.jwt.SignedJWT signedJWT = com.nimbusds.jwt.SignedJWT.parse(body);
+        SignedJWT signedJwt = SignedJWT.parse(body);
 
         // Verify signature against the embedded x5c certificate
-        java.util.List<com.nimbusds.jose.util.Base64> x5c =
-            signedJWT.getHeader().getX509CertChain();
-        org.junit.jupiter.api.Assertions.assertNotNull(x5c,
+        List<com.nimbusds.jose.util.Base64> x5c =
+            signedJwt.getHeader().getX509CertChain();
+        assertNotNull(x5c,
             "Signed metadata must contain x5c header");
         org.junit.jupiter.api.Assertions.assertFalse(x5c.isEmpty(), "x5c header must not be empty");
 
-        java.security.cert.CertificateFactory cf =
-            java.security.cert.CertificateFactory.getInstance("X.509");
-        java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate) cf
+        CertificateFactory cf =
+            CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) cf
             .generateCertificate(new java.io.ByteArrayInputStream(x5c.get(0).decode()));
-        java.security.PublicKey publicKey = cert.getPublicKey();
+        PublicKey publicKey = cert.getPublicKey();
 
         com.nimbusds.jose.JWSVerifier verifier;
-        if (publicKey instanceof java.security.interfaces.ECPublicKey) {
-          verifier = new com.nimbusds.jose.crypto.ECDSAVerifier(
-              (java.security.interfaces.ECPublicKey) publicKey);
-        } else if (publicKey instanceof java.security.interfaces.RSAPublicKey) {
-          verifier = new com.nimbusds.jose.crypto.RSASSAVerifier(
-              (java.security.interfaces.RSAPublicKey) publicKey);
+        if (publicKey instanceof ECPublicKey) {
+          verifier = new com.nimbusds.jose.crypto.ECDSAVerifier((ECPublicKey) publicKey);
+        } else if (publicKey instanceof RSAPublicKey) {
+          verifier = new com.nimbusds.jose.crypto.RSASSAVerifier((RSAPublicKey) publicKey);
         } else {
           throw new IllegalArgumentException(
-              "Unsupported public key type: " + publicKey.getAlgorithm());
+              "Unsupported public key type: " + publicKey.getClass().getName());
         }
 
-        org.junit.jupiter.api.Assertions.assertTrue(signedJWT.verify(verifier),
-            "Metadata JWT signature verification failed");
+        org.junit.jupiter.api.Assertions.assertTrue(signedJwt.verify(verifier),
+            "Metadata signature verification failed");
 
-        return signedJWT.getPayload().toString();
+        return signedJwt.getPayload().toString();
       } catch (Exception e) {
         throw new RuntimeException("Failed to verify signed metadata", e);
       }

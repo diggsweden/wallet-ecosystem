@@ -20,6 +20,8 @@ public enum Property {
   TRUST_VALIDATOR_BASE_URI("https://localhost/trust-validator"),
   TRUST_SOURCE_BASE_URI("https://localhost/trust-source"),
   WALLET_CLIENT_GATEWAY_BASE_URI("https://localhost/wallet-client-gateway"),
+  WALLET_ACCOUNT_DB_BASE_URI("jdbc:postgresql://localhost:5432/wallet-account"),
+  WALLET_ACCOUNT_DB_TESTING_ENABLED("true"),
   WALLET_CLIENT_GATEWAY_API_KEY("apikey"),
   VERIFIER_AUDIENCE("x509_san_dns:localhost");
 

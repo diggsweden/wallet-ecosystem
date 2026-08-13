@@ -133,5 +133,25 @@ public class EndToEndTest {
         "Request object retrieved",
         "Wallet response posted",
         "Verifier got wallet response")));
+
+    // 8. Verify Database Persistence (skip if not available in environment)
+    if (Boolean.parseBoolean(Property.WALLET_ACCOUNT_DB_TESTING_ENABLED.getValue())) {
+      try (java.sql.Connection conn = java.sql.DriverManager.getConnection(
+          ServiceIdentifier.WALLET_ACCOUNT_DB.toString(), "wallet-account",
+          "pass");
+          java.sql.PreparedStatement stmt = conn.prepareStatement(
+              "SELECT client_status_list_uri, key_storage_status_list_uri "
+                  + "FROM issued_credential ORDER BY issued_at DESC LIMIT 1");
+          java.sql.ResultSet rs = stmt.executeQuery()) {
+
+        if (!rs.next()) {
+          org.junit.jupiter.api.Assertions.fail("Expected at least one credential in the database");
+        }
+        org.junit.jupiter.api.Assertions.assertEquals("http://trust-source/signed/status-list.jwt",
+            rs.getString("client_status_list_uri"));
+        org.junit.jupiter.api.Assertions.assertEquals("http://trust-source/signed/status-list.jwt",
+            rs.getString("key_storage_status_list_uri"));
+      }
+    }
   }
 }
