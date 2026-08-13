@@ -37,5 +37,11 @@ public class WalletProviderTest {
 
     assertThat(wua, matchesPattern(
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+
+    // Verify WUA contains the injected key_storage_status
+    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(wua);
+    org.junit.jupiter.api.Assertions.assertNotNull(
+        jwt.getJWTClaimsSet().getClaim("key_storage_status"),
+        "WUA must contain the 'key_storage_status' claim");
   }
 }

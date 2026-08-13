@@ -48,6 +48,12 @@ class KeycloakInternalTest {
         .and().body(containsString("rel=\"icon\""));
   }
 
+  @Test
+  void doesNotServeUrlSlashAdmin() {
+    internalKeycloak.tryGetAdminRoot()
+        .then().assertThat().statusCode(is(404));
+  }
+
   @ParameterizedTest
   @MethodSource("masterAdminConsoleUrls")
   void servesMasterAdminConsoleConfiguredForInternalRoute(String url) {

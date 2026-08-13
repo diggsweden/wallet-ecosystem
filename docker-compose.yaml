@@ -32,7 +32,7 @@ x-kafka-common: &kafka-common
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.9.2
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0@sha256:2f2772b1df39a529f3683c7e82d10d03221b475e67da7b2d8cb1b9aebe6f71f9
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
@@ -51,7 +51,7 @@ services:
       VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "pass1234"
       VERIFIER_RESPONSE_MODE: "DirectPost"
       VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
-      VERIFIER_TRUSTVALIDATOR_SERVICEURL: "http://trust-validator:8080/trust-validator/trust"
+      VERIFIER_TRUST_VALIDATOR_SERVICE_URL: "http://trust-validator:8080/trust-validator/trust"
       LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
       JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
     depends_on:
@@ -72,9 +72,6 @@ services:
     hostname: trust-validator
     environment:
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
-      LOGGING_LEVEL_EU_EUROPA_EC_EUDI: "TRACE"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "DEBUG"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP: "DEBUG"
       TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
       TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
@@ -85,7 +82,6 @@ services:
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Revocation"
-      LOGGING_LEVEL_EU_EUROPA_ESIG: "DEBUG"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.trust-validator.rule=PathPrefix(`/trust-validator`)"
@@ -97,7 +93,7 @@ services:
       - wallet-ecosystem-network
 
   trust-source:
-    image: nginx:1.31.2-alpine-slim@sha256:dd722b8ee8794f3c273bfaf8b5351b0652a68ccd73c17e5f0d029857a58f25ef
+    image: nginx:1.31.3-alpine-slim@sha256:45b82ed5f285b90d63df07ba70430fdd8f25624b416617d9e6dc93412b2006dc
     container_name: trust-source
     hostname: trust-source
     volumes:
@@ -116,7 +112,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: ghcr.io/diggsweden/wallet-provider:v0.0.23@sha256:a10414a20ce4918da0b89c4c20f2087699ca601024c655225370b20007b25f2b
+    image: ghcr.io/diggsweden/wallet-provider:v0.0.24@sha256:26e06546fd8b2d624d6bf29c24749f23185d06ca3497bf5dc6ae9ba0fb6f4410
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
@@ -129,6 +125,7 @@ services:
       WUA_KEYSTORE_PATH: "file:///opt/common/wallet_provider.p12"
       WUA_KEYSTORE_PASSWORD: "pass1234"
       WUA_KEYSTORE_ALIAS: "wallet_provider"
+      WALLET_PROVIDER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wallet-provider.rule=PathPrefix(`/wallet-provider`)"
@@ -140,7 +137,7 @@ services:
       - wallet-ecosystem-network
 
   demo-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.9@sha256:948c9518de8993cffdafde6631a5e767528bef5ede7d5bd97a3e5ef2b3aeba94
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.10@sha256:6e3750d6633d4091e05bc696d4a9ef749583a730a759a6042466e7739ea9903a
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
@@ -163,7 +160,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.9.1
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.0@sha256:90a8d77a27e3dca9fa83386d75400b30f53508c0cc59f7af08f1a44c4c3c394c
     container_name: pid-issuer
     depends_on:
       keycloak:
@@ -172,12 +169,12 @@ services:
       - SPRING_PROFILES_ACTIVE=insecure
       - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
       - SERVER_PORT=8080
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_ID=pid-issuer-srv
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENT_SECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENTID=pid-issuer-srv
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENTSECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
       - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
+      - SPRING_HTTP_CODECS_MAXINMEMORYSIZE=8MB
       - ISSUER_PUBLICURL=${BASE_URL}/pid-issuer
       - ISSUER_AUTHORIZATIONSERVER_PUBLICURL=${BASE_URL}/idp/realms/pid-issuer-realm
-      - ISSUER_AUTHORIZATIONSERVER_METADATA=http://keycloak:8080/idp/realms/pid-issuer-realm/.well-known/openid-configuration
       - ISSUER_AUTHORIZATIONSERVER_INTROSPECTION=http://keycloak:8080/idp/realms/pid-issuer-realm/protocol/openid-connect/token/introspect
       - ISSUER_CREDENTIALRESPONSEENCRYPTION_SUPPORTED=true
       - ISSUER_CREDENTIALRESPONSEENCRYPTION_REQUIRED=true
@@ -187,38 +184,43 @@ services:
       - ISSUER_PID_SD_JWT_VC_ENABLED=true
       - ISSUER_PID_SD_JWT_VC_NOTUSEBEFORE=PT0S
       - ISSUER_PID_SD_JWT_VC_NOTIFICATIONS_ENABLED=true
-      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_REQUIRED=true
-      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_CONSTRAINTS_KEY_STORAGE=iso_18045_high
-      - ISSUER_PID_SD_JWT_VC_KEY_ATTESTATIONS_CONSTRAINTS_USER_AUTHENTICATION=iso_18045_high
       - ISSUER_PID_ISSUINGCOUNTRY=SE
       - ISSUER_PID_ISSUINGJURISDICTION=SE-Y # Västernorrland
-      - ISSUER_EHIC_ENABLED=false
       - ISSUER_MDL_ENABLED=false
       - ISSUER_LEARNINGCREDENTIAL_ENABLED=false
-      - ISSUER_CREDENTIALOFFER_URI=openid-credential-offer://
+      - ISSUER_CREDENTIALOFFER_DEFAULTURI=openid-credential-offer://
+      - ISSUER_CREDENTIALOFFER_ALLOWEDSCHEMES=https,openid-credential-offer,eu-eaa-offer
       - ISSUER_KEYSTORE_FILE=file:///opt/common/pid_issuer.p12
       - ISSUER_KEYSTORE_TYPE=PKCS12
       - ISSUER_KEYSTORE_PASSWORD=pass1234
-      - ISSUER_PID_SD_JWT_VC_SIGNING_KEY=LoadFromKeystore
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_ALIAS=pid_issuer
       - ISSUER_PID_SD_JWT_VC_SIGNING_KEY_PASSWORD=pass1234
-      - ISSUER_METADATA_SIGNED_METADATA_ENABLED=false
+      - ISSUER_NONCE_ENCRYPTION_KEY_ALIAS=nonce-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_ALIAS=request-encryption
+      - ISSUER_CREDENTIALREQUESTENCRYPTION_JWKS_PASSWORD=pass1234
+      - ISSUER_NONCE_ENCRYPTION_KEY_PASSWORD=pass1234
+      - ISSUER_ACCESS_CERTIFICATE_ALIAS=pid_issuer
+      - ISSUER_ACCESS_CERTIFICATE_PASSWORD=pass1234
+      - SPRING_R2DBC_URL=r2dbc:pool:postgresql://wallet-account-db:5432/wallet-account
+      - SPRING_R2DBC_USERNAME=wallet-account
+      - SPRING_R2DBC_PASSWORD=pass
+      - ISSUER_STATUSLIST_SERVICE_GENERATE_URI=http://status-list:5000/token_status_list/take
+      - ISSUER_STATUSLIST_SERVICE_REVOKE_URI=http://status-list:5000/token_status_list/take
+      - ISSUER_STATUSLIST_SERVICE_APIKEY=aaa-bbb-ccc
       - ISSUER_KEYCLOAK_SERVER_URL=http://keycloak:8080/idp
       - ISSUER_KEYCLOAK_AUTHENTICATION_REALM=master
       - ISSUER_KEYCLOAK_CLIENT_ID=admin-cli
       - ISSUER_KEYCLOAK_USERNAME=admin
       - ISSUER_KEYCLOAK_PASSWORD=password
       - ISSUER_KEYCLOAK_USER_REALM=pid-issuer-realm
-      - ISSUER_DPOP_PROOF_MAX_AGE=PT1M
-      - ISSUER_DPOP_CACHE_PURGE_INTERVAL=PT10M
       - ISSUER_DPOP_REALM=pid-issuer
       - ISSUER_DPOP_NONCE_ENABLED=false
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_ENABLED=true
       - ISSUER_CREDENTIALENDPOINT_BATCHISSUANCE_BATCHSIZE=10
       - ISSUER_CNONCE_EXPIRATION=PT5M
-      - ISSUER_ACCESS_TOKEN_TYPE=BearerAndDPoPIfAvailable
       - ISSUER_METADATA_DISPLAY_0_LOGO_URI=https://dela.digg.se/img/sr-logo-color.png
       - ISSUER_METADATA_DISPLAY_0_NAME=DIGG issuer
+      - SPRING_CONFIG_IMPORT=configtree:/opt/common/configtree/
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,loggers,httpexchanges
       - SPRING_CODEC_LOG_REQUEST_DETAILS=true
       - LOGGING_LEVEL_EU_EUROPA_EC_EUDI=DEBUG
@@ -230,6 +232,7 @@ services:
       - JAVA_OPTS="-XX:MaxDirectMemorySize=128M"
     volumes:
       - ./config/certificates/issuer/pid_issuer.p12:/opt/common/pid_issuer.p12:ro
+      - ./config/pid-issuer/issuer_wrprc.jwt:/opt/common/configtree/issuer.wrprc:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pid-issuer.rule=PathPrefix(`/pid-issuer`)"
@@ -248,13 +251,17 @@ services:
       - wallet-ecosystem-network
 
   wallet-account-db:
-    image: "postgres:16"
+    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
     container_name: wallet-account-db
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: wallet-account
       POSTGRES_PASSWORD: pass
       POSTGRES_DATABASE: wallet-account
+    volumes:
+      - ./config/db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wallet-account -d wallet-account"]
       interval: 5s
@@ -359,7 +366,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.4-0
+    image: quay.io/keycloak/keycloak:26.7.1@sha256:f1f1f01e472c8a78df40d8f2a49a925274eda4d3d80d5f6edbb5c880ee3c01c6
     container_name: keycloak
     command:
       - start
@@ -377,13 +384,14 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
       - KC_DB=dev-file
     healthcheck:
-      test: "bash /opt/keycloak/health-check.sh"
+      # This is the recommended way to perform the healthcheck without curl, as per:
+      # https://www.keycloak.org/observability/health#_healthcheck
+      test: ["CMD-SHELL", "{ printf 'HEAD /idp/health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000"]
       interval: 5s
       timeout: 10s
       retries: 12
       start_period: 30s
     volumes:
-      - ./config/keycloak/extra/health-check.sh:/opt/keycloak/health-check.sh
       - ./config/keycloak/themes/:/opt/keycloak/themes
       - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:
@@ -423,7 +431,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-bff:
-    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639@sha256:fc63a91dd698ccb2114dcced589654a367651f21fd671862a6a127d23e3bc9e5
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -454,7 +462,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639@sha256:33533b4475dec3924b0d4af006f2ffc0eb8b7e34d40ece12b24c7582f808969f
     env_file:
       - .env.opaque
       - .env.softhsm
@@ -524,7 +532,7 @@ services:
       - wallet-ecosystem-network
 
   traefik:
-    image: traefik:v3.6
+    image: traefik:v3.6@sha256:31267173a15b4944e797a76ffd9c419707c8d8b32fe5b610f80cd0cfa05f372d
     container_name: traefik
     restart: unless-stopped
     ports:

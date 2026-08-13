@@ -95,6 +95,12 @@ SPDX-License-Identifier: CC0-1.0
       <version>10.8</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

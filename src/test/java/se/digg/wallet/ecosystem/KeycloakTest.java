@@ -19,6 +19,8 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -82,6 +84,38 @@ class KeycloakTest {
         "client_id", "wallet-dev",
         "username", "tneal",
         "password", "password")));
+  }
+
+  @Test
+  void successfullyIntrospectsAccessToken() {
+    String accessToken = keycloak.getAccessToken("pid-issuer-realm", Map.of(
+        "grant_type", "password",
+        "client_id", "wallet-dev",
+        "username", "tneal",
+        "password", "password"));
+
+    keycloak
+        .introspectToken("pid-issuer-realm", accessToken, "pid-issuer-srv",
+            "zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2")
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .and()
+        .body("active", is(true));
+  }
+
+  @Test
+  void accessTokenContainsClientStatusClaim() throws Exception {
+    String accessToken = keycloak.getAccessToken("pid-issuer-realm", Map.of(
+        "grant_type", "password",
+        "client_id", "wallet-dev",
+        "username", "tneal",
+        "password", "password"));
+
+    SignedJWT jwt = SignedJWT.parse(accessToken);
+    JWTClaimsSet claims = jwt.getJWTClaimsSet();
+    assertNotNull(claims.getClaim("client_status"),
+        "Access token must contain the 'client_status' claim from the protocol mapper");
   }
 
   @ParameterizedTest

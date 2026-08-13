@@ -161,6 +161,33 @@ just logs keycloak  # View specific service logs
 just status    # Show service status
 ```
 
+### Keycloak Admin Console
+
+When running the ecosystem locally via `just up`, the Keycloak Admin Console is available at:
+[https://localhost/idp-internal/admin/master/console/](https://localhost/idp-internal/admin/master/console/)
+
+**Default Login Credentials:**
+
+- **Username:** `admin`
+- **Password:** `password`
+
+### Managing Certificates and Trust Lists
+
+If you need to regenerate the certificates and trust lists for the ecosystem (e.g., when they expire or when setting up a fresh environment), you can run the following wrapper script:
+
+```shell
+bash config/certificates/generate_ecosystem_certs.sh
+```
+
+After updating the certificates, restart the ecosystem and run the tests to verify the changes:
+
+```shell
+just down
+just pull
+just up
+just test
+```
+
 ### Automated Tests
 
 We have [an automated test suite](./src/test/java/) for the Wallet ecosystem.
@@ -280,8 +307,8 @@ so that they are not trusted by the verifier.
 # Remove the root CA so that a new one is generated
 rm config/certificates/rootca/*
 
-# Generate new keystores for all services
-config/certificates/generate_keystores.sh
+# Generate new keystores and trust lists for all services
+bash config/certificates/generate_ecosystem_certs.sh
 
 # Use the existing trusted issuers instead of the newly generated ones
 git checkout config/certificates/verifier/trusted_issuers.p12

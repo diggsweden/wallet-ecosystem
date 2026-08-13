@@ -21,10 +21,16 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.EncryptedJWT;
+import com.nimbusds.jwt.SignedJWT;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import java.net.URI;
+import java.security.PublicKey;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +55,54 @@ public class PidIssuerClient {
     return given().when().get(strategy.applyTo(
         ServiceIdentifier.PID_ISSUER.toUri(),
         "/.well-known/openid-credential-issuer"));
+  }
+
+  public String getDecodedOpenIdCredentialIssuerMetadata(MetadataLocationStrategy strategy) {
+    var response = tryGetOpenIdCredentialIssuerMetadata(strategy)
+        .then()
+        .assertThat().statusCode(200)
+        .extract();
+
+    String contentType = response.contentType();
+    String body = response.asString();
+
+    if (contentType != null && contentType.startsWith("application/jwt")) {
+      try {
+        SignedJWT signedJwt = SignedJWT.parse(body);
+
+        // Verify signature against the embedded x5c certificate
+        List<com.nimbusds.jose.util.Base64> x5c =
+            signedJwt.getHeader().getX509CertChain();
+        assertNotNull(x5c,
+            "Signed metadata must contain x5c header");
+        org.junit.jupiter.api.Assertions.assertFalse(x5c.isEmpty(), "x5c header must not be empty");
+
+        CertificateFactory cf =
+            CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) cf
+            .generateCertificate(new java.io.ByteArrayInputStream(x5c.get(0).decode()));
+        PublicKey publicKey = cert.getPublicKey();
+
+        com.nimbusds.jose.JWSVerifier verifier;
+        if (publicKey instanceof ECPublicKey) {
+          verifier = new com.nimbusds.jose.crypto.ECDSAVerifier((ECPublicKey) publicKey);
+        } else if (publicKey instanceof RSAPublicKey) {
+          verifier = new com.nimbusds.jose.crypto.RSASSAVerifier((RSAPublicKey) publicKey);
+        } else {
+          throw new IllegalArgumentException(
+              "Unsupported public key type: " + publicKey.getClass().getName());
+        }
+
+        org.junit.jupiter.api.Assertions.assertTrue(signedJwt.verify(verifier),
+            "Metadata signature verification failed");
+
+        return signedJwt.getPayload().toString();
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to verify signed metadata", e);
+      }
+    }
+
+    return body;
   }
 
   public Response tryGetJwtVcIssuerMetadata(MetadataLocationStrategy strategy) {
@@ -77,7 +131,7 @@ public class PidIssuerClient {
         .auth()
         .oauth2(accessToken)
         .header("DPoP",
-            DpopUtil.createDpopProof(key, nonceEndpoint.toString(), "POST"))
+            DpopUtil.createDpopProof(key, nonceEndpoint.toString(), "POST", accessToken))
         .when()
         .post(nonceEndpoint)
         .then()
@@ -103,6 +157,7 @@ public class PidIssuerClient {
 
   private ValidatableResponse getCredentialIssuerMetadata() {
     return given()
+        .header("Accept", "application/json")
         .when()
         .get(this.base.resolve(".well-known/openid-credential-issuer"))
         .then().statusCode(200);
@@ -135,10 +190,9 @@ public class PidIssuerClient {
         this.base.resolve("wallet/credentialEndpoint").toString();
     String responsePayload =
         given()
-            .auth()
-            .oauth2(accessToken)
+            .header("Authorization", "DPoP " + accessToken)
             .header("DPoP", DpopUtil.createDpopProof(userJwk,
-                credentialsEndpoint, "POST"))
+                credentialsEndpoint, "POST", accessToken))
             .when()
             .contentType("application/jwt")
             .body(requestPayload)

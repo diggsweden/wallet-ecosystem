@@ -23,6 +23,8 @@ import java.util.Map;
 
 public class IssuanceAgent {
 
+  private static final String DEFAULT_WUA_KEY_ID = "0";
+
   static IssuanceAgent untrusted() {
     return new IssuanceAgent(
         new InternalWalletClient(
@@ -67,11 +69,10 @@ public class IssuanceAgent {
             .keyUse(KeyUse.ENCRYPTION)
             .generate();
 
-    ECKey userJwk = new ECKeyGenerator(Curve.P_256).generate();
     String accessToken =
         keycloak.getDpopAccessToken(
             "pid-issuer-realm",
-            userJwk,
+            bindingKey,
             Map.of(
                 "grant_type", "password",
                 "client_id", "wallet-dev",
@@ -80,14 +81,15 @@ public class IssuanceAgent {
                 "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
                 "role", "user"));
 
-    String nonce = pidIssuer.getNonce(accessToken, userJwk);
+    String nonce = pidIssuer.getNonce(accessToken, bindingKey);
     String walletAttestation = wallet.createWalletUnitAttestation(bindingKey, nonce);
     String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =
         pidIssuer
             .issueCredentials(
-                accessToken, userJwk, encryptionKey, proof, pidIssuerCredentialRequestEncryptionKey)
+                accessToken, bindingKey, encryptionKey, proof,
+                pidIssuerCredentialRequestEncryptionKey)
             .toJSONObject();
 
     return extractSdJwtVc(payloadJson);
@@ -97,12 +99,13 @@ public class IssuanceAgent {
     JWSHeader header =
         new JWSHeader.Builder(JWSAlgorithm.ES256)
             .type(new JOSEObjectType("openid4vci-proof+jwt"))
+            .keyID(DEFAULT_WUA_KEY_ID)
             .customParam("key_attestation", wua)
             .build();
 
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
-            .issuer(jwk.toPublicJWK().toString())
+            .issuer("wallet-dev")
             .audience(audience)
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
