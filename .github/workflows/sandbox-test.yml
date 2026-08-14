@@ -49,7 +49,8 @@ jobs:
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_VERIFIER_BACKEND_HEALTH: true
           DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_INTERNAL: true
           DIGG_WALLET_ECOSYSTEM_WALLET_ACCOUNT_DB_TESTING_ENABLED: false
+          DIGG_WALLET_ECOSYSTEM_PID_ISSUER_DB_TESTING_ENABLED: false
         run: |
           echo "Running tests on sandbox..."
           # shellcheck disable=SC2086
-          mvn $MAVEN_CLI_OPTS test -Dtest.excludes='TraefikTest,WalletAccountTest'
+          mvn $MAVEN_CLI_OPTS test -Dtest.excludes='TraefikTest,WalletAccountTest,PidIssuerDbTest'
