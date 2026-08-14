@@ -18,6 +18,10 @@ REGEX_FOR_OTHERS='(refimpl-verifier-backend|wallet-provider|pid-issuer|traefik|d
 # Give services time to initialize (especially Keycloak)
 for i in {1..10}; do
   echo "Check attempt $i/10..."
+  # Trigger health checks in environments without automatic timer scheduling (e.g. CI)
+  for cid in $(podman ps -q --filter "health=starting" --filter "health=unhealthy" 2>/dev/null); do
+    podman healthcheck run "$cid" >/dev/null 2>&1 || true
+  done
   # Get statuses of all containers that have health checks
   UNHEALTHY=$(
     podman ps -a --format "{{.Names}} {{.Status}}" |
