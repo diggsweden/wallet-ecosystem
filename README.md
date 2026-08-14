@@ -165,3 +165,5 @@ mvn test
 # Teardown compose
 docker compose down
 ```
+
+"https://wallet-keycloak-apps.diggprod.cappdigg.sgit.se/idp"
