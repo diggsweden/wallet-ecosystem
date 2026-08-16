@@ -31,15 +31,15 @@ x-kafka-common: &kafka-common
     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
 services:
-  refimpl-verifier-backend:
+  verifier-endpoint:
     image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0@sha256:2f2772b1df39a529f3683c7e82d10d03221b475e67da7b2d8cb1b9aebe6f71f9
-    container_name: refimpl-verifier-backend
-    hostname: refimpl-verifier-backend
+    container_name: verifier-endpoint
+    hostname: verifier-endpoint
     volumes:
       - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
     environment:
-      SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
-      VERIFIER_PUBLICURL: "${BASE_URL}/refimpl-verifier-backend"
+      SPRING_WEBFLUX_BASEPATH: "/verifier-endpoint"
+      VERIFIER_PUBLICURL: "${BASE_URL}/verifier-endpoint"
       VERIFIER_ORIGINALCLIENTID: "${VERIFIER_CLIENT_ID:-localhost}"
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       SPRING_PROFILES_ACTIVE: "self-signed"
@@ -58,11 +58,11 @@ services:
       - trust-validator
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.refimpl-verifier-backend.rule=PathPrefix(`/refimpl-verifier-backend`)"
-      - "traefik.http.routers.refimpl-verifier-backend.entrypoints=websecure"
-      - "traefik.http.routers.refimpl-verifier-backend.tls=true"
-      - "traefik.http.routers.refimpl-verifier-backend.service=refimpl-verifier-backend"
-      - "traefik.http.services.refimpl-verifier-backend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.verifier-endpoint.rule=PathPrefix(`/verifier-endpoint`)"
+      - "traefik.http.routers.verifier-endpoint.entrypoints=websecure"
+      - "traefik.http.routers.verifier-endpoint.tls=true"
+      - "traefik.http.routers.verifier-endpoint.service=verifier-endpoint"
+      - "traefik.http.services.verifier-endpoint.loadbalancer.server.port=8080"
     networks:
       - wallet-ecosystem-network
 
@@ -136,25 +136,25 @@ services:
     networks:
       - wallet-ecosystem-network
 
-  demo-verifier:
+  wallet-verifier-test-web:
     image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.10@sha256:6e3750d6633d4091e05bc696d4a9ef749583a730a759a6042466e7739ea9903a
-    container_name: demo-verifier
-    hostname: demo-verifier
+    container_name: wallet-verifier-test-web
+    hostname: wallet-verifier-test-web
     environment:
-      HOST_API: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend"
+      HOST_API: "http://verifier-endpoint:8080/verifier-endpoint"
       PORT: "3002"
       NITRO_PORT: "3002"
-      NUXT_PUBLIC_BASE_URL: "${BASE_URL}/demo-verifier"
-      NUXT_APP_BASE_URL: "/demo-verifier"
+      NUXT_PUBLIC_BASE_URL: "${BASE_URL}/wallet-verifier-test-web"
+      NUXT_APP_BASE_URL: "/wallet-verifier-test-web"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
     depends_on:
-      - refimpl-verifier-backend
+      - verifier-endpoint
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.demo-verifier.rule=PathPrefix(`/demo-verifier`)"
-      - "traefik.http.routers.demo-verifier.entrypoints=websecure"
-      - "traefik.http.routers.demo-verifier.tls=true"
-      - "traefik.http.services.demo-verifier.loadbalancer.server.port=3002"
+      - "traefik.http.routers.wallet-verifier-test-web.rule=PathPrefix(`/wallet-verifier-test-web`)"
+      - "traefik.http.routers.wallet-verifier-test-web.entrypoints=websecure"
+      - "traefik.http.routers.wallet-verifier-test-web.tls=true"
+      - "traefik.http.services.wallet-verifier-test-web.loadbalancer.server.port=3002"
     restart: on-failure
     networks:
       - wallet-ecosystem-network
@@ -452,6 +452,7 @@ services:
 
   wallet-bff:
     image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639@sha256:fc63a91dd698ccb2114dcced589654a367651f21fd671862a6a127d23e3bc9e5
+    container_name: wallet-bff
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -481,8 +482,9 @@ services:
     networks:
       - wallet-ecosystem-network
 
-  hsm-worker:
+  wallet-hsm-worker:
     image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639@sha256:33533b4475dec3924b0d4af006f2ffc0eb8b7e34d40ece12b24c7582f808969f
+    container_name: wallet-hsm-worker
     env_file:
       - .env.opaque
       - .env.softhsm
@@ -518,6 +520,7 @@ services:
 
   init-kafka:
     image: apache/kafka:latest@sha256:9516fb7634bad307d17c33b589fde9023003b0cb761374f500002b980a3149b9
+    container_name: init-kafka
     depends_on:
       kafka-1:
         condition: service_healthy
@@ -540,6 +543,7 @@ services:
   # Optional: Kafka UI for management
   kafka-ui:
     image: provectuslabs/kafka-ui:latest@sha256:8f2ff02d64b0a7a2b71b6b3b3148b85f66d00ec20ad40c30bdcd415d46d31818
+    container_name: kafka-ui
     depends_on:
       kafka-1:
         condition: service_healthy

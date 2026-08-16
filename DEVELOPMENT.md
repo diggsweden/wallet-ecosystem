@@ -161,6 +161,16 @@ just logs keycloak  # View specific service logs
 just status    # Show service status
 ```
 
+#### Service and Container Naming Conventions
+
+To maintain consistency across Docker Compose services, container names, and repository coordinates:
+
+- **Digg Services (`wallet-*`):** Services maintained by Digg use the `wallet-` prefix matching their GitHub repository names (e.g., `wallet-provider`, `wallet-account`, `wallet-client-gateway`, `wallet-verifier-test-web`, `wallet-bff`, `wallet-hsm-worker`).
+- **Upstream EUDIW Services:** Reference services from the upstream EU Digital Identity Wallet project strip the `eudi-srv-` and `refimpl-` prefixes to retain clean domain-level service names (e.g., `verifier-endpoint`, `pid-issuer`, `trust-validator`).
+- **Infrastructure Services:** Standard supporting infrastructure retains concise utility names (e.g., `keycloak`, `traefik`, `kafka-1`, `init-kafka`, `kafka-ui`, `trust-source`, `wallet-account-db`, `wallet-client-gateway-valkey`).
+- **Container Names:** Every service in `docker-compose.yaml` must explicitly declare a `container_name` identical to its service key.
+- **Routing & Path Conventions:** Where exposed via Traefik, HTTP path prefixes mirror the service name (e.g., `/verifier-endpoint`, `/wallet-verifier-test-web`, `/wallet-provider`).
+
 ### Keycloak Admin Console
 
 When running the ecosystem locally via `just up`, the Keycloak Admin Console is available at:

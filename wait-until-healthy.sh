@@ -14,7 +14,7 @@ REGEX_FOR_ALL_SERVICES=$(yq -r '.services | to_entries | .[].key | select(test("
 REGEX_FOR_CONTAINER_NAME="^($REGEX_FOR_ALL_SERVICES|$PROJECT_NAME-($REGEX_FOR_ALL_SERVICES)-[0-9]+) "
 REGEX_FOR_SERVICES_WITH_HEALTH_CHECKS='(keycloak|wallet-client-gateway|wallet-account|wallet-account-db|pid-issuer-db|valkey|db|kafka-[0-9]+)(-[0-9]+)? .*healthy'
 REGEX_FOR_INIT_CONTAINERS='(keycloak-master-init|init-kafka)(-[0-9]+)? Exited \(0\)'
-REGEX_FOR_OTHERS='(refimpl-verifier-backend|wallet-provider|pid-issuer|traefik|demo-verifier|trust-validator|wallet-bff|hsm-worker|kafka-ui|trust-source)(-[0-9]+)? Up'
+REGEX_FOR_OTHERS='(verifier-endpoint|wallet-provider|pid-issuer|traefik|wallet-verifier-test-web|trust-validator|wallet-bff|wallet-hsm-worker|kafka-ui|trust-source)(-[0-9]+)? Up'
 # Give services time to initialize (especially Keycloak)
 for i in {1..10}; do
   echo "Check attempt $i/10..."

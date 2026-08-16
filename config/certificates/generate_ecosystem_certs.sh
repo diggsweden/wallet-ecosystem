@@ -20,7 +20,7 @@ export TRUST_SOURCE_OUT="${CERT_DIR}/../trust-source"
 export LOTE_OUT_FILE="${TRUST_SOURCE_OUT}/signed/trusted-entities.json"
 
 # 3. Ecosystem SANs
-export VERIFIER_SANS="DNS.1:localhost,DNS.2:verifier-backend,DNS.3:refimpl-verifier-backend,DNS.4:10.0.2.2"
+export VERIFIER_SANS="DNS.1:localhost,DNS.2:verifier-backend,DNS.3:verifier-endpoint,DNS.4:refimpl-verifier-backend,DNS.5:10.0.2.2"
 export PROVIDER_SANS="DNS.1:localhost,DNS.2:wallet-provider"
 export ISSUER_SANS="DNS.1:localhost,DNS.2:pid-issuer"
 export TRUST_SOURCE_SANS="DNS.1:localhost,DNS.2:trust-source"

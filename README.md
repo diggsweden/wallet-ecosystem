@@ -123,8 +123,8 @@ podman compose up
 
 | Service | URL | Description |
 |---|---|---|
-| Demo verifier | <https://localhost/demo-verifier> | Our verifier demo service |
-| EU reference verifier backend | <https://localhost/refimpl-verifier-backend> | Backend used by both verifier implementations |
+| Wallet verifier test web | <https://localhost/wallet-verifier-test-web> | Our verifier test service |
+| EU reference verifier endpoint | <https://localhost/verifier-endpoint> | Verifier endpoint service |
 | EU reference PID issuer | <https://localhost/pid-issuer> | EU's reference implementation of a PID issuer |
 | Keycloak | <https://localhost/idp> | Identity provider for the PID issuer |
 | Wallet Provider | <https://localhost/wallet-provider> | Issues and manages the lifecycle of Wallet Unit Attestations (WUA) |
