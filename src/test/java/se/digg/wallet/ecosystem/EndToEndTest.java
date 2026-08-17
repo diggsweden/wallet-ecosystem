@@ -135,9 +135,9 @@ public class EndToEndTest {
         "Verifier got wallet response")));
 
     // 8. Verify Database Persistence (skip if not available in environment)
-    if (Boolean.parseBoolean(Property.WALLET_ACCOUNT_DB_TESTING_ENABLED.getValue())) {
+    if (Boolean.parseBoolean(Property.PID_ISSUER_DB_TESTING_ENABLED.getValue())) {
       try (java.sql.Connection conn = java.sql.DriverManager.getConnection(
-          ServiceIdentifier.WALLET_ACCOUNT_DB.toString(), "wallet-account",
+          ServiceIdentifier.PID_ISSUER_DB.toString(), "pid-issuer",
           "pass");
           java.sql.PreparedStatement stmt = conn.prepareStatement(
               "SELECT client_status_list_uri, key_storage_status_list_uri "

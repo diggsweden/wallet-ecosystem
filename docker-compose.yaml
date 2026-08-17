@@ -165,6 +165,8 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
+      pid-issuer-db:
+        condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=insecure
       - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
@@ -201,8 +203,8 @@ services:
       - ISSUER_NONCE_ENCRYPTION_KEY_PASSWORD=pass1234
       - ISSUER_ACCESS_CERTIFICATE_ALIAS=pid_issuer
       - ISSUER_ACCESS_CERTIFICATE_PASSWORD=pass1234
-      - SPRING_R2DBC_URL=r2dbc:pool:postgresql://wallet-account-db:5432/wallet-account
-      - SPRING_R2DBC_USERNAME=wallet-account
+      - SPRING_R2DBC_URL=r2dbc:pool:postgresql://pid-issuer-db:5432/pid-issuer
+      - SPRING_R2DBC_USERNAME=pid-issuer
       - SPRING_R2DBC_PASSWORD=pass
       - ISSUER_STATUSLIST_SERVICE_GENERATE_URI=http://status-list:5000/token_status_list/take
       - ISSUER_STATUSLIST_SERVICE_REVOKE_URI=http://status-list:5000/token_status_list/take
@@ -250,6 +252,26 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  pid-issuer-db:
+    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
+    container_name: pid-issuer-db
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: pid-issuer
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: pid-issuer
+    volumes:
+      - ./config/pid-issuer-db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pid-issuer -d pid-issuer"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wallet-ecosystem-network
+
   wallet-account-db:
     image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
     container_name: wallet-account-db
@@ -259,9 +281,7 @@ services:
     environment:
       POSTGRES_USER: wallet-account
       POSTGRES_PASSWORD: pass
-      POSTGRES_DATABASE: wallet-account
-    volumes:
-      - ./config/db/init:/docker-entrypoint-initdb.d:ro
+      POSTGRES_DB: wallet-account
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wallet-account -d wallet-account"]
       interval: 5s

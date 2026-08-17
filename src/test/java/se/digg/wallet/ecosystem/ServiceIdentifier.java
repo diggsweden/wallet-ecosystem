@@ -19,7 +19,8 @@ public enum ServiceIdentifier {
   TRUST_VALIDATOR,
   TRUST_SOURCE,
   WALLET_CLIENT_GATEWAY,
-  WALLET_ACCOUNT_DB;
+  WALLET_ACCOUNT_DB,
+  PID_ISSUER_DB;
 
   private String getValue() {
     return Enum.valueOf(Property.class, name() + "_BASE_URI").getValue();
