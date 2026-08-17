@@ -69,6 +69,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y podman podman-compose
+          sudo loginctl enable-linger runner || true
+          sudo loginctl enable-linger "$(whoami)" || true
           systemctl --user start podman.socket
           sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
           echo "PODMAN_SOCK=$XDG_RUNTIME_DIR/podman/podman.sock" >> "$GITHUB_ENV"
@@ -104,11 +106,27 @@ jobs:
             -out config/traefik/certs/wallet-cert.pem \
             -days 1 -nodes -subj "/CN=localhost"
 
-      - name: Start Ecosystem
-        timeout-minutes: 10
+      - name: Pull Images
+        timeout-minutes: 5
         run: |
           cd wallet-ecosystem
+          podman compose pull
+
+      - name: Start Ecosystem
+        timeout-minutes: 5
+        run: |
+          cd wallet-ecosystem
+          (
+            while true; do
+              sleep 3
+              for id in $(podman ps -q --filter "health=starting" --filter "health=unhealthy" 2>/dev/null); do
+                podman healthcheck run "$id" >/dev/null 2>&1 || true
+              done
+            done
+          ) &
+          HEALTHCHECK_PID=$!
           podman compose up -d
+          kill $HEALTHCHECK_PID 2>/dev/null || true
 
       - name: Wait for Services to be Healthy
         run: |
