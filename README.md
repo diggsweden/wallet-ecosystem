@@ -166,4 +166,4 @@ mvn test
 docker compose down
 ```
 
-"https://wallet-keycloak-apps.diggprod.cappdigg.sgit.se/idp"
+"<https://wallet-keycloak-apps.diggprod.cappdigg.sgit.se/idp>"
