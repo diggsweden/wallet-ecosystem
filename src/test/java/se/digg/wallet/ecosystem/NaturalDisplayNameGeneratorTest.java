@@ -20,6 +20,7 @@ class NaturalDisplayNameGeneratorTest {
 
     void understandsNumbersLikeA5OutOf100() {}
 
+    @SuppressWarnings("checkstyle:MethodName")
     void understands_snake_case() {}
   }
 
@@ -41,16 +42,18 @@ class NaturalDisplayNameGeneratorTest {
   private static class FooBar {
   }
 
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private static class AcronymABCTest {
   }
 
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private static class AcronymABCWithMoreWordsTest {
   }
 
   private static class NestedTest {
     private static class NestedAtLevelOne {
       private static class NestedAtLevelTwo {
-        void aNestedTestMethod() {}
+        void nestedTestMethod() {}
       }
     }
   }
