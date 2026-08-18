@@ -7,11 +7,10 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.Matchers.is;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayNameGeneration(DisplayNameGenerator.Standard.class)
+@DisplayName("The Traefik service")
 public class TraefikTest {
 
   @Test

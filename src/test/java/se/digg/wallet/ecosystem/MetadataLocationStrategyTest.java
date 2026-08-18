@@ -11,13 +11,10 @@ import static se.digg.wallet.ecosystem.MetadataLocationStrategy.OID4VCI_COMPLIAN
 
 import java.net.URI;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@DisplayNameGeneration(DisplayNameGenerator.Standard.class)
 class MetadataLocationStrategyTest {
 
   public static Stream<Arguments> uriExamples() {
