@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -26,12 +27,17 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.path.json.JsonPath;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -244,5 +250,57 @@ public class PidIssuerTest {
         .then()
         .assertThat()
         .statusCode(401);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "tneal, Tyler, Neal, 195504162776",
+      "snilsson, Sune, Nilsson, 194106177753",
+      "aberglund, Anna Sofia, Berglund, 195808052384",
+      "fstrom, Fredrik, Ström, 195812092830",
+      "syestrom, Sverker Jr, Yeström, 196709272691",
+      "ccarlgren, Carina Marianne, Carlgren, 196710083103",
+      "knyberg, Klaudia Anastasia, Nyberg, 197508069163",
+      "leriksson, Lars Johan, Eriksson, 197508259293",
+      "asupremo, Anna, Supremo, 198001042384",
+      "apersson, Axel, Persson, 198403062394",
+      "saruba, Sara, Aruba, 199804012384",
+      "tmalinovski, Tim, Malinovski, 200605162395"
+  })
+  void issuesPidCredentialForFictiveUsers(
+      String username, String expectedGivenName, String expectedFamilyName, String expectedPnr)
+      throws Exception {
+    ECKey bindingKey =
+        new ECKeyGenerator(Curve.P_256)
+            .algorithm(JWSAlgorithm.ES256)
+            .keyUse(KeyUse.SIGNATURE)
+            .generate();
+
+    IssuanceAgent issuer = new IssuanceAgent();
+    String sdJwtVc = issuer.issuePidCredential(bindingKey, username, "password");
+
+    assertNotNull(sdJwtVc);
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String, String> disclosedClaims =
+        Arrays.stream(sdJwtVc.split("~"))
+            .skip(1)
+            .filter(part -> !part.contains("."))
+            .map(part -> new String(Base64.getUrlDecoder().decode(part)))
+            .map(
+                decoded -> {
+                  try {
+                    return objectMapper.readTree(decoded);
+                  } catch (Exception e) {
+                    throw new RuntimeException("Failed to parse SD-JWT disclosure", e);
+                  }
+                })
+            .filter(node -> node.isArray() && node.size() == 3)
+            .map(node -> List.of(node.get(1).asText(), node.get(2).asText()))
+            .collect(Collectors.toMap(List::getFirst, List::getLast, (a, b) -> b));
+
+    assertThat(disclosedClaims.get("given_name"), is(expectedGivenName));
+    assertThat(disclosedClaims.get("family_name"), is(expectedFamilyName));
+    assertThat(disclosedClaims.get("personal_administrative_number"), is(expectedPnr));
   }
 }
