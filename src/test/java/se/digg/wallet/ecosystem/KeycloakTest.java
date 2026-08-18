@@ -108,7 +108,7 @@ class KeycloakTest {
   }
 
   @Test
-  void accessTokenContainsClientStatusClaim() throws Exception {
+  void includesClientStatusClaimInAccessToken() throws Exception {
     String accessToken = keycloak.getAccessToken("pid-issuer-realm", Map.of(
         "grant_type", "password",
         "client_id", "wallet-dev",
