@@ -97,6 +97,7 @@ jobs:
           services:
             ${SERVICE_NAME}:
               image: ${SERVICE_NAME}:${IMAGE_TAG}
+              pull_policy: never
           EOF
 
           # Generate TLS certificates
