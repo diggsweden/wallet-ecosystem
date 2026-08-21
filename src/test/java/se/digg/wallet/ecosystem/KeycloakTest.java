@@ -75,15 +75,34 @@ class KeycloakTest {
         "client_secret", "zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2")));
   }
 
-  @Test
-  void createsDpopAccessTokenFromValidPasswordCredentials() throws JOSEException {
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+          "tneal",
+          "snilsson",
+          "aberglund",
+          "asupremo",
+          "apersson",
+          "ccarlgren",
+          "fstrom",
+          "knyberg",
+          "leriksson",
+          "saruba",
+          "syestrom",
+          "tmalinovski"
+      })
+  void createsDpopAccessTokenFromValidPasswordCredentials(String username) throws JOSEException {
     ECKey jwk = new ECKeyGenerator(Curve.P_256).generate();
 
-    assertNotNull(keycloak.getDpopAccessToken("pid-issuer-realm", jwk, Map.of(
-        "grant_type", "password",
-        "client_id", "wallet-dev",
-        "username", "tneal",
-        "password", "password")));
+    assertNotNull(
+        keycloak.getDpopAccessToken(
+            "pid-issuer-realm",
+            jwk,
+            Map.of(
+                "grant_type", "password",
+                "client_id", "wallet-dev",
+                "username", username,
+                "password", "password")));
   }
 
   @Test
