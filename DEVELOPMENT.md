@@ -39,14 +39,7 @@ This guide outlines core essentials for developing in this project.
 
    Then restart your terminal.
 
-3. Install pipx (needed for reuse license linting):
-
-   ```bash
-   # Debian/Ubuntu
-   sudo apt install pipx
-   ```
-
-4. Install project tools:
+3. Install project tools:
 
    ```bash
    mise install
@@ -84,13 +77,7 @@ This guide outlines core essentials for developing in this project.
    brew install bash
    ```
 
-4. Install pipx (needed for reuse license linting):
-
-   ```bash
-   brew install pipx
-   ```
-
-5. Install project tools:
+4. Install project tools:
 
    ```bash
    mise install
