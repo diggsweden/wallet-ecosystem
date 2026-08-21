@@ -8,7 +8,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
@@ -17,22 +16,17 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-
 public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public static Stream<Arguments> issuers() {
     return Stream.of(
@@ -69,11 +63,11 @@ public class EndToEndTest {
             .keyUse(KeyUse.SIGNATURE)
             .generate();
 
-    String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
+    String rawCredential = issuer.issuePidCredential(bindingKey, "tneal", "password");
 
     // 4. Create vp_token
     String vpToken =
-        VerifiablePresentationToken.asString(sdJwtVc, bindingKey, nonce);
+        VerifiablePresentationToken.asString(rawCredential, bindingKey, nonce);
 
     // 5. Post wallet response
     String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
@@ -98,31 +92,14 @@ public class EndToEndTest {
     Map<String, List<String>> vpTokenMap = response.jsonPath().getMap("vp_token");
     String returnedVpToken = vpTokenMap.get(dcqlId).getFirst();
 
-    String issuerSignedJwtString = returnedVpToken.split("~")[0];
-    SignedJWT issuerSignedJwt = SignedJWT.parse(issuerSignedJwtString);
-    assertThat(issuerSignedJwt.getJWTClaimsSet().getIssuer(),
+    SdJwtVc sdJwtVc = SdJwtVc.parse(returnedVpToken);
+    assertThat(
+        sdJwtVc.issuerJwt().getJWTClaimsSet().getIssuer(),
         is(ServiceIdentifier.PID_ISSUER.toString()));
 
-    Map<String, String> disclosedClaims =
-        Arrays.stream(returnedVpToken.split("~"))
-            .skip(1)
-            .filter(part -> !part.contains("."))
-            .map(part -> new String(Base64.getUrlDecoder().decode(part)))
-            .map(
-                decoded -> {
-                  try {
-                    return objectMapper.readTree(decoded);
-                  } catch (Exception e) {
-                    throw new RuntimeException("Failed to parse SD-JWT disclosure", e);
-                  }
-                })
-            .filter(node -> node.isArray() && node.size() == 3)
-            .map(node -> List.of(node.get(1).asText(), node.get(2).asText()))
-            .collect(Collectors.toMap(List::getFirst, List::getLast, (a, b) -> b));
-
-    assertThat(disclosedClaims.get("given_name"), is("Tyler"));
-    assertThat(disclosedClaims.get("family_name"), is("Neal"));
-    assertThat(disclosedClaims.get("personal_administrative_number"), is("195504162776"));
+    assertThat(sdJwtVc.disclosedClaims().get("given_name"), is("Tyler"));
+    assertThat(sdJwtVc.disclosedClaims().get("family_name"), is("Neal"));
+    assertThat(sdJwtVc.disclosedClaims().get("personal_administrative_number"), is("195504162776"));
 
     // 7. Verify Events Response
     Response presentationEvents = verifierBackend.getPresentationEvents(transactionId);

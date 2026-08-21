@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -27,12 +26,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.path.json.JsonPath;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -277,30 +272,12 @@ public class PidIssuerTest {
             .generate();
 
     IssuanceAgent issuer = new IssuanceAgent();
-    String sdJwtVc = issuer.issuePidCredential(bindingKey, username, "password");
+    String rawCredential = issuer.issuePidCredential(bindingKey, username, "password");
+    assertNotNull(rawCredential);
 
-    assertNotNull(sdJwtVc);
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    Map<String, String> disclosedClaims =
-        Arrays.stream(sdJwtVc.split("~"))
-            .skip(1)
-            .filter(part -> !part.contains("."))
-            .map(part -> new String(Base64.getUrlDecoder().decode(part)))
-            .map(
-                decoded -> {
-                  try {
-                    return objectMapper.readTree(decoded);
-                  } catch (Exception e) {
-                    throw new RuntimeException("Failed to parse SD-JWT disclosure", e);
-                  }
-                })
-            .filter(node -> node.isArray() && node.size() == 3)
-            .map(node -> List.of(node.get(1).asText(), node.get(2).asText()))
-            .collect(Collectors.toMap(List::getFirst, List::getLast, (a, b) -> b));
-
-    assertThat(disclosedClaims.get("given_name"), is(expectedGivenName));
-    assertThat(disclosedClaims.get("family_name"), is(expectedFamilyName));
-    assertThat(disclosedClaims.get("personal_administrative_number"), is(expectedPnr));
+    SdJwtVc sdJwtVc = SdJwtVc.parse(rawCredential);
+    assertThat(sdJwtVc.disclosedClaims().get("given_name"), is(expectedGivenName));
+    assertThat(sdJwtVc.disclosedClaims().get("family_name"), is(expectedFamilyName));
+    assertThat(sdJwtVc.disclosedClaims().get("personal_administrative_number"), is(expectedPnr));
   }
 }
