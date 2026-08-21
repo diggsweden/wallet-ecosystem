@@ -24,6 +24,7 @@ import com.nimbusds.jwt.SignedJWT;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,6 +32,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@DisplayName("The Keycloak service")
 class KeycloakTest {
 
   private static final KeycloakClient keycloak = new KeycloakClient();
@@ -105,7 +107,7 @@ class KeycloakTest {
   }
 
   @Test
-  void accessTokenContainsClientStatusClaim() throws Exception {
+  void includesClientStatusClaimInAccessToken() throws Exception {
     String accessToken = keycloak.getAccessToken("pid-issuer-realm", Map.of(
         "grant_type", "password",
         "client_id", "wallet-dev",
