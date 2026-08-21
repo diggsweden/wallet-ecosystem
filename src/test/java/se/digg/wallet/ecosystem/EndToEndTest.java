@@ -93,9 +93,7 @@ public class EndToEndTest {
     String returnedVpToken = vpTokenMap.get(dcqlId).getFirst();
 
     SdJwtVc sdJwtVc = SdJwtVc.parse(returnedVpToken);
-    assertThat(
-        sdJwtVc.issuerJwt().getJWTClaimsSet().getIssuer(),
-        is(ServiceIdentifier.PID_ISSUER.toString()));
+    assertThat(sdJwtVc.getIssuer(), is(ServiceIdentifier.PID_ISSUER.toString()));
 
     assertThat(sdJwtVc.disclosedClaims().get("given_name"), is("Tyler"));
     assertThat(sdJwtVc.disclosedClaims().get("family_name"), is("Neal"));

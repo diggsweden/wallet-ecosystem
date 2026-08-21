@@ -13,19 +13,16 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public record SdJwtVc(
     SignedJWT issuerJwt,
-    Map<String, String> disclosedClaims,
-    Optional<SignedJWT> keyBindingJwt,
-    String raw) {
+    Map<String, String> disclosedClaims) {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  public static SdJwtVc of(String raw) {
-    return parse(raw);
+  public SdJwtVc {
+    disclosedClaims = Map.copyOf(disclosedClaims);
   }
 
   public static SdJwtVc parse(String raw) {
@@ -59,19 +56,15 @@ public record SdJwtVc(
             .map(node -> List.of(node.get(1).asText(), node.get(2).asText()))
             .collect(Collectors.toMap(List::getFirst, List::getLast, (a, b) -> b));
 
-    Optional<SignedJWT> keyBindingJwt = Optional.empty();
-    if (parts.length > 1) {
-      String lastPart = parts[parts.length - 1];
-      if (lastPart.contains(".")) {
-        try {
-          keyBindingJwt = Optional.of(SignedJWT.parse(lastPart));
-        } catch (ParseException ignored) {
-          // not a valid JWT, ignore
-        }
-      }
-    }
+    return new SdJwtVc(issuerJwt, claims);
+  }
 
-    return new SdJwtVc(issuerJwt, claims, keyBindingJwt, raw);
+  public String getIssuer() {
+    try {
+      return issuerJwt.getJWTClaimsSet().getIssuer();
+    } catch (ParseException e) {
+      throw new IllegalStateException("Failed to parse issuer claims", e);
+    }
   }
 
   public String getDisclosedClaim(String claimName) {
