@@ -7,3 +7,5 @@ gommitlint:
     required: true
   repo:
     max_commits_ahead: 20
+  conventional:
+    max_description_length: 76
