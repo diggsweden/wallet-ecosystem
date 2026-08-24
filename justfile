@@ -133,10 +133,10 @@ lint-version-control:
 lint-commits:
     @{{lint}}/commits.sh
 
-# Scan for secrets
+# Scan for secrets (with org rules layered on the defaults)
 [group('lint')]
 lint-secrets:
-    @{{lint}}/secrets.sh
+    @DEVBASE_CHECK_ORG_RULES=1 {{lint}}/secrets.sh
 
 # Lint YAML files
 [group('lint')]

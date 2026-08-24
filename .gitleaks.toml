@@ -4,6 +4,10 @@
 
 title = "Wallet Ecosystem Gitleaks configuration"
 
+# The digg-internal-hosts rule now lives in devbase-check
+# (linters/config/org-rules.toml) and is layered on by lint-secrets when
+# DEVBASE_CHECK_ORG_RULES=1 (set in this repo's lint-secrets recipe).
+
 [extend]
 useDefault = true
 
