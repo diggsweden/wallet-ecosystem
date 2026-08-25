@@ -86,7 +86,7 @@ document:
     mkdir -p target/documentation
     podman run \
         --rm \
-        -v "$PWD":/data derlin/docker-compose-viz-mermaid \
+        -v "$PWD":/data ghcr.io/derlin/docker-compose-viz-mermaid \
         /data/docker-compose.yaml \
         --no-ports \
         --no-volumes \
@@ -96,7 +96,7 @@ document:
         --out=/data/target/documentation/wallet-ecosystem-minimal.svg
     podman run \
         --rm \
-        -v "$PWD":/data derlin/docker-compose-viz-mermaid \
+        -v "$PWD":/data ghcr.io/derlin/docker-compose-viz-mermaid \
         /data/docker-compose.yaml \
         --ports \
         --volumes \
