@@ -691,7 +691,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": true,
       "clientAuthenticatorType": "client-secret",
-      "secret": "zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2",
+      "secret": "${KEYCLOAK_PID_ISSUER_CLIENT_SECRET}",
       "redirectUris": ["http://localhost:8080/*"],
       "webOrigins": ["http://localhost:8080"],
       "notBefore": 0,

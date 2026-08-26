@@ -403,6 +403,7 @@ services:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
       - KC_DB=dev-file
+      - KEYCLOAK_PID_ISSUER_CLIENT_SECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
     healthcheck:
       # This is the recommended way to perform the healthcheck without curl, as per:
       # https://www.keycloak.org/observability/health#_healthcheck
