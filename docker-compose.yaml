@@ -172,7 +172,7 @@ services:
       - SPRING_WEBFLUX_BASE_PATH=/pid-issuer
       - SERVER_PORT=8080
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENTID=pid-issuer-srv
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENTSECRET=zIKAV9DIIIaJCzHCVBPlySgU8KgY68U2
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_OPAQUETOKEN_CLIENTSECRET=cow3go8W5gbI5HcR5mim7O00DAYaAmfv
       - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
       - SPRING_HTTP_CODECS_MAXINMEMORYSIZE=8MB
       - ISSUER_PUBLICURL=${BASE_URL}/pid-issuer
@@ -403,6 +403,7 @@ services:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
       - KC_DB=dev-file
+      - KEYCLOAK_PID_ISSUER_CLIENT_SECRET=cow3go8W5gbI5HcR5mim7O00DAYaAmfv
     healthcheck:
       # This is the recommended way to perform the healthcheck without curl, as per:
       # https://www.keycloak.org/observability/health#_healthcheck
