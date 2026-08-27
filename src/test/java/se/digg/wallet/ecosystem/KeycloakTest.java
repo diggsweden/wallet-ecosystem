@@ -72,7 +72,7 @@ class KeycloakTest {
     assertNotNull(keycloak.getDpopAccessToken("pid-issuer-realm", jwk, Map.of(
         "grant_type", "client_credentials",
         "client_id", "pid-issuer-srv",
-        "client_secret", "cow3go8W5gbI5HcR5mim7O00DAYaAmfv")));
+        "client_secret", Property.KEYCLOAK_PID_ISSUER_CLIENT_SECRET.getValue())));
   }
 
   @ParameterizedTest
@@ -115,7 +115,7 @@ class KeycloakTest {
 
     keycloak
         .introspectToken("pid-issuer-realm", accessToken, "pid-issuer-srv",
-            "cow3go8W5gbI5HcR5mim7O00DAYaAmfv")
+            Property.KEYCLOAK_PID_ISSUER_CLIENT_SECRET.getValue())
         .then()
         .assertThat()
         .statusCode(200)
