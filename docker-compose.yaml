@@ -453,7 +453,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-bff:
-    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-f014639@sha256:fc63a91dd698ccb2114dcced589654a367651f21fd671862a6a127d23e3bc9e5
+    image: ghcr.io/diggsweden/wallet-r2ps/wallet-bff:0.0.0-dev-main-46bb7f9@sha256:4c4b7f4d73c9e528e83e692ff8a46448c73b359a8b2d33bcea015fe098ee1fb7
     ports:
       - "8088:8088"
       - "9012:8000"
@@ -462,6 +462,8 @@ services:
       init-kafka:
         condition: service_completed_successfully
       kafka-1:
+        condition: service_healthy
+      wallet-client-gateway-valkey:
         condition: service_healthy
     environment:
       KAFKA_BOOTSTRAP_SERVERS: "kafka-1:19092"
@@ -484,7 +486,7 @@ services:
       - wallet-ecosystem-network
 
   hsm-worker:
-    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-f014639@sha256:33533b4475dec3924b0d4af006f2ffc0eb8b7e34d40ece12b24c7582f808969f
+    image: ghcr.io/diggsweden/wallet-r2ps/hsm-worker:0.0.0-dev-main-46bb7f9@sha256:29b2ee806fd1773ce1838abdd1d8abf1a258b3dfc4da34b58603239b8d7c0b3a
     env_file:
       - .env.opaque
       - .env.softhsm
