@@ -13,6 +13,7 @@ description = "We accept 'secrets' in our local docker configuration and our tes
 paths = [
     '^config/',
     '^docker-compose.yaml$',
+    '^\.env\.example$',
     '^access-mechanism-poc/docker-compose.yaml$',
     '^src/test/java/',
 
