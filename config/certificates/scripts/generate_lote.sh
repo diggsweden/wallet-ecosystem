@@ -12,6 +12,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CERT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 : "${LOTE_OUT_FILE:?Environment variable LOTE_OUT_FILE is not set}"
+: "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Environment variable WALLET_PROVIDER_KEYSTORE_PASSWORD is not set}"
+: "${PID_ISSUER_KEYSTORE_PASSWORD:?Environment variable PID_ISSUER_KEYSTORE_PASSWORD is not set}"
 OUTPUT_FILE="$LOTE_OUT_FILE"
 
 TMP_DIR=$(mktemp -d)
@@ -101,10 +103,10 @@ main() {
   echo "Extracting certificates..."
 
   local wallet_clcert wallet_cacert issuer_clcert issuer_cacert trust_source_cert
-  wallet_clcert=$(get_clcert_base64 "$CERT_DIR/wallet-provider/wallet_provider.p12" "pass1234")
-  wallet_cacert=$(get_cacert_base64 "$CERT_DIR/wallet-provider/wallet_provider.p12" "pass1234")
-  issuer_clcert=$(get_clcert_base64 "$CERT_DIR/issuer/pid_issuer.p12" "pass1234")
-  issuer_cacert=$(get_cacert_base64 "$CERT_DIR/issuer/pid_issuer.p12" "pass1234")
+  wallet_clcert=$(get_clcert_base64 "$CERT_DIR/wallet-provider/wallet_provider.p12" "$WALLET_PROVIDER_KEYSTORE_PASSWORD")
+  wallet_cacert=$(get_cacert_base64 "$CERT_DIR/wallet-provider/wallet_provider.p12" "$WALLET_PROVIDER_KEYSTORE_PASSWORD")
+  issuer_clcert=$(get_clcert_base64 "$CERT_DIR/issuer/pid_issuer.p12" "$PID_ISSUER_KEYSTORE_PASSWORD")
+  issuer_cacert=$(get_cacert_base64 "$CERT_DIR/issuer/pid_issuer.p12" "$PID_ISSUER_KEYSTORE_PASSWORD")
   trust_source_cert=$(get_pem_cert_base64 "$CERT_DIR/trust-list-signer/trust_source_cert.pem")
 
   echo "Building LoTE payload..."
