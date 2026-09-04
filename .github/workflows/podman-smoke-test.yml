@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Podman Smoke Test
+
+on:
+  push:
+    branches:
+      - test/podman-preinstalled
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    name: Verify preinstalled Podman tooling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Wallet Ecosystem
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Inspect preinstalled container tooling
+        run: |
+          podman --version
+          podman info
+          podman compose version
+          docker compose version
+          command -v podman-compose || true
+          systemctl --user is-active podman.socket || true
+
+      - name: Validate ecosystem Compose configuration
+        run: podman compose --env-file .env.example config --quiet
