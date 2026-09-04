@@ -23,12 +23,53 @@ jobs:
 
       - name: Inspect preinstalled container tooling
         run: |
+          echo "::group::Runner environment"
+          echo "Runner image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          echo "Kernel: $(uname -srmo)"
+          echo "User: $(id)"
+          echo "::endgroup::"
+
+          echo "::group::Executable locations"
+          echo "podman: $(command -v podman || echo 'NOT FOUND')"
+          echo "podman-compose: $(command -v podman-compose || echo 'NOT FOUND')"
+          echo "docker: $(command -v docker || echo 'NOT FOUND')"
+          echo "::endgroup::"
+
+          echo "::group::Tool versions"
+          echo "Checking Podman version..."
           podman --version
-          podman info
+
+          echo "Checking the Compose provider selected by Podman..."
           podman compose version
+
+          echo "Checking the preinstalled Docker Compose version..."
           docker compose version
-          command -v podman-compose || true
-          systemctl --user is-active podman.socket || true
+          echo "::endgroup::"
+
+          echo "::group::Rootless Podman information"
+          podman info
+          echo "::endgroup::"
+
+          echo "::group::Podman API socket"
+          if systemctl --user is-active --quiet podman.socket; then
+            echo "Podman socket is active before any workflow configuration."
+          else
+            echo "Podman socket is inactive before any workflow configuration."
+          fi
+          echo "::endgroup::"
+
+          echo "Preinstalled Podman and its Compose provider are usable."
 
       - name: Validate ecosystem Compose configuration
-        run: podman compose --env-file .env.example config --quiet
+        run: |
+          echo "Validating docker-compose.yaml with values from .env.example..."
+          podman compose --env-file .env.example config --quiet
+          echo "Compose configuration is valid."
+
+          echo "::group::Resolved services"
+          podman compose --env-file .env.example config --services
+          echo "::endgroup::"
+
+          echo "::group::Resolved images"
+          podman compose --env-file .env.example config --images | sort -u
+          echo "::endgroup::"
