@@ -8,6 +8,8 @@
 .rumdl_cache
 megalinter-reports
 target
+hsm-e2e/build
+hsm-e2e/.gradle
 development/format/eclipse-java-google-style.xml
 development/lint/google_checks.xml
 development/sast/pmd_default_java.xml
