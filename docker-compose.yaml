@@ -412,7 +412,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 12
-      start_period: 30s
+      start_period: 120s
     volumes:
       - ./config/keycloak/themes/:/opt/keycloak/themes
       - ./config/keycloak/realms/:/opt/keycloak/data/import/
