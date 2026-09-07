@@ -316,6 +316,32 @@ The test will print the credentials and signing key to standard out
 and this data can be copied into the corresponding variable values
 of the `rejectsCredentialFromUntrustedSource` test method.
 
+#### HSM operations end-to-end test
+
+`hsm-e2e/` is a standalone Android instrumented test (not part of `mvn test`)
+that drives the wallet **HSM key operations** through the real
+`se.digg.wallet:access-mechanism` library and its native OPAQUE core, **through
+the real `wallet-client-gateway`** (account creation → challenge-response
+session → `/hsm/v0/*`), against the live ecosystem stack
+(`wallet-client-gateway → wallet-bff → hsm-worker → SoftHSM`, all already in
+`docker-compose.yaml`). It needs an x86_64 Android emulator because the library
+ships an Android-only native slice.
+
+```shell
+just up            # ecosystem (gateway + wallet-bff + hsm-worker + kafka + ...)
+just hsm-test      # boots a headless emulator if needed, runs the tests
+just down
+```
+
+The Gradle build needs a JDK ≤ 21 (root repo pins 25 for Maven); `hsm-e2e/.mise.toml`
+selects it. `just hsm-emulator` (via `hsm-e2e/emulator.sh`) finds the SDK and
+boots a headless emulator if none is attached — creating a host-arch AVD if you
+have none. On a Citrix App Protection machine it stops with instructions to
+disable that library for the run. When the gateway is unreachable the test skips
+(JUnit `Assume`) rather than fails.
+`.github/workflows/hsm-e2e.yml` runs it on `workflow_dispatch` and on PRs
+touching `hsm-e2e/`. See `hsm-e2e/README.md`.
+
 ### Quality Checks
 
 This project uses `just` + `mise` for local quality checks.
