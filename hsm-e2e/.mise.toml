@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# The root repo pins JDK 25 (for the Maven suite), but Gradle 8.13 / AGP 8.12
+# need a JDK <= 21 for the Gradle daemon. This nested config gives `mise exec`
+# in hsm-e2e/ a compatible JDK.
+[tools]
+java = "temurin-21"

@@ -12,7 +12,20 @@ path = [
   "renovate.json",
   "config/certificates/README.md",
   "SECURITY.md",
+  "hsm-e2e/README.md",
+  "hsm-e2e/gradle.properties",
+  "hsm-e2e/gradle/wrapper/gradle-wrapper.properties",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Digg - Agency for Digital Government"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [
+  "hsm-e2e/gradlew",
+  "hsm-e2e/gradlew.bat",
+  "hsm-e2e/gradle/wrapper/gradle-wrapper.jar",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Gradle Inc."
+SPDX-License-Identifier = "Apache-2.0"
