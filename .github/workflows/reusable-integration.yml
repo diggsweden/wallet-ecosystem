@@ -65,10 +65,8 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
-      - name: Install Podman
+      - name: Configure Podman
         run: |
-          sudo apt-get update
-          sudo apt-get install -y podman podman-compose
           sudo loginctl enable-linger runner || true
           sudo loginctl enable-linger "$(whoami)" || true
           systemctl --user start podman.socket
