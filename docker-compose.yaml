@@ -253,7 +253,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer-db:
-    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
+    image: "postgres:16@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94"
     container_name: pid-issuer-db
     restart: always
     ports:
@@ -273,7 +273,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account-db:
-    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
+    image: "postgres:16@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94"
     container_name: wallet-account-db
     restart: always
     ports:
@@ -556,7 +556,7 @@ services:
       - wallet-ecosystem-network
 
   traefik:
-    image: traefik:v3.6@sha256:31267173a15b4944e797a76ffd9c419707c8d8b32fe5b610f80cd0cfa05f372d
+    image: traefik:v3.7@sha256:f86a2cab1b5c649070c49f883c743dd32d8485a56e3368c5f93b9e91f1e91259
     container_name: traefik
     restart: unless-stopped
     ports:
