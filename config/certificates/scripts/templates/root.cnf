@@ -6,7 +6,7 @@ prompt = no
 [req_distinguished_name]
 C = SE
 O = DIGG
-CN = DIGG Wallet Ecosystem Root CA
+CN = ${cn}
 
 [v3_ca]
 basicConstraints = critical, CA:TRUE

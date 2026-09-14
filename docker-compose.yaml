@@ -36,7 +36,7 @@ services:
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     volumes:
-      - ./config/certificates/verifier/verifier_backend.p12:/opt/common/verifier_backend.p12:ro
+      - ./config/certificates/verifier/verifier-access-certificate.p12:/opt/common/verifier-access-certificate.p12:ro
     environment:
       SPRING_WEBFLUX_BASEPATH: "/refimpl-verifier-backend"
       VERIFIER_PUBLICURL: "${BASE_URL}/refimpl-verifier-backend"
@@ -44,11 +44,11 @@ services:
       VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
       SPRING_PROFILES_ACTIVE: "self-signed"
       VERIFIER_ACCESS_CERTIFICATE_SIGNING_ALGORITHM: "ES256"
-      VERIFIER_ACCESS_CERTIFICATE_KEYSTORE: "file:///opt/common/verifier_backend.p12"
+      VERIFIER_ACCESS_CERTIFICATE_KEYSTORE: "file:///opt/common/verifier-access-certificate.p12"
       VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_TYPE: "PKCS12"
-      VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD: "${VERIFIER_KEYSTORE_PASSWORD:?Set VERIFIER_KEYSTORE_PASSWORD in .env}"
-      VERIFIER_ACCESS_CERTIFICATE_ALIAS: "verifier_backend"
-      VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "${VERIFIER_KEYSTORE_PASSWORD:?Set VERIFIER_KEYSTORE_PASSWORD in .env}"
+      VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD: "${VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD:?Set VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD in .env}"
+      VERIFIER_ACCESS_CERTIFICATE_ALIAS: "verifier_access_certificate"
+      VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "${VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD:?Set VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD in .env}"
       VERIFIER_DEFAULTHTTPRESPONSEMODE: "DirectPost"
       VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
       VERIFIER_TRUST_VALIDATOR_SERVICE_URL: "http://trust-validator:8080/trust-validator/trust"
