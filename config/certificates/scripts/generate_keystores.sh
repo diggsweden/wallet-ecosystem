@@ -20,6 +20,12 @@ TMP_DIR="$CERT_DIR/tmp"
 : "${PROVIDER_SANS:?Environment variable PROVIDER_SANS is not set}"
 : "${ISSUER_SANS:?Environment variable ISSUER_SANS is not set}"
 : "${TRUST_SOURCE_SANS:?Environment variable TRUST_SOURCE_SANS is not set}"
+: "${PID_ISSUER_KEYSTORE_PASSWORD:?Environment variable PID_ISSUER_KEYSTORE_PASSWORD is not set}"
+: "${VERIFIER_KEYSTORE_PASSWORD:?Environment variable VERIFIER_KEYSTORE_PASSWORD is not set}"
+: "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Environment variable WALLET_PROVIDER_KEYSTORE_PASSWORD is not set}"
+: "${TRUST_SOURCE_KEYSTORE_PASSWORD:?Environment variable TRUST_SOURCE_KEYSTORE_PASSWORD is not set}"
+: "${TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD:?Environment variable TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD is not set}"
+: "${TRUST_VALIDATOR_TRUST_STORE_PASSWORD:?Environment variable TRUST_VALIDATOR_TRUST_STORE_PASSWORD is not set}"
 
 export crl_dp="$CRL_DP"
 export status_list_url="$STATUS_LIST_URL"
@@ -122,14 +128,15 @@ function generate_service_cert_ec() {
 # --- Service Certificates ---
 
 # 1. PID Issuer
-generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "pass1234" "PID Issuer (Ecosystem)" "$ISSUER_SANS"
+generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "$PID_ISSUER_KEYSTORE_PASSWORD" "PID Issuer (Ecosystem)" "$ISSUER_SANS"
 
 # Add nonce-encryption and request-encryption keys to pid_issuer.p12
-generate_service_cert_ec "issuer" "nonce" "nonce-encryption" "pass1234" "nonce-encryption" "DNS.1:localhost" "encryption.cnf"
-generate_service_cert_ec "issuer" "request" "request-encryption" "pass1234" "request-encryption" "DNS.1:localhost" "encryption.cnf"
+# (these are transient stores merged into pid_issuer.p12 below, so they share its password)
+generate_service_cert_ec "issuer" "nonce" "nonce-encryption" "$PID_ISSUER_KEYSTORE_PASSWORD" "nonce-encryption" "DNS.1:localhost" "encryption.cnf"
+generate_service_cert_ec "issuer" "request" "request-encryption" "$PID_ISSUER_KEYSTORE_PASSWORD" "request-encryption" "DNS.1:localhost" "encryption.cnf"
 
-keytool -importkeystore -srckeystore "$CERT_DIR/issuer/nonce.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
-keytool -importkeystore -srckeystore "$CERT_DIR/issuer/request.p12" -srcstoretype PKCS12 -srcstorepass pass1234 -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass pass1234 -noprompt
+keytool -importkeystore -srckeystore "$CERT_DIR/issuer/nonce.p12" -srcstoretype PKCS12 -srcstorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -noprompt
+keytool -importkeystore -srckeystore "$CERT_DIR/issuer/request.p12" -srcstoretype PKCS12 -srcstorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -noprompt
 rm -f "$CERT_DIR/issuer/nonce.p12" "$CERT_DIR/issuer/request.p12" "$CERT_DIR/issuer/nonce.p12.license" "$CERT_DIR/issuer/request.p12.license"
 
 echo "Generating issuer_wrprc.jwt for PID Issuer (using bash)..."
@@ -186,22 +193,22 @@ create_license "$JWT_PATH"
 create_license "$PRE_JWT_PATH"
 
 # 2. Verifier Backend
-generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "pass1234" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS"
+generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "$VERIFIER_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS"
 
 # 3. Verifier Trust Store
 echo "Creating trusted_issuers.p12 for Verifier..."
 TRUST_P12="$CERT_DIR/trust-validator/trusted_issuers.p12"
 mkdir -p "$CERT_DIR/trust-validator"
 rm -f "$TRUST_P12"
-keytool -importcert -noprompt -alias pid_issuer -file "$TMP_DIR/pid_issuer.crt.trust" -keystore "$TRUST_P12" -storepass pass1234 -storetype PKCS12
-keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_P12" -storepass pass1234 -storetype PKCS12
+keytool -importcert -noprompt -alias pid_issuer -file "$TMP_DIR/pid_issuer.crt.trust" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
+keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
 create_license "$TRUST_P12"
 
 # 4. Wallet Provider
-generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "pass1234" "Wallet Provider (Ecosystem)" "$PROVIDER_SANS"
+generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "$WALLET_PROVIDER_KEYSTORE_PASSWORD" "Wallet Provider (Ecosystem)" "$PROVIDER_SANS"
 
 # 5. Trust Source
-generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "pass1234" "Trust Source (Ecosystem)" "$TRUST_SOURCE_SANS" "signer.cnf"
+generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "$TRUST_SOURCE_KEYSTORE_PASSWORD" "Trust Source (Ecosystem)" "$TRUST_SOURCE_SANS" "signer.cnf"
 cp "$TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
 cp "$TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
 
@@ -250,8 +257,8 @@ echo "Creating trust_store.p12 for Trust Validator..."
 TRUST_VALIDATOR_TRUST_STORE="$CERT_DIR/trust-validator/trust_store.p12"
 mkdir -p "$CERT_DIR/trust-validator"
 rm -f "$TRUST_VALIDATOR_TRUST_STORE"
-keytool -importcert -noprompt -alias trust_source -file "$TMP_DIR/trust_source.crt.trust" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass pass1234 -storetype PKCS12
-keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass pass1234 -storetype PKCS12
+keytool -importcert -noprompt -alias trust_source -file "$TMP_DIR/trust_source.crt.trust" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
+keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
 create_license "$TRUST_VALIDATOR_TRUST_STORE"
 
 # --- Finalization ---
