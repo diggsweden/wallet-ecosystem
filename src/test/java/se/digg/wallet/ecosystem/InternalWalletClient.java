@@ -21,6 +21,6 @@ public class InternalWalletClient implements WalletClient {
 
   public String createWalletUnitAttestation(ECKey bindingKey, String nonce)
       throws JsonProcessingException {
-    return walletProvider.getWalletUnitAttestation(bindingKey, nonce);
+    return walletProvider.getKeyAttestation(bindingKey, nonce);
   }
 }

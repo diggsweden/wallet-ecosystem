@@ -18,6 +18,7 @@ public class WalletProviderClient {
   private final URI base;
 
   private static final String WUA_URL = "wallet-unit-attestation";
+  private static final String KEY_ATTESTATIONS_URL = "key_attestations";
 
   public WalletProviderClient() {
     this(ServiceIdentifier.WALLET_PROVIDER.getResourceRoot());
@@ -46,6 +47,27 @@ public class WalletProviderClient {
                 new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()),
                 nonce))
         .post(base.resolve(WUA_URL))
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .extract()
+        .body()
+        .asString();
+  }
+
+  public String getKeyAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(
+            String.format("""
+                {
+                  "jwk": %s,
+                  "nonce": "%s"
+                }""",
+                new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()),
+                nonce))
+        .post(base.resolve(KEY_ATTESTATIONS_URL))
         .then()
         .assertThat()
         .statusCode(200)
