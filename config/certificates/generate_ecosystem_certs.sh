@@ -49,9 +49,7 @@ generate_password TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD
 generate_password TRUST_VALIDATOR_TRUST_STORE_PASSWORD
 
 # 1. Ecosystem Service URLs
-export CRL_DP="URI:http://trust-source/revocation-list.pem"
 export STATUS_LIST_URL="http://trust-source/signed/status-list.jwt"
-export AIA_URL="URI:http://trust-source/rootca.crt"
 
 # 2. Ecosystem Output Directories
 export PID_ISSUER_OUT="${CERT_DIR}/../pid-issuer"

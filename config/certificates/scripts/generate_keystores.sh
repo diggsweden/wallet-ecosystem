@@ -11,9 +11,7 @@ CERT_DIR="$SCRIPT_DIR/.."
 TMP_DIR="$CERT_DIR/tmp"
 
 # Configuration (Must be provided by wrapper script)
-: "${CRL_DP:?Environment variable CRL_DP is not set}"
 : "${STATUS_LIST_URL:?Environment variable STATUS_LIST_URL is not set}"
-: "${AIA_URL:?Environment variable AIA_URL is not set}"
 : "${PID_ISSUER_OUT:?Environment variable PID_ISSUER_OUT is not set}"
 : "${TRUST_SOURCE_OUT:?Environment variable TRUST_SOURCE_OUT is not set}"
 : "${VERIFIER_SANS:?Environment variable VERIFIER_SANS is not set}"
@@ -27,9 +25,7 @@ TMP_DIR="$CERT_DIR/tmp"
 : "${TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD:?Environment variable TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD is not set}"
 : "${TRUST_VALIDATOR_TRUST_STORE_PASSWORD:?Environment variable TRUST_VALIDATOR_TRUST_STORE_PASSWORD is not set}"
 
-export crl_dp="$CRL_DP"
 export status_list_url="$STATUS_LIST_URL"
-export aia_url="$AIA_URL"
 
 # Cleanup temporary files on exit
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -45,35 +41,63 @@ function create_license() {
 EOF
 }
 
-# 1. Root CA configuration
-ROOTCA_DIR="$CERT_DIR/rootca"
-mkdir -p "$ROOTCA_DIR"
-ROOT_KEY="$ROOTCA_DIR/rootca_private_key.pem"
-ROOT_PEM="$ROOTCA_DIR/rootca.pem"
+# 1. Independent self-signed CAs for each application service
+CA_DIR="$CERT_DIR/ca"
+mkdir -p "$CA_DIR"
 
-if [ ! -f "$ROOT_KEY" ] || [ ! -f "$ROOT_PEM" ]; then
-  echo "Generating EC Root CA (P-256)..."
-  openssl ecparam -name prime256v1 -genkey -noout -out "$ROOT_KEY"
-  cp "$SCRIPT_DIR/templates/root.cnf" "$TMP_DIR/root.cnf"
-  openssl req -x509 -new -nodes -key "$ROOT_KEY" \
-    -sha256 -days 3650 \
-    -out "$ROOT_PEM" \
-    -config "$TMP_DIR/root.cnf"
-  create_license "$ROOT_KEY"
-  create_license "$ROOT_PEM"
-else
-  echo "Using existing Root CA found in $ROOTCA_DIR"
-fi
+generate_ca() {
+  local ca_name="$1"
+  local common_name="$2"
+  local ca_dir="$CA_DIR/$ca_name"
+  local ca_tmp_dir="$TMP_DIR/$ca_name"
+  local ca_key="$ca_dir/ca_private_key.pem"
+  local ca_pem="$ca_dir/ca.pem"
+  local crl="$ca_dir/revocation-list.pem"
 
-if [ ! -f "$ROOTCA_DIR/revocation-list.pem" ]; then
-  echo "Generating empty Certificate Revocation List (CRL)..."
-  export TMP_DIR ROOT_PEM ROOT_KEY
-  envsubst <"$SCRIPT_DIR/templates/ca.cnf" >"$TMP_DIR/ca.cnf"
-  touch "$TMP_DIR/index.txt"
-  echo "01" >"$TMP_DIR/crlnumber"
-  openssl ca -gencrl -config "$TMP_DIR/ca.cnf" -out "$ROOTCA_DIR/revocation-list.pem"
-  create_license "$ROOTCA_DIR/revocation-list.pem"
-fi
+  mkdir -p "$ca_dir" "$ca_tmp_dir"
+  if [ ! -f "$ca_key" ] || [ ! -f "$ca_pem" ]; then
+    echo "Generating $common_name (P-256)..."
+    openssl ecparam -name prime256v1 -genkey -noout -out "$ca_key"
+    export cn="$common_name"
+    envsubst <"$SCRIPT_DIR/templates/root.cnf" >"$ca_tmp_dir/root.cnf"
+    openssl req -x509 -new -nodes -key "$ca_key" \
+      -sha256 -days 3650 -out "$ca_pem" -config "$ca_tmp_dir/root.cnf"
+    create_license "$ca_key"
+    create_license "$ca_pem"
+  else
+    echo "Using existing $common_name found in $ca_dir"
+  fi
+
+  if [ ! -f "$crl" ]; then
+    echo "Generating empty CRL for $common_name..."
+    TMP_DIR="$ca_tmp_dir" ROOT_PEM="$ca_pem" ROOT_KEY="$ca_key" \
+      envsubst <"$SCRIPT_DIR/templates/ca.cnf" >"$ca_tmp_dir/ca.cnf"
+    touch "$ca_tmp_dir/index.txt"
+    echo "01" >"$ca_tmp_dir/crlnumber"
+    openssl ca -gencrl -config "$ca_tmp_dir/ca.cnf" -out "$crl"
+    create_license "$crl"
+  fi
+
+  [ -f "$ca_dir/ca.srl" ] && create_license "$ca_dir/ca.srl"
+}
+
+generate_ca "pid-issuer" "DIGG Wallet PID Issuer CA"
+generate_ca "wallet-provider" "DIGG Wallet Provider CA"
+generate_ca "trust-source" "DIGG Wallet Trust Source CA"
+generate_ca "verifier" "DIGG Wallet Verifier CA"
+
+PID_ISSUER_CA_KEY="$CA_DIR/pid-issuer/ca_private_key.pem"
+PID_ISSUER_CA_PEM="$CA_DIR/pid-issuer/ca.pem"
+WALLET_PROVIDER_CA_KEY="$CA_DIR/wallet-provider/ca_private_key.pem"
+WALLET_PROVIDER_CA_PEM="$CA_DIR/wallet-provider/ca.pem"
+TRUST_SOURCE_CA_KEY="$CA_DIR/trust-source/ca_private_key.pem"
+TRUST_SOURCE_CA_PEM="$CA_DIR/trust-source/ca.pem"
+VERIFIER_CA_KEY="$CA_DIR/verifier/ca_private_key.pem"
+VERIFIER_CA_PEM="$CA_DIR/verifier/ca.pem"
+
+# Use a separate temporary area after the per-CA CRL generation above.
+SERVICE_TMP_DIR="$TMP_DIR/services"
+mkdir -p "$SERVICE_TMP_DIR"
 
 function generate_service_cert_ec() {
   local target_subdir="$1"
@@ -83,20 +107,26 @@ function generate_service_cert_ec() {
   local cn="$5"
   local sans="$6"
   local service_cnf_file="${7:-service.cnf}"
+  local ca_pem="$8"
+  local ca_key="$9"
+  local ca_name="${10}"
 
   local target_dir="$CERT_DIR/$target_subdir"
   mkdir -p "$target_dir"
 
   echo "Processing $cert_name (EC) for $target_subdir..."
 
+  export crl_dp="URI:http://trust-source/$ca_name/revocation-list.pem"
+  export aia_url="URI:http://trust-source/$ca_name/ca.pem"
+
   # Create temporary config for CSR
-  local cnf_file="$TMP_DIR/$cert_name.cnf"
+  local cnf_file="$SERVICE_TMP_DIR/$cert_name.cnf"
   export cn sans
   envsubst <"$SCRIPT_DIR/templates/$service_cnf_file" >"$cnf_file"
 
-  local key_file="$TMP_DIR/$cert_name.key"
-  local csr_file="$TMP_DIR/$cert_name.csr"
-  local crt_file="$TMP_DIR/$cert_name.crt"
+  local key_file="$SERVICE_TMP_DIR/$cert_name.key"
+  local csr_file="$SERVICE_TMP_DIR/$cert_name.csr"
+  local crt_file="$SERVICE_TMP_DIR/$cert_name.crt"
   local p12_file="$target_dir/$cert_name.p12"
 
   # Generate EC Private Key (P-256)
@@ -107,14 +137,14 @@ function generate_service_cert_ec() {
 
   # Sign Cert
   openssl x509 -req -in "$csr_file" \
-    -CA "$ROOT_PEM" -CAkey "$ROOT_KEY" -CAcreateserial \
+    -CA "$ca_pem" -CAkey "$ca_key" -CAcreateserial \
     -out "$crt_file" -days 825 -sha256 \
     -extfile "$cnf_file" -extensions v3_req
 
   # Create P12
   rm -f "$p12_file"
   openssl pkcs12 -export \
-    -in "$crt_file" -inkey "$key_file" -certfile "$ROOT_PEM" \
+    -in "$crt_file" -inkey "$key_file" -certfile "$ca_pem" \
     -out "$p12_file" \
     -name "$alias_name" \
     -passout "pass:$password"
@@ -122,18 +152,18 @@ function generate_service_cert_ec() {
   create_license "$p12_file"
 
   # Save cert for trust store use by other services
-  cp "$crt_file" "$TMP_DIR/$cert_name.crt.trust"
+  cp "$crt_file" "$SERVICE_TMP_DIR/$cert_name.crt.trust"
 }
 
 # --- Service Certificates ---
 
 # 1. PID Issuer
-generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "$PID_ISSUER_KEYSTORE_PASSWORD" "PID Issuer (Ecosystem)" "$ISSUER_SANS"
+generate_service_cert_ec "issuer" "pid_issuer" "pid_issuer" "$PID_ISSUER_KEYSTORE_PASSWORD" "PID Issuer (Ecosystem)" "$ISSUER_SANS" service.cnf "$PID_ISSUER_CA_PEM" "$PID_ISSUER_CA_KEY" pid-issuer
 
 # Add nonce-encryption and request-encryption keys to pid_issuer.p12
 # (these are transient stores merged into pid_issuer.p12 below, so they share its password)
-generate_service_cert_ec "issuer" "nonce" "nonce-encryption" "$PID_ISSUER_KEYSTORE_PASSWORD" "nonce-encryption" "DNS.1:localhost" "encryption.cnf"
-generate_service_cert_ec "issuer" "request" "request-encryption" "$PID_ISSUER_KEYSTORE_PASSWORD" "request-encryption" "DNS.1:localhost" "encryption.cnf"
+generate_service_cert_ec "issuer" "nonce" "nonce-encryption" "$PID_ISSUER_KEYSTORE_PASSWORD" "nonce-encryption" "DNS.1:localhost" encryption.cnf "$PID_ISSUER_CA_PEM" "$PID_ISSUER_CA_KEY" pid-issuer
+generate_service_cert_ec "issuer" "request" "request-encryption" "$PID_ISSUER_KEYSTORE_PASSWORD" "request-encryption" "DNS.1:localhost" encryption.cnf "$PID_ISSUER_CA_PEM" "$PID_ISSUER_CA_KEY" pid-issuer
 
 keytool -importkeystore -srckeystore "$CERT_DIR/issuer/nonce.p12" -srcstoretype PKCS12 -srcstorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -noprompt
 keytool -importkeystore -srckeystore "$CERT_DIR/issuer/request.p12" -srcstoretype PKCS12 -srcstorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -destkeystore "$CERT_DIR/issuer/pid_issuer.p12" -deststoretype PKCS12 -deststorepass "$PID_ISSUER_KEYSTORE_PASSWORD" -noprompt
@@ -146,7 +176,7 @@ JWT_PATH="${PID_ISSUER_OUT}/issuer_wrprc.jwt"
 PRE_JWT_PATH="${PID_ISSUER_OUT}/issuer_wrprc.json"
 
 # Extract cert body, removing headers/footers and newlines
-CERT_B64=$(grep -v -- '---' "${TMP_DIR}/pid_issuer.crt" | tr -d '\n')
+CERT_B64=$(grep -v -- '---' "${SERVICE_TMP_DIR}/pid_issuer.crt" | tr -d '\n')
 
 # Create JSON payload and header
 read -r -d '' HEADER_JSON <<EOF || true
@@ -163,10 +193,10 @@ B64_PAYLOAD=$(echo -n "$PAYLOAD_JSON" | base64 -w0 | tr '+/' '-_' | tr -d '=')
 SIGNING_INPUT="${B64_HEADER}.${B64_PAYLOAD}"
 
 # Sign with openssl
-echo -n "$SIGNING_INPUT" | openssl dgst -sha256 -sign "${TMP_DIR}/pid_issuer.key" -out "${TMP_DIR}/sig.der"
+echo -n "$SIGNING_INPUT" | openssl dgst -sha256 -sign "${SERVICE_TMP_DIR}/pid_issuer.key" -out "${SERVICE_TMP_DIR}/sig.der"
 
 # Convert DER signature to Raw R||S
-PARSED=$(openssl asn1parse -inform DER -in "${TMP_DIR}/sig.der" 2>/dev/null)
+PARSED=$(openssl asn1parse -inform DER -in "${SERVICE_TMP_DIR}/sig.der" 2>/dev/null)
 R_HEX=$(echo "$PARSED" | awk 'NR==2 { sub(/.*:/, ""); print }')
 S_HEX=$(echo "$PARSED" | awk 'NR==3 { sub(/.*:/, ""); print }')
 
@@ -193,24 +223,24 @@ create_license "$JWT_PATH"
 create_license "$PRE_JWT_PATH"
 
 # 2. Verifier Backend
-generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "$VERIFIER_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS"
+generate_service_cert_ec "verifier" "verifier_backend" "verifier_backend" "$VERIFIER_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" service.cnf "$VERIFIER_CA_PEM" "$VERIFIER_CA_KEY" verifier
 
 # 3. Verifier Trust Store
 echo "Creating trusted_issuers.p12 for Verifier..."
 TRUST_P12="$CERT_DIR/trust-validator/trusted_issuers.p12"
 mkdir -p "$CERT_DIR/trust-validator"
 rm -f "$TRUST_P12"
-keytool -importcert -noprompt -alias pid_issuer -file "$TMP_DIR/pid_issuer.crt.trust" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
-keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
+keytool -importcert -noprompt -alias pid_issuer -file "$SERVICE_TMP_DIR/pid_issuer.crt.trust" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
+keytool -importcert -noprompt -alias pid_issuer_ca -file "$PID_ISSUER_CA_PEM" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
 create_license "$TRUST_P12"
 
 # 4. Wallet Provider
-generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "$WALLET_PROVIDER_KEYSTORE_PASSWORD" "Wallet Provider (Ecosystem)" "$PROVIDER_SANS"
+generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "$WALLET_PROVIDER_KEYSTORE_PASSWORD" "Wallet Provider (Ecosystem)" "$PROVIDER_SANS" service.cnf "$WALLET_PROVIDER_CA_PEM" "$WALLET_PROVIDER_CA_KEY" wallet-provider
 
 # 5. Trust Source
-generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "$TRUST_SOURCE_KEYSTORE_PASSWORD" "Trust Source (Ecosystem)" "$TRUST_SOURCE_SANS" "signer.cnf"
-cp "$TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
-cp "$TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
+generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "$TRUST_SOURCE_KEYSTORE_PASSWORD" "Trust Source (Ecosystem)" "$TRUST_SOURCE_SANS" signer.cnf "$TRUST_SOURCE_CA_PEM" "$TRUST_SOURCE_CA_KEY" trust-source
+cp "$SERVICE_TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
+cp "$SERVICE_TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
 
 echo "Generating status-list.jwt for Trust Source..."
 # Extract cert body, removing headers/footers and newlines
@@ -226,9 +256,9 @@ STATUS_B64_HEADER=$(echo -n "$STATUS_HEADER_JSON" | base64 -w0 | tr '+/' '-_' | 
 STATUS_B64_PAYLOAD=$(echo -n "$STATUS_PAYLOAD" | base64 -w0 | tr '+/' '-_' | tr -d '=')
 STATUS_SIGNING_INPUT="${STATUS_B64_HEADER}.${STATUS_B64_PAYLOAD}"
 
-echo -n "$STATUS_SIGNING_INPUT" | openssl dgst -sha256 -sign "${CERT_DIR}/trust-list-signer/trust_source_key.pem" -out "${TMP_DIR}/status_sig.der"
+echo -n "$STATUS_SIGNING_INPUT" | openssl dgst -sha256 -sign "${CERT_DIR}/trust-list-signer/trust_source_key.pem" -out "${SERVICE_TMP_DIR}/status_sig.der"
 
-STATUS_PARSED=$(openssl asn1parse -inform DER -in "${TMP_DIR}/status_sig.der" 2>/dev/null)
+STATUS_PARSED=$(openssl asn1parse -inform DER -in "${SERVICE_TMP_DIR}/status_sig.der" 2>/dev/null)
 STATUS_R_HEX=$(echo "$STATUS_PARSED" | awk 'NR==2 { sub(/.*:/, ""); print }')
 STATUS_S_HEX=$(echo "$STATUS_PARSED" | awk 'NR==3 { sub(/.*:/, ""); print }')
 
@@ -257,20 +287,25 @@ echo "Creating trust_store.p12 for Trust Validator..."
 TRUST_VALIDATOR_TRUST_STORE="$CERT_DIR/trust-validator/trust_store.p12"
 mkdir -p "$CERT_DIR/trust-validator"
 rm -f "$TRUST_VALIDATOR_TRUST_STORE"
-keytool -importcert -noprompt -alias trust_source -file "$TMP_DIR/trust_source.crt.trust" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
-keytool -importcert -noprompt -alias root_ca -file "$ROOT_PEM" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
+keytool -importcert -noprompt -alias trust_source -file "$SERVICE_TMP_DIR/trust_source.crt.trust" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
+keytool -importcert -noprompt -alias trust_source_ca -file "$TRUST_SOURCE_CA_PEM" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
 create_license "$TRUST_VALIDATOR_TRUST_STORE"
 
 # --- Finalization ---
-
-# License for serial file if it exists
-[ -f "$ROOTCA_DIR/rootca.srl" ] && create_license "$ROOTCA_DIR/rootca.srl"
 
 # Ensure container readability
 find "$CERT_DIR" -name "*.p12" -exec chmod 644 {} +
 find "$CERT_DIR" -name "*.pem" -exec chmod 644 {} +
 
 # Copy CRL to trust-source to be hosted by Nginx
-cp "$ROOTCA_DIR/revocation-list.pem" "${TRUST_SOURCE_OUT}/revocation-list.pem"
+for ca_name in pid-issuer wallet-provider trust-source verifier; do
+  mkdir -p "${TRUST_SOURCE_OUT}/${ca_name}"
+  cp "$CA_DIR/$ca_name/ca.pem" "${TRUST_SOURCE_OUT}/${ca_name}/ca.pem"
+  cp "$CA_DIR/$ca_name/revocation-list.pem" "${TRUST_SOURCE_OUT}/${ca_name}/revocation-list.pem"
+  create_license "${TRUST_SOURCE_OUT}/${ca_name}/ca.pem"
+  create_license "${TRUST_SOURCE_OUT}/${ca_name}/revocation-list.pem"
+done
+cp "$CA_DIR/trust-source/revocation-list.pem" "${TRUST_SOURCE_OUT}/revocation-list.pem"
+create_license "${TRUST_SOURCE_OUT}/revocation-list.pem"
 
 echo "Done! All certificates and licenses in config/certificates updated for Ecosystem."

@@ -291,8 +291,8 @@ In order to do so, we can manipulate the certificates
 so that they are not trusted by the verifier.
 
 ```shell
-# Remove the root CA so that a new one is generated
-rm config/certificates/rootca/*
+# Remove the application CAs so that new ones are generated
+rm -r config/certificates/ca/*
 
 # Generate new keystores and trust lists for all services
 bash config/certificates/generate_ecosystem_certs.sh
