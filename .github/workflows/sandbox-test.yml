@@ -40,6 +40,8 @@ jobs:
           DIGG_WALLET_ECOSYSTEM_VERIFIER_AUDIENCE: x509_san_dns:${{ secrets.SANDBOX_URL }}
           DIGG_WALLET_ECOSYSTEM_VERIFIER_FRONTEND_BASE_URI: https://${{ secrets.SANDBOX_URL }}/demo-verifier
           DIGG_WALLET_ECOSYSTEM_VERIFIER_BACKEND_BASE_URI: https://${{ secrets.SANDBOX_URL }}/verifier
+          DIGG_WALLET_ECOSYSTEM_TRUST_VALIDATOR_BASE_URI: https://${{ secrets.SANDBOX_URL }}/trust-validator
+          DIGG_WALLET_ECOSYSTEM_TRUST_SOURCE_BASE_URI: https://${{ secrets.SANDBOX_URL }}/trust-source
           DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_BASE_URI: https://${{ secrets.SANDBOX_URL }}/api
           DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_API_KEY: ${{ secrets.CLIENT_GATEWAY_API_KEY }}
           DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI: https://${{ secrets.SANDBOX_URL }}/wallet-provider
