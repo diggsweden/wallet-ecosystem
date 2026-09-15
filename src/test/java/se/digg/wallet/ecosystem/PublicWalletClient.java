@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -35,6 +36,8 @@ public class PublicWalletClient implements WalletClient {
     return signedJwt.serialize();
   }
 
+  @Deprecated
+  @Override
   public String createWalletUnitAttestation(ECKey bindingKey, String nonce) throws JOSEException {
     ECKey deviceKey =
         new ECKeyGenerator(Curve.P_256)
@@ -61,5 +64,11 @@ public class PublicWalletClient implements WalletClient {
         .body()
         .jsonPath()
         .getString("jwt");
+  }
+
+  @Override
+  public String createKeyAttestation(ECKey bindingKey, String nonce)
+      throws JsonProcessingException, JOSEException {
+    return createWalletUnitAttestation(bindingKey, nonce);
   }
 }
