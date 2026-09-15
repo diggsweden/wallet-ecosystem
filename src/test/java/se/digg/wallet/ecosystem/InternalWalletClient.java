@@ -19,8 +19,16 @@ public class InternalWalletClient implements WalletClient {
     this.walletProvider = walletProvider;
   }
 
+  @Deprecated
+  @Override
   public String createWalletUnitAttestation(ECKey bindingKey, String nonce)
       throws JsonProcessingException {
-    return walletProvider.getWalletUnitAttestation(bindingKey, nonce);
+    return createKeyAttestation(bindingKey, nonce);
+  }
+
+  @Override
+  public String createKeyAttestation(ECKey bindingKey, String nonce)
+      throws JsonProcessingException {
+    return walletProvider.getKeyAttestation(bindingKey, nonce);
   }
 }
