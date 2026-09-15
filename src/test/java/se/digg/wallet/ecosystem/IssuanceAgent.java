@@ -82,7 +82,7 @@ public class IssuanceAgent {
                 "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
-    String walletAttestation = wallet.createWalletUnitAttestation(bindingKey, nonce);
+    String walletAttestation = wallet.createKeyAttestation(bindingKey, nonce);
     String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =

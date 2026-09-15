@@ -56,10 +56,16 @@ public class WalletProviderTest {
     assertThat(ka, matchesPattern(
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
 
-    // Verify KA contains the injected key_storage_status
+    // Verify KA contains the injected key_storage_status, iss, and sub
     com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(ka);
     org.junit.jupiter.api.Assertions.assertNotNull(
         jwt.getJWTClaimsSet().getClaim("key_storage_status"),
         "Key attestation must contain the 'key_storage_status' claim");
+    org.junit.jupiter.api.Assertions.assertNotNull(
+        jwt.getJWTClaimsSet().getIssuer(),
+        "Key attestation must contain the 'iss' claim");
+    org.junit.jupiter.api.Assertions.assertNotNull(
+        jwt.getJWTClaimsSet().getSubject(),
+        "Key attestation must contain the 'sub' claim");
   }
 }
