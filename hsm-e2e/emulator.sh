@@ -80,7 +80,7 @@ ensure_avd() {
 
 # Citrix App Protection preloads a lib that segfaults the emulator — detect and stop.
 citrix_guard() {
-  grep -qi 'AppProtection' /etc/ld.so.preload 2>/dev/null || return 0
+  grep -qiE '^[^#]*AppProtection' /etc/ld.so.preload 2>/dev/null || return 0
   cat >&2 <<'EOF'
 Citrix App Protection is active — it segfaults the Android emulator.
 Comment its line out of /etc/ld.so.preload for the run, e.g.:
