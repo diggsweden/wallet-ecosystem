@@ -13,6 +13,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class WalletProviderClient {
@@ -58,8 +59,13 @@ public class WalletProviderClient {
   }
 
   public String getKeyAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
+    return getKeyAttestation(List.of(jwk), nonce);
+  }
+
+  public String getKeyAttestation(List<ECKey> jwks, String nonce) throws JsonProcessingException {
     Map<String, Object> body = new HashMap<>();
-    body.put("jwk", jwk.toPublicJWK().toJSONString());
+    List<String> jwkStrings = jwks.stream().map(k -> k.toPublicJWK().toJSONString()).toList();
+    body.put("jwks", jwkStrings);
     if (nonce != null) {
       body.put("nonce", nonce);
     }
@@ -71,8 +77,9 @@ public class WalletProviderClient {
         .then()
         .assertThat()
         .statusCode(200)
+        .contentType(ContentType.JSON)
         .extract()
-        .body()
-        .asString();
+        .jsonPath()
+        .getString("key_attestation");
   }
 }
