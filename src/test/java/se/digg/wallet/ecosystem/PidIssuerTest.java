@@ -95,7 +95,7 @@ public class PidIssuerTest {
   }
 
   @Test
-  void servesMetadataWithLogo() {
+  void servesMetadataWithReachableLogo() {
     String response =
         pidIssuer.getDecodedOpenIdCredentialIssuerMetadata(
             MetadataLocationStrategy.OID4VCI_COMPLIANT);
