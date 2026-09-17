@@ -21,7 +21,7 @@ public class WalletProviderClient {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final String WUA_URL = "wallet-unit-attestation";
-  private static final String KEY_ATTESTATIONS_URL = "key_attestations";
+  private static final String KEY_ATTESTATIONS_URL = "key-attestations";
 
   public WalletProviderClient() {
     this(ServiceIdentifier.WALLET_PROVIDER.getResourceRoot());
