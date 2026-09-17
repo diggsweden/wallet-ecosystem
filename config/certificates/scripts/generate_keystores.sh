@@ -281,15 +281,6 @@ jq . "${TRUST_SOURCE_OUT}/signed/status-list.json" >"${TRUST_SOURCE_OUT}/signed/
 create_license "${TRUST_SOURCE_OUT}/signed/status-list.jwt"
 create_license "${TRUST_SOURCE_OUT}/signed/status-list.json"
 
-# 6. Trust Validator
-echo "Creating trust_store.p12 for Trust Validator..."
-TRUST_VALIDATOR_TRUST_STORE="$CERT_DIR/trust-validator/trust_store.p12"
-mkdir -p "$CERT_DIR/trust-validator"
-rm -f "$TRUST_VALIDATOR_TRUST_STORE"
-keytool -importcert -noprompt -alias trust_source -file "$SERVICE_TMP_DIR/trust_source.crt.trust" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
-keytool -importcert -noprompt -alias trust_source_ca -file "$TRUST_SOURCE_CA_PEM" -keystore "$TRUST_VALIDATOR_TRUST_STORE" -storepass "$TRUST_VALIDATOR_TRUST_STORE_PASSWORD" -storetype PKCS12
-create_license "$TRUST_VALIDATOR_TRUST_STORE"
-
 # --- Finalization ---
 
 # Ensure container readability
