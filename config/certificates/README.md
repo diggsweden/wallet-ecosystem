@@ -2,7 +2,8 @@
 
 ## Generate Internal Service Certificates and Keystores
 
-The ecosystem uses a separate local Root CA to issue certificates for all internal services (PID Issuer, Verifier, Wallet Provider, etc.). These are distinct from the Traefik TLS certificate above and are managed via an automation script.
+The ecosystem uses separate local self-signed CAs for the PID Issuer, Verifier, Wallet Provider, and Trust Source application trust domains.
+These certificates are separate from the Traefik/mkcert TLS certificate and are managed via an automation script.
 
 ### Automated Generation
 
@@ -14,7 +15,7 @@ To (re)generate all ecosystem certificates, keystores, and REUSE-compliant licen
 
 This script:
 
-* Generates an EC (P-256) Root CA (if not present).
-* Issues certificates for **PID Issuer**, **Verifier**, and **Wallet Provider**.
-* Updates the **Verifier Trust Store** with the PID Issuer's certificate.
-* Ensures all files have the correct permissions for Docker containers.
+* Generates one EC (P-256) CA per application trust domain (if not present).
+* Issues certificates for **PID Issuer**, **Verifier**, **Wallet Provider**, and **Trust Source**.
+* Creates the **Trust Validator** certificate stores and regenerates the signed LoTE for the PID Issuer and Wallet Provider.
+* Ensures generated keystores and PEM files are readable by Docker containers.
