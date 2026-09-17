@@ -12,12 +12,17 @@ import com.nimbusds.jose.jwk.ECKey;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WalletProviderClient {
 
   private final URI base;
 
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final String WUA_URL = "wallet-unit-attestation";
+  private static final String KEY_ATTESTATIONS_URL = "key-attestations";
 
   public WalletProviderClient() {
     this(ServiceIdentifier.WALLET_PROVIDER.getResourceRoot());
@@ -33,18 +38,17 @@ public class WalletProviderClient {
         .get(base.resolve("actuator/health"));
   }
 
+  @Deprecated
   public String getWalletUnitAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
+    Map<String, Object> body = new HashMap<>();
+    body.put("jwk", jwk.toPublicJWK().toJSONString());
+    if (nonce != null) {
+      body.put("nonce", nonce);
+    }
     return given()
         .when()
         .contentType(ContentType.JSON)
-        .body(
-            String.format("""
-                {
-                  "jwk": %s,
-                  "nonce": "%s"
-                }""",
-                new ObjectMapper().writeValueAsString(jwk.toPublicJWK().toJSONString()),
-                nonce))
+        .body(OBJECT_MAPPER.writeValueAsString(body))
         .post(base.resolve(WUA_URL))
         .then()
         .assertThat()
@@ -52,5 +56,30 @@ public class WalletProviderClient {
         .extract()
         .body()
         .asString();
+  }
+
+  public String getKeyAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
+    return getKeyAttestation(List.of(jwk), nonce);
+  }
+
+  public String getKeyAttestation(List<ECKey> jwks, String nonce) throws JsonProcessingException {
+    Map<String, Object> body = new HashMap<>();
+    List<String> jwkStrings = jwks.stream().map(k -> k.toPublicJWK().toJSONString()).toList();
+    body.put("jwks", jwkStrings);
+    if (nonce != null) {
+      body.put("nonce", nonce);
+    }
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(OBJECT_MAPPER.writeValueAsString(body))
+        .post(base.resolve(KEY_ATTESTATIONS_URL))
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .contentType(ContentType.JSON)
+        .extract()
+        .jsonPath()
+        .getString("key_attestation");
   }
 }
