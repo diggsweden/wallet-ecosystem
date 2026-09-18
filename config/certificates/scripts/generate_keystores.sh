@@ -135,10 +135,10 @@ function generate_service_cert_ec() {
 
   # Sign Cert
   openssl x509 -req -in "$csr_file" \
-    -CA "$ca_pem" -CAkey "$ca_key" -CAcreateserial \
+    -CA "$ca_pem" -CAkey "$ca_key" \
     -out "$crt_file" -days 825 -sha256 \
-    -extfile "$cnf_file" -extensions v3_req
-  create_license "${ca_pem%.pem}.srl"
+    -extfile "$cnf_file" -extensions v3_req \
+    -set_serial "0x$(openssl rand -hex 16)"
 
   # Create P12
   rm -f "$p12_file"
