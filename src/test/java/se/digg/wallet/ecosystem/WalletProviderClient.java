@@ -22,7 +22,7 @@ public class WalletProviderClient {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final String WUA_URL = "wallet-unit-attestation";
-  private static final String KEY_ATTESTATIONS_URL = "key-attestations";
+  private static final String KEY_ATTESTATIONS_URL = "v0/key-attestations";
 
   public WalletProviderClient() {
     this(ServiceIdentifier.WALLET_PROVIDER.getResourceRoot());
@@ -64,8 +64,11 @@ public class WalletProviderClient {
 
   public String getKeyAttestation(List<ECKey> jwks, String nonce) throws JsonProcessingException {
     Map<String, Object> body = new HashMap<>();
-    List<String> jwkStrings = jwks.stream().map(k -> k.toPublicJWK().toJSONString()).toList();
-    body.put("jwks", jwkStrings);
+    List<Map<String, String>> jwkItems =
+        jwks.stream()
+            .map(k -> Map.of("jwk", k.toPublicJWK().toJSONString()))
+            .toList();
+    body.put("jwks", jwkItems);
     if (nonce != null) {
       body.put("nonce", nonce);
     }
