@@ -112,8 +112,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: wallet-provider:local
-    pull_policy: never
+    image: ghcr.io/diggsweden/wallet-provider:v0.1.4
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
