@@ -321,6 +321,30 @@ certs:
            localhost 127.0.0.1 ::1
 
 # ==================================================================================== #
+# HSM E2E - access-mechanism / gateway / SoftHSM instrumented test (see hsm-e2e/README.md)
+# ==================================================================================== #
+
+# Run the HSM e2e test: boot a headless emulator if needed, then connectedCheck.
+# The ecosystem must be up first (`just up`); an unreachable gateway skips, not fails.
+[group('hsm-e2e')]
+hsm-test: hsm-emulator hsm-check
+
+# Run the instrumented test against an already-attached device + a running ecosystem (CI entrypoint)
+[group('hsm-e2e')]
+hsm-check:
+    ./hsm-e2e/run-e2e.sh
+
+# Boot a headless emulator if none is attached (creates the AVD if missing; see hsm-e2e/emulator.sh)
+[group('hsm-e2e')]
+hsm-emulator avd="hsm-e2e":
+    ./hsm-e2e/emulator.sh boot {{avd}}
+
+# Stop any running emulator
+[group('hsm-e2e')]
+hsm-emulator-stop:
+    ./hsm-e2e/emulator.sh stop
+
+# ==================================================================================== #
 # INTERNAL
 # ==================================================================================== #
 
