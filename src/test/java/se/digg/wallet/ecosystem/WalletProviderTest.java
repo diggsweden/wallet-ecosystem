@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -67,5 +68,22 @@ public class WalletProviderTest {
     org.junit.jupiter.api.Assertions.assertNotNull(
         jwt.getJWTClaimsSet().getSubject(),
         "Key attestation must contain the 'sub' claim");
+  }
+
+  @Test
+  void createsKeyAttestationWithMultipleKeys() throws Exception {
+    String ka =
+        walletProvider.getKeyAttestation(
+            List.of(
+                new ECKeyGenerator(Curve.P_256).generate(),
+                new ECKeyGenerator(Curve.P_256).generate()),
+            "nonce");
+
+    assertThat(ka, matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
+
+    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(ka);
+    org.junit.jupiter.api.Assertions.assertNotNull(
+        jwt.getJWTClaimsSet().getClaim("attested_keys"),
+        "Key attestation must contain the 'attested_keys' claim");
   }
 }
