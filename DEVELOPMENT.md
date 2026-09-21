@@ -298,7 +298,7 @@ rm -r config/certificates/ca/*
 bash config/certificates/generate_ecosystem_certs.sh
 
 # Use the existing trusted issuers instead of the newly generated ones
-git checkout config/certificates/verifier/trusted_issuers.p12
+git checkout config/certificates/verifier-access-certificate/trusted_issuers.p12
 
 # Restart environment
 docker compose restart
