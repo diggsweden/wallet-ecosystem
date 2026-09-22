@@ -4,12 +4,14 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -23,6 +25,9 @@ class AccessCertificateTest {
       "config/certificates/verifier-access-certificate/verifier-access-certificate.p12");
   private static final String VERIFIER_ALIAS = "verifier_access_certificate";
   private static final String RP_CONTACT_URI = "https://localhost/demo-verifier";
+  private static final String ACCESS_CERTIFICATE_POLICY_OID = "0.4.0.194118.1.2";
+  private static final String ACCESS_CERTIFICATE_CPS_URI =
+      "http://trust-source/verifier-access-certificate/cps.md";
 
   // Check that the RP contact URI is in the SAN.
   @Test
@@ -65,6 +70,40 @@ class AccessCertificateTest {
     }
   }
 
+  // Check that the required policy OID is present.
+  @Test
+  void verifierAccessCertificateContainsRequiredPolicyIdentifier() throws Exception {
+    String certificateDetails = opensslCertificateDetails(verifierCertificate());
+
+    assertTrue(certificateDetails.contains("Policy: " + ACCESS_CERTIFICATE_POLICY_OID),
+        "Verifier access certificate must contain the required policy OID");
+  }
+
+  // Check that the CPS URI is present.
+  @Test
+  void verifierAccessCertificateContainsCpsUri() throws Exception {
+    String certificateDetails = opensslCertificateDetails(verifierCertificate());
+
+    assertTrue(certificateDetails.contains("CPS: " + ACCESS_CERTIFICATE_CPS_URI),
+        "Verifier access certificate must contain the CPS URI");
+  }
+
+  private String opensslCertificateDetails(X509Certificate certificate) throws Exception {
+    Path certificateFile = Files.createTempFile("verifier-access-certificate-", ".der");
+    try {
+      Files.write(certificateFile, certificate.getEncoded());
+      Process process = new ProcessBuilder("openssl", "x509", "-inform", "DER",
+          "-in", certificateFile.toString(), "-text", "-noout")
+          .redirectErrorStream(true)
+          .start();
+      String details = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+      assertEquals(0, process.waitFor(), "OpenSSL could not read the certificate");
+      return details;
+    } finally {
+      Files.deleteIfExists(certificateFile);
+    }
+  }
+
   private X509Certificate verifierCertificate() throws Exception {
     KeyStore keyStore = KeyStore.getInstance("PKCS12");
     try (InputStream input = Files.newInputStream(VERIFIER_KEYSTORE)) {
@@ -80,8 +119,10 @@ class AccessCertificateTest {
       try (InputStream input = Files.newInputStream(Path.of(".env"))) {
         dotenv.load(input);
       }
-      password =
-          dotenv.getProperty("VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD", "verifier_password");
+      password = dotenv.getProperty("VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD");
+      if (password == null) {
+        password = dotenv.getProperty("VERIFIER_KEYSTORE_PASSWORD", "verifier_password");
+      }
     }
     return password.toCharArray();
   }
