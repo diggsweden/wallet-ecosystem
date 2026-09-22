@@ -20,10 +20,13 @@ public class InternalWalletClient implements WalletClient {
   }
 
   @Deprecated
-  @Override
-  public String createWalletUnitAttestation(ECKey bindingKey, String nonce)
-      throws JsonProcessingException {
-    return walletProvider.getWalletUnitAttestation(bindingKey, nonce);
+  public static WalletClient deprecatedWua() {
+    return deprecatedWua(new WalletProviderClient());
+  }
+
+  @Deprecated
+  public static WalletClient deprecatedWua(WalletProviderClient walletProvider) {
+    return (bindingKey, nonce) -> walletProvider.getWalletUnitAttestation(bindingKey, nonce);
   }
 
   @Override

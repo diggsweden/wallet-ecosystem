@@ -39,23 +39,17 @@ public class IssuanceAgent {
   private final KeycloakClient keycloak;
   private final PidIssuerClient pidIssuer;
   private final String audience;
-  private final boolean useDeprecatedWalletUnitAttestation;
 
   public IssuanceAgent() {
     this(new InternalWalletClient(new WalletProviderClient()));
   }
 
   public IssuanceAgent(WalletClient wallet) {
-    this(wallet, false);
-  }
-
-  public IssuanceAgent(WalletClient wallet, boolean useDeprecatedWalletUnitAttestation) {
     this(
         wallet,
         new KeycloakClient(),
         new PidIssuerClient(),
-        ServiceIdentifier.PID_ISSUER.toString(),
-        useDeprecatedWalletUnitAttestation);
+        ServiceIdentifier.PID_ISSUER.toString());
   }
 
   public IssuanceAgent(
@@ -63,31 +57,14 @@ public class IssuanceAgent {
       KeycloakClient keycloak,
       PidIssuerClient pidIssuer,
       String audience) {
-    this(wallet, keycloak, pidIssuer, audience, false);
-  }
-
-  public IssuanceAgent(
-      WalletClient wallet,
-      KeycloakClient keycloak,
-      PidIssuerClient pidIssuer,
-      String audience,
-      boolean useDeprecatedWalletUnitAttestation) {
 
     this.wallet = wallet;
     this.keycloak = keycloak;
     this.pidIssuer = pidIssuer;
     this.audience = audience;
-    this.useDeprecatedWalletUnitAttestation = useDeprecatedWalletUnitAttestation;
   }
 
   public String issuePidCredential(ECKey bindingKey, String username, String password)
-      throws Exception {
-    return issuePidCredential(
-        bindingKey, username, password, this.useDeprecatedWalletUnitAttestation);
-  }
-
-  private String issuePidCredential(
-      ECKey bindingKey, String username, String password, boolean useWalletUnitAttestation)
       throws Exception {
     ECKey encryptionKey =
         new ECKeyGenerator(Curve.P_256)
@@ -108,10 +85,7 @@ public class IssuanceAgent {
                 "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
-    String walletAttestation =
-        useWalletUnitAttestation
-            ? wallet.createWalletUnitAttestation(bindingKey, nonce)
-            : wallet.createKeyAttestation(bindingKey, nonce);
+    String walletAttestation = wallet.createKeyAttestation(bindingKey, nonce);
     String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =
@@ -122,12 +96,6 @@ public class IssuanceAgent {
             .toJSONObject();
 
     return extractSdJwtVc(payloadJson);
-  }
-
-  @Deprecated
-  public String issuePidCredentialWithWalletUnitAttestation(
-      ECKey bindingKey, String username, String password) throws Exception {
-    return issuePidCredential(bindingKey, username, password, true);
   }
 
   private String createProof(ECKey jwk, String wua, String nonce) throws JOSEException {

@@ -290,7 +290,7 @@ public class PidIssuerTest {
             .keyUse(KeyUse.SIGNATURE)
             .generate();
 
-    IssuanceAgent issuer = new IssuanceAgent(new InternalWalletClient(), true);
+    IssuanceAgent issuer = new IssuanceAgent(InternalWalletClient.deprecatedWua());
     String rawCredential = issuer.issuePidCredential(bindingKey, "tneal", "password");
     assertNotNull(rawCredential);
 

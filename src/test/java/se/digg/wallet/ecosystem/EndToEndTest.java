@@ -44,7 +44,7 @@ public class EndToEndTest {
   @Deprecated
   @Test
   void supportsIssuanceAndPresentationOfPidWithDeprecatedWalletUnitAttestation() throws Exception {
-    runIssuanceAndPresentationFlow(new IssuanceAgent(new InternalWalletClient(), true));
+    runIssuanceAndPresentationFlow(new IssuanceAgent(InternalWalletClient.deprecatedWua()));
   }
 
   private void runIssuanceAndPresentationFlow(IssuanceAgent issuer) throws Exception {

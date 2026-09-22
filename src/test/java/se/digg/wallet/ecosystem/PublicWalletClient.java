@@ -36,9 +36,9 @@ public class PublicWalletClient implements WalletClient {
     return signedJwt.serialize();
   }
 
-  @Deprecated
   @Override
-  public String createWalletUnitAttestation(ECKey bindingKey, String nonce) throws JOSEException {
+  public String createKeyAttestation(ECKey bindingKey, String nonce)
+      throws JsonProcessingException, JOSEException {
     ECKey deviceKey =
         new ECKeyGenerator(Curve.P_256)
             .keyID("device-key-" + java.util.UUID.randomUUID())
@@ -64,11 +64,5 @@ public class PublicWalletClient implements WalletClient {
         .body()
         .jsonPath()
         .getString("jwt");
-  }
-
-  @Override
-  public String createKeyAttestation(ECKey bindingKey, String nonce)
-      throws JsonProcessingException, JOSEException {
-    return createWalletUnitAttestation(bindingKey, nonce);
   }
 }
