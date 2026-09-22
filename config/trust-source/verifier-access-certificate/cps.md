@@ -4,4 +4,4 @@ This local test CPS describes the verifier access certificate profile used by th
 
 Provider: DIGG
 Profile: ETSI TS 119 411-8 NCP-l-eudiwrp (local test profile)
-RP support contact: https://localhost/demo-verifier
+RP support contact: <https://localhost/demo-verifier>
