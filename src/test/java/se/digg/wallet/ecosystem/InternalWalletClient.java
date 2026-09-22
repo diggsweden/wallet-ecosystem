@@ -23,7 +23,7 @@ public class InternalWalletClient implements WalletClient {
   @Override
   public String createWalletUnitAttestation(ECKey bindingKey, String nonce)
       throws JsonProcessingException {
-    return createKeyAttestation(bindingKey, nonce);
+    return walletProvider.getWalletUnitAttestation(bindingKey, nonce);
   }
 
   @Override
