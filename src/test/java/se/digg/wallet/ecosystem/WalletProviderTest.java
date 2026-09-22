@@ -28,6 +28,7 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
+  @Deprecated
   @ParameterizedTest
   @ValueSource(strings = {"nonce", ""})
   @NullSource

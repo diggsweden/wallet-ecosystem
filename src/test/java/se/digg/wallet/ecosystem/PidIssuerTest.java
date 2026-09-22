@@ -280,4 +280,23 @@ public class PidIssuerTest {
     assertThat(sdJwtVc.disclosedClaims().get("family_name"), is(expectedFamilyName));
     assertThat(sdJwtVc.disclosedClaims().get("personal_administrative_number"), is(expectedPnr));
   }
+
+  @Deprecated
+  @Test
+  void issuesPidCredentialWithDeprecatedWalletUnitAttestation() throws Exception {
+    ECKey bindingKey =
+        new ECKeyGenerator(Curve.P_256)
+            .algorithm(JWSAlgorithm.ES256)
+            .keyUse(KeyUse.SIGNATURE)
+            .generate();
+
+    IssuanceAgent issuer = new IssuanceAgent(new InternalWalletClient(), true);
+    String rawCredential = issuer.issuePidCredential(bindingKey, "tneal", "password");
+    assertNotNull(rawCredential);
+
+    SdJwtVc sdJwtVc = SdJwtVc.parse(rawCredential);
+    assertThat(sdJwtVc.disclosedClaims().get("given_name"), is("Tyler"));
+    assertThat(sdJwtVc.disclosedClaims().get("family_name"), is("Neal"));
+    assertThat(sdJwtVc.disclosedClaims().get("personal_administrative_number"), is("195504162776"));
+  }
 }
