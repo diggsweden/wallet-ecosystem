@@ -25,6 +25,7 @@ class AccessCertificateTest {
       "config/certificates/verifier-access-certificate/verifier-access-certificate.p12");
   private static final String VERIFIER_ALIAS = "verifier_access_certificate";
   private static final String RP_CONTACT_URI = "https://localhost/demo-verifier";
+  private static final int URI_SAN_TYPE = 6;
   private static final String ACCESS_CERTIFICATE_POLICY_OID = "0.4.0.194118.1.2";
   private static final String ACCESS_CERTIFICATE_CPS_URI =
       "http://trust-source/verifier-access-certificate/cps.md";
@@ -127,11 +128,11 @@ class AccessCertificateTest {
     return password.toCharArray();
   }
 
-  // SAN type 6 is a URI.
+  // SAN type URI is identified by URI_SAN_TYPE.
   private boolean hasUri(Collection<List<?>> subjectAlternativeNames, String expectedUri) {
     return subjectAlternativeNames != null
         && subjectAlternativeNames.stream().anyMatch(name -> name.size() == 2
-            && Integer.valueOf(6).equals(name.get(0))
+            && Integer.valueOf(URI_SAN_TYPE).equals(name.get(0))
             && expectedUri.equals(name.get(1)));
   }
 }
