@@ -7,9 +7,11 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import com.nimbusds.jwt.SignedJWT;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,8 +43,8 @@ public class WalletProviderTest {
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
 
     // Verify WUA contains the injected key_storage_status
-    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(wua);
-    org.junit.jupiter.api.Assertions.assertNotNull(
+    SignedJWT jwt = SignedJWT.parse(wua);
+    assertNotNull(
         jwt.getJWTClaimsSet().getClaim("key_storage_status"),
         "WUA must contain the 'key_storage_status' claim");
   }
@@ -55,18 +57,15 @@ public class WalletProviderTest {
         new ECKeyGenerator(Curve.P_256).generate(),
         nonce);
 
-    assertThat(ka, matchesPattern(
-        "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
-
     // Verify KA contains the injected key_storage_status, iss, and sub
-    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(ka);
-    org.junit.jupiter.api.Assertions.assertNotNull(
+    SignedJWT jwt = SignedJWT.parse(ka);
+    assertNotNull(
         jwt.getJWTClaimsSet().getClaim("key_storage_status"),
         "Key attestation must contain the 'key_storage_status' claim");
-    org.junit.jupiter.api.Assertions.assertNotNull(
+    assertNotNull(
         jwt.getJWTClaimsSet().getIssuer(),
         "Key attestation must contain the 'iss' claim");
-    org.junit.jupiter.api.Assertions.assertNotNull(
+    assertNotNull(
         jwt.getJWTClaimsSet().getSubject(),
         "Key attestation must contain the 'sub' claim");
   }
@@ -80,10 +79,8 @@ public class WalletProviderTest {
                 new ECKeyGenerator(Curve.P_256).generate()),
             "nonce");
 
-    assertThat(ka, matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
-
-    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(ka);
-    org.junit.jupiter.api.Assertions.assertNotNull(
+    SignedJWT jwt = SignedJWT.parse(ka);
+    assertNotNull(
         jwt.getJWTClaimsSet().getClaim("attested_keys"),
         "Key attestation must contain the 'attested_keys' claim");
   }
