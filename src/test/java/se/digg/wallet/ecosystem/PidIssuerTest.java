@@ -166,7 +166,7 @@ public class PidIssuerTest {
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
     WalletClient wallet = new InternalWalletClient(new WalletProviderClient());
-    String walletAttestation = wallet.createWalletUnitAttestation(bindingKey, nonce);
+    String walletAttestation = wallet.createKeyAttestation(bindingKey, nonce);
 
     // Create an invalid proof with a mismatched keyID ("invalid-kid" instead of "0")
     JWSHeader header =
@@ -279,5 +279,24 @@ public class PidIssuerTest {
     assertThat(sdJwtVc.disclosedClaims().get("given_name"), is(expectedGivenName));
     assertThat(sdJwtVc.disclosedClaims().get("family_name"), is(expectedFamilyName));
     assertThat(sdJwtVc.disclosedClaims().get("personal_administrative_number"), is(expectedPnr));
+  }
+
+  @Deprecated
+  @Test
+  void issuesPidCredentialWithDeprecatedWalletUnitAttestation() throws Exception {
+    ECKey bindingKey =
+        new ECKeyGenerator(Curve.P_256)
+            .algorithm(JWSAlgorithm.ES256)
+            .keyUse(KeyUse.SIGNATURE)
+            .generate();
+
+    IssuanceAgent issuer = new IssuanceAgent(InternalWalletClient.deprecatedWua());
+    String rawCredential = issuer.issuePidCredential(bindingKey, "tneal", "password");
+    assertNotNull(rawCredential);
+
+    SdJwtVc sdJwtVc = SdJwtVc.parse(rawCredential);
+    assertThat(sdJwtVc.disclosedClaims().get("given_name"), is("Tyler"));
+    assertThat(sdJwtVc.disclosedClaims().get("family_name"), is("Neal"));
+    assertThat(sdJwtVc.disclosedClaims().get("personal_administrative_number"), is("195504162776"));
   }
 }

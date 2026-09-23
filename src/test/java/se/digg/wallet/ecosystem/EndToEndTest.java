@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -37,6 +38,16 @@ public class EndToEndTest {
   @ParameterizedTest
   @MethodSource("issuers")
   void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer) throws Exception {
+    runIssuanceAndPresentationFlow(issuer);
+  }
+
+  @Deprecated
+  @Test
+  void supportsIssuanceAndPresentationOfPidWithDeprecatedWalletUnitAttestation() throws Exception {
+    runIssuanceAndPresentationFlow(new IssuanceAgent(InternalWalletClient.deprecatedWua()));
+  }
+
+  private void runIssuanceAndPresentationFlow(IssuanceAgent issuer) throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
