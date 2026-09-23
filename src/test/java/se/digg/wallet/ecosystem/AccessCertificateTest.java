@@ -4,6 +4,10 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -18,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class AccessCertificateTest {
@@ -27,42 +32,37 @@ class AccessCertificateTest {
   private static final String RP_CONTACT_URI = "https://localhost/demo-verifier";
   private static final int URI_SAN_TYPE = 6;
   private static final String ACCESS_CERTIFICATE_POLICY_OID = "0.4.0.194118.1.2";
+  private static final String QC_STATEMENTS_OID = "1.3.6.1.5.5.7.1.3";
   private static final String ACCESS_CERTIFICATE_CPS_URI =
       "http://trust-source/verifier-access-certificate/cps.md";
+  private static X509Certificate verifierCertificate;
 
   // Check that the RP contact URI is in the SAN.
   @Test
   void verifierAccessCertificateContainsRpContactInformationInSan() throws Exception {
-    X509Certificate certificate = verifierCertificate();
-    Collection<List<?>> subjectAlternativeNames = certificate.getSubjectAlternativeNames();
+    Collection<List<?>> subjectAlternativeNames = verifierCertificate.getSubjectAlternativeNames();
 
-    assertTrue(hasUri(subjectAlternativeNames, RP_CONTACT_URI),
-        "Verifier access certificate must contain the RP contact URI in its SAN");
+    assertThat(subjectAlternativeNames, hasItem(List.of(URI_SAN_TYPE, RP_CONTACT_URI)));
   }
 
   // Check that TLS usage is not included.
   @Test
   void verifierAccessCertificateDoesNotContainTlsExtendedKeyUsage() throws Exception {
-    X509Certificate certificate = verifierCertificate();
-
-    assertNull(certificate.getExtendedKeyUsage(),
+    assertNull(verifierCertificate.getExtendedKeyUsage(),
         "Verifier access certificate must not contain TLS extended key usage");
   }
 
   // Check that QC statements are not included.
   @Test
   void verifierAccessCertificateDoesNotContainQcStatements() throws Exception {
-    X509Certificate certificate = verifierCertificate();
-
-    assertNull(certificate.getExtensionValue("1.3.6.1.5.5.7.1.3"),
-        "Verifier access certificate must not contain QC statements");
+    assertThat(verifierCertificate.getCriticalExtensionOIDs(), not(hasItem(QC_STATEMENTS_OID)));
+    assertThat(verifierCertificate.getNonCriticalExtensionOIDs(), not(hasItem(QC_STATEMENTS_OID)));
   }
 
   // Check that only the required key usages are included.
   @Test
   void verifierAccessCertificateUsesOnlySignatureAndNonRepudiationKeyUsage() throws Exception {
-    X509Certificate certificate = verifierCertificate();
-    boolean[] keyUsage = certificate.getKeyUsage();
+    boolean[] keyUsage = verifierCertificate.getKeyUsage();
 
     assertTrue(keyUsage[0], "digitalSignature must be enabled");
     assertTrue(keyUsage[1], "nonRepudiation must be enabled");
@@ -74,19 +74,16 @@ class AccessCertificateTest {
   // Check that the required policy OID is present.
   @Test
   void verifierAccessCertificateContainsRequiredPolicyIdentifier() throws Exception {
-    String certificateDetails = opensslCertificateDetails(verifierCertificate());
-
-    assertTrue(certificateDetails.contains("Policy: " + ACCESS_CERTIFICATE_POLICY_OID),
-        "Verifier access certificate must contain the required policy OID");
+    String certificateDetails = opensslCertificateDetails(verifierCertificate);
+    assertThat(certificateDetails, containsString("Policy: " + ACCESS_CERTIFICATE_POLICY_OID));
   }
 
   // Check that the CPS URI is present.
   @Test
   void verifierAccessCertificateContainsCpsUri() throws Exception {
-    String certificateDetails = opensslCertificateDetails(verifierCertificate());
+    String certificateDetails = opensslCertificateDetails(verifierCertificate);
 
-    assertTrue(certificateDetails.contains("CPS: " + ACCESS_CERTIFICATE_CPS_URI),
-        "Verifier access certificate must contain the CPS URI");
+    assertThat(certificateDetails, containsString("CPS: " + ACCESS_CERTIFICATE_CPS_URI));
   }
 
   private String opensslCertificateDetails(X509Certificate certificate) throws Exception {
@@ -105,15 +102,16 @@ class AccessCertificateTest {
     }
   }
 
-  private X509Certificate verifierCertificate() throws Exception {
+  @BeforeAll
+  static void loadVerifierCertificate() throws Exception {
     KeyStore keyStore = KeyStore.getInstance("PKCS12");
     try (InputStream input = Files.newInputStream(VERIFIER_KEYSTORE)) {
       keyStore.load(input, verifierKeystorePassword());
     }
-    return (X509Certificate) keyStore.getCertificate(VERIFIER_ALIAS);
+    verifierCertificate = (X509Certificate) keyStore.getCertificate(VERIFIER_ALIAS);
   }
 
-  private char[] verifierKeystorePassword() throws Exception {
+  private static char[] verifierKeystorePassword() throws Exception {
     String password = System.getenv("VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD");
     if (password == null) {
       Properties dotenv = new Properties();
@@ -128,11 +126,4 @@ class AccessCertificateTest {
     return password.toCharArray();
   }
 
-  // SAN type URI is identified by URI_SAN_TYPE.
-  private boolean hasUri(Collection<List<?>> subjectAlternativeNames, String expectedUri) {
-    return subjectAlternativeNames != null
-        && subjectAlternativeNames.stream().anyMatch(name -> name.size() == 2
-            && Integer.valueOf(URI_SAN_TYPE).equals(name.get(0))
-            && expectedUri.equals(name.get(1)));
-  }
 }
