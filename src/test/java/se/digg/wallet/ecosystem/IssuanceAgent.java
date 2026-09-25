@@ -45,7 +45,10 @@ public class IssuanceAgent {
   }
 
   public IssuanceAgent(WalletClient wallet) {
-    this(wallet, new KeycloakClient(), new PidIssuerClient(),
+    this(
+        wallet,
+        new KeycloakClient(),
+        new PidIssuerClient(),
         ServiceIdentifier.PID_ISSUER.toString());
   }
 
@@ -82,7 +85,7 @@ public class IssuanceAgent {
                 "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
-    String walletAttestation = wallet.createWalletUnitAttestation(bindingKey, nonce);
+    String walletAttestation = wallet.createKeyAttestation(bindingKey, nonce);
     String proof = createProof(bindingKey, walletAttestation, nonce);
     ECKey pidIssuerCredentialRequestEncryptionKey = pidIssuer.getCredentialRequestEncryptionKey();
     Map<String, Object> payloadJson =

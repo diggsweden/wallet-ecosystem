@@ -102,10 +102,8 @@ main() {
 
   echo "Extracting certificates..."
 
-  local wallet_clcert wallet_cacert issuer_clcert issuer_cacert trust_source_cert
-  wallet_clcert=$(get_clcert_base64 "$CERT_DIR/wallet-provider/wallet_provider.p12" "$WALLET_PROVIDER_KEYSTORE_PASSWORD")
+  local wallet_cacert issuer_cacert trust_source_cert
   wallet_cacert=$(get_cacert_base64 "$CERT_DIR/wallet-provider/wallet_provider.p12" "$WALLET_PROVIDER_KEYSTORE_PASSWORD")
-  issuer_clcert=$(get_clcert_base64 "$CERT_DIR/issuer/pid_issuer.p12" "$PID_ISSUER_KEYSTORE_PASSWORD")
   issuer_cacert=$(get_cacert_base64 "$CERT_DIR/issuer/pid_issuer.p12" "$PID_ISSUER_KEYSTORE_PASSWORD")
   trust_source_cert=$(get_pem_cert_base64 "$CERT_DIR/trust-list-signer/trust_source_cert.pem")
 
@@ -142,7 +140,6 @@ main() {
               "ServiceName": [{"lang": "en", "value": "Local Wallet Issuance"}],
               "ServiceDigitalIdentity": {
                 "X509Certificates": [
-                  {"val": "${wallet_clcert}"},
                   {"val": "${wallet_cacert}"}
                 ]
               },
@@ -168,7 +165,6 @@ main() {
               "ServiceName": [{"lang": "en", "value": "Local PID Issuance"}],
               "ServiceDigitalIdentity": {
                 "X509Certificates": [
-                  {"val": "${issuer_clcert}"},
                   {"val": "${issuer_cacert}"}
                 ]
               },

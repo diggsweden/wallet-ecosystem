@@ -7,9 +7,12 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import com.nimbusds.jwt.SignedJWT;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -27,6 +30,7 @@ public class WalletProviderTest {
         .and().body("status", equalTo("UP"));
   }
 
+  @Deprecated
   @ParameterizedTest
   @ValueSource(strings = {"nonce", ""})
   @NullSource
@@ -39,9 +43,45 @@ public class WalletProviderTest {
         "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
 
     // Verify WUA contains the injected key_storage_status
-    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(wua);
-    org.junit.jupiter.api.Assertions.assertNotNull(
+    SignedJWT jwt = SignedJWT.parse(wua);
+    assertNotNull(
         jwt.getJWTClaimsSet().getClaim("key_storage_status"),
         "WUA must contain the 'key_storage_status' claim");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"nonce", ""})
+  @NullSource
+  void createsKeyAttestation(String nonce) throws Exception {
+    String ka = walletProvider.getKeyAttestation(
+        new ECKeyGenerator(Curve.P_256).generate(),
+        nonce);
+
+    // Verify KA contains the injected key_storage_status, iss, and sub
+    SignedJWT jwt = SignedJWT.parse(ka);
+    assertNotNull(
+        jwt.getJWTClaimsSet().getClaim("key_storage_status"),
+        "Key attestation must contain the 'key_storage_status' claim");
+    assertNotNull(
+        jwt.getJWTClaimsSet().getIssuer(),
+        "Key attestation must contain the 'iss' claim");
+    assertNotNull(
+        jwt.getJWTClaimsSet().getSubject(),
+        "Key attestation must contain the 'sub' claim");
+  }
+
+  @Test
+  void createsKeyAttestationWithMultipleKeys() throws Exception {
+    String ka =
+        walletProvider.getKeyAttestation(
+            List.of(
+                new ECKeyGenerator(Curve.P_256).generate(),
+                new ECKeyGenerator(Curve.P_256).generate()),
+            "nonce");
+
+    SignedJWT jwt = SignedJWT.parse(ka);
+    assertNotNull(
+        jwt.getJWTClaimsSet().getClaim("attested_keys"),
+        "Key attestation must contain the 'attested_keys' claim");
   }
 }
