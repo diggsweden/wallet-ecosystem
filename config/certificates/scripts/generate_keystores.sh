@@ -222,7 +222,7 @@ create_license "$JWT_PATH"
 create_license "$PRE_JWT_PATH"
 
 # 2. Verifier Backend
-generate_service_cert_ec "verifier-access-certificate" "verifier-access-certificate" "verifier_access_certificate" "$VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" service.cnf "$VERIFIER_CA_PEM" "$VERIFIER_CA_KEY" verifier-access-certificate
+generate_service_cert_ec "verifier-access-certificate" "verifier-access-certificate" "verifier_access_certificate" "$VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" verifier-access.cnf "$VERIFIER_CA_PEM" "$VERIFIER_CA_KEY" verifier-access-certificate
 
 # 3. Verifier Trust Store
 echo "Creating trusted_issuers.p12 for Verifier..."

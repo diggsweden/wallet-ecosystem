@@ -1,0 +1,26 @@
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = req_ext
+prompt = no
+
+[req_ext]
+subjectAltName = ${sans}
+
+[req_distinguished_name]
+C = SE
+O = DIGG
+organizationIdentifier = VATSE-12345678
+CN = ${cn}
+
+[v3_req]
+subjectAltName = ${sans}
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+authorityInfoAccess = caIssuers;${aia_url}
+crlDistributionPoints = ${crl_dp}
+certificatePolicies = @certificate_policies
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, digitalSignature, nonRepudiation
+[certificate_policies]
+policyIdentifier = 0.4.0.194118.1.2
+CPS.1 = http://trust-source/verifier-access-certificate/cps.md
