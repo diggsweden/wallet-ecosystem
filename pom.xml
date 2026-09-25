@@ -27,6 +27,7 @@ SPDX-License-Identifier: CC0-1.0
     <checkstyle.version>14.1.0</checkstyle.version>
     <pmd-maven-plugin.version>3.28.0</pmd-maven-plugin.version>
     <open-test-reporting.version>0.2.7</open-test-reporting.version>
+    <bouncycastle.version>1.86</bouncycastle.version>
     <test.excludes />
   </properties>
   <dependencyManagement>
@@ -93,6 +94,12 @@ SPDX-License-Identifier: CC0-1.0
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
       <version>10.9.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

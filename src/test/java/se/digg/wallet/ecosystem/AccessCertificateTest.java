@@ -7,21 +7,27 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import org.bouncycastle.asn1.ASN1IA5String;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PolicyQualifierId;
+import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +42,7 @@ class AccessCertificateTest {
   private static final String ACCESS_CERTIFICATE_CPS_URI =
       "http://trust-source/verifier-access-certificate/cps.md";
   private static X509Certificate verifierCertificate;
+  private static CertificatePolicies verifierCertificatePolicies;
 
   // Check that the RP contact URI is in the SAN.
   @Test
@@ -74,32 +81,42 @@ class AccessCertificateTest {
   // Check that the required policy OID is present.
   @Test
   void verifierAccessCertificateContainsRequiredPolicyIdentifier() throws Exception {
-    String certificateDetails = opensslCertificateDetails(verifierCertificate);
-    assertThat(certificateDetails, containsString("Policy: " + ACCESS_CERTIFICATE_POLICY_OID));
+    assertThat(certificatePolicyOids(), hasItem(ACCESS_CERTIFICATE_POLICY_OID));
   }
 
   // Check that the CPS URI is present.
   @Test
   void verifierAccessCertificateContainsCpsUri() throws Exception {
-    String certificateDetails = opensslCertificateDetails(verifierCertificate);
-
-    assertThat(certificateDetails, containsString("CPS: " + ACCESS_CERTIFICATE_CPS_URI));
+    assertThat(certificatePolicyCpsUris(), hasItem(ACCESS_CERTIFICATE_CPS_URI));
   }
 
-  private String opensslCertificateDetails(X509Certificate certificate) throws Exception {
-    Path certificateFile = Files.createTempFile("verifier-access-certificate-", ".der");
-    try {
-      Files.write(certificateFile, certificate.getEncoded());
-      Process process = new ProcessBuilder("openssl", "x509", "-inform", "DER",
-          "-in", certificateFile.toString(), "-text", "-noout")
-          .redirectErrorStream(true)
-          .start();
-      String details = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-      assertEquals(0, process.waitFor(), "OpenSSL could not read the certificate");
-      return details;
-    } finally {
-      Files.deleteIfExists(certificateFile);
+  private Collection<String> certificatePolicyOids() {
+    return Arrays.stream(verifierCertificatePolicies.getPolicyInformation())
+        .map(PolicyInformation::getPolicyIdentifier)
+        .map(ASN1ObjectIdentifier::getId)
+        .toList();
+  }
+
+  private Collection<String> certificatePolicyCpsUris() {
+    return Arrays.stream(verifierCertificatePolicies.getPolicyInformation())
+        .filter(policy -> policy.getPolicyQualifiers() != null)
+        .flatMap(policy -> Arrays.stream(policy.getPolicyQualifiers().toArray()))
+        .map(PolicyQualifierInfo::getInstance)
+        .filter(qualifier -> PolicyQualifierId.id_qt_cps.equals(qualifier.getPolicyQualifierId()))
+        .map(PolicyQualifierInfo::getQualifier)
+        .map(ASN1IA5String::getInstance)
+        .map(ASN1IA5String::getString)
+        .toList();
+  }
+
+  private static CertificatePolicies certificatePolicies(X509Certificate certificate)
+      throws Exception {
+    X509CertificateHolder certificateHolder = new X509CertificateHolder(certificate.getEncoded());
+    Extension extension = certificateHolder.getExtension(Extension.certificatePolicies);
+    if (extension == null) {
+      return new CertificatePolicies(new PolicyInformation[0]);
     }
+    return CertificatePolicies.getInstance(extension.getParsedValue());
   }
 
   @BeforeAll
@@ -109,6 +126,7 @@ class AccessCertificateTest {
       keyStore.load(input, verifierKeystorePassword());
     }
     verifierCertificate = (X509Certificate) keyStore.getCertificate(VERIFIER_ALIAS);
+    verifierCertificatePolicies = certificatePolicies(verifierCertificate);
   }
 
   private static char[] verifierKeystorePassword() throws Exception {
