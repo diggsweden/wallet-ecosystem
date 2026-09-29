@@ -18,6 +18,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -77,8 +78,7 @@ class VerifierBackendTest {
   @Test
   void createsPresentationRequestWithDirectPost() throws Exception {
     VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(
-            dcqlId, VerifierBackendClient.RESPONSE_MODE_DIRECT_POST);
+        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST);
 
     assertNotNull(presentationResponse);
     assertThat(presentationResponse.transaction_id(), notNullValue());
@@ -92,8 +92,7 @@ class VerifierBackendTest {
   @Test
   void createsPresentationRequestWithDirectPostJwt() throws Exception {
     VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(
-            dcqlId, VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT);
+        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST_JWT);
 
     assertNotNull(presentationResponse);
     assertThat(presentationResponse.transaction_id(), notNullValue());
@@ -103,6 +102,30 @@ class VerifierBackendTest {
     SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
     assertThat(jwt.getJWTClaimsSet().getStringClaim("response_mode"), is("direct_post.jwt"));
     assertThat(jwt.getJWTClaimsSet().getJSONObjectClaim("client_metadata"), notNullValue());
+  }
+
+  @Test
+  void rejectsUnencryptedResponseWhenDirectPostJwtExpected() throws Exception {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST_JWT);
+
+    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
+    String responseUri = jwt.getJWTClaimsSet().getStringClaim("response_uri");
+    String state = jwt.getJWTClaimsSet().getStringClaim("state");
+
+    Response response =
+        RestAssuredSugar.given()
+            .baseUri(responseUri)
+            .contentType(ContentType.URLENC)
+            .formParam("state", state)
+            .formParam("vp_token", String.format("{ \"%s\": [ \"mock-token\" ] }", dcqlId))
+            .when()
+            .post()
+            .then()
+            .extract()
+            .response();
+
+    assertThat(response.getStatusCode(), is(400));
   }
 
   @Test

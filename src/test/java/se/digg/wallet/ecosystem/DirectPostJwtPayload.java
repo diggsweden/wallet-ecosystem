@@ -19,21 +19,26 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
-public final class DirectPostJwtResponse {
+public final class DirectPostJwtPayload {
 
-  private DirectPostJwtResponse() {}
+  private DirectPostJwtPayload() {}
 
   public static String create(
-      SignedJWT signedAuthRequest, String state, String dcqlId, String vpToken, String nonce)
+      SignedJWT signedAuthRequest, String state, String dcqlId, String vpToken)
       throws ParseException, JOSEException {
-    return create(signedAuthRequest, state, Map.of(dcqlId, List.of(vpToken)), nonce);
+    return create(signedAuthRequest, state, Map.of(dcqlId, List.of(vpToken)));
   }
 
   public static String create(
-      SignedJWT signedAuthRequest, String state, Map<String, List<String>> vpTokens, String nonce)
+      SignedJWT signedAuthRequest, String state, Map<String, List<String>> vpTokens)
       throws ParseException, JOSEException {
 
     JWTClaimsSet authClaims = signedAuthRequest.getJWTClaimsSet();
+    String nonce = authClaims.getStringClaim("nonce");
+    if (nonce == null) {
+      throw new IllegalArgumentException("nonce is missing in authorization request");
+    }
+
     Map<String, Object> clientMetadata = authClaims.getJSONObjectClaim("client_metadata");
     if (clientMetadata == null) {
       throw new IllegalArgumentException("client_metadata is missing in authorization request");
