@@ -14,6 +14,7 @@ CERT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 : "${LOTE_OUT_FILE:?Environment variable LOTE_OUT_FILE is not set}"
 : "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Environment variable WALLET_PROVIDER_KEYSTORE_PASSWORD is not set}"
 : "${PID_ISSUER_KEYSTORE_PASSWORD:?Environment variable PID_ISSUER_KEYSTORE_PASSWORD is not set}"
+: "${VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD:?Environment variable VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD is not set}"
 OUTPUT_FILE="$LOTE_OUT_FILE"
 
 TMP_DIR=$(mktemp -d)
@@ -26,14 +27,6 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 # Base64url-encode stdin (RFC 7515 — no padding, URL-safe alphabet)
 base64url_encode() {
   base64 -w0 | tr '+/' '-_' | tr -d '='
-}
-
-# Extract the client (leaf) certificate from a PKCS#12 as DER-encoded base64
-get_clcert_base64() {
-  local p12="$1" pass="$2"
-  openssl pkcs12 -in "$p12" -passin "pass:$pass" -nokeys -clcerts 2>/dev/null |
-    openssl x509 -outform DER 2>/dev/null |
-    base64 -w0
 }
 
 # Extract the CA certificate from a PKCS#12 as DER-encoded base64
@@ -102,9 +95,13 @@ main() {
 
   echo "Extracting certificates..."
 
-  local wallet_cacert issuer_cacert trust_source_cert
+  local wallet_cacert issuer_cacert
+  local verifier_registration_cacert trust_source_cert
   wallet_cacert=$(get_cacert_base64 "$CERT_DIR/wallet-provider/wallet_provider.p12" "$WALLET_PROVIDER_KEYSTORE_PASSWORD")
   issuer_cacert=$(get_cacert_base64 "$CERT_DIR/issuer/pid_issuer.p12" "$PID_ISSUER_KEYSTORE_PASSWORD")
+  verifier_registration_cacert=$(get_cacert_base64 \
+    "$CERT_DIR/verifier-registration-certificate/verifier-registration-certificate.p12" \
+    "$VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD")
   trust_source_cert=$(get_pem_cert_base64 "$CERT_DIR/trust-list-signer/trust_source_cert.pem")
 
   echo "Building LoTE payload..."
@@ -169,6 +166,31 @@ main() {
                 ]
               },
               "ServiceTypeIdentifier": "http://uri.etsi.org/19602/SvcType/PID/Issuance",
+              "ServiceStatus": "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted",
+              "StatusStartingTime": "${now}"
+            }
+          }
+        ]
+      },
+      {
+        "TrustedEntityInformation": {
+          "TEName": [{"lang": "en", "value": "Local WRPRC Provider"}],
+          "TEAddress": {
+            "TEPostalAddress": [{"lang": "en", "StreetAddress": "Local", "Country": "SE"}],
+            "TEElectronicAddress": [{"lang": "en", "uriValue": "http://localhost"}]
+          },
+          "TEInformationURI": [{"lang": "en", "uriValue": "http://localhost"}]
+        },
+        "TrustedEntityServices": [
+          {
+            "ServiceInformation": {
+              "ServiceName": [{"lang": "en", "value": "Local WRPRC Issuance"}],
+              "ServiceDigitalIdentity": {
+                "X509Certificates": [
+                  {"val": "${verifier_registration_cacert}"}
+                ]
+              },
+              "ServiceTypeIdentifier": "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance",
               "ServiceStatus": "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted",
               "StatusStartingTime": "${now}"
             }
