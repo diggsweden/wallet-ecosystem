@@ -14,13 +14,13 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,29 +34,26 @@ public class EndToEndTest {
 
   public static Stream<Arguments> testCases() {
     return Stream.of(
-        Arguments.argumentSet(
-            "Deprecated Wallet Unit Attestation",
-            new IssuanceAgent(InternalWalletClient.deprecatedWua())),
         Arguments.argumentSet("Internal route - direct_post",
             new IssuanceAgent(new InternalWalletClient()),
-            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST),
+            ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
             "internal - direct_post.jwt",
             new IssuanceAgent(new InternalWalletClient()),
-            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT),
+            ResponseMode.DIRECT_POST_JWT),
         Arguments.argumentSet(
             "Public rotue - direct_post",
             new IssuanceAgent(new PublicWalletClient()),
-            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST),
+            ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
             "public - direct_post.jwt",
             new IssuanceAgent(new PublicWalletClient()),
-            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT));
+            ResponseMode.DIRECT_POST_JWT));
   }
 
   @ParameterizedTest
   @MethodSource("testCases")
-  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, String responseMode)
+  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, ResponseMode responseMode)
       throws Exception {
     runIssuanceAndPresentationFlow(issuer, responseMode);
   }
@@ -66,10 +63,10 @@ public class EndToEndTest {
   void supportsIssuanceAndPresentationOfPidWithDeprecatedWalletUnitAttestation() throws Exception {
     runIssuanceAndPresentationFlow(
         new IssuanceAgent(InternalWalletClient.deprecatedWua()),
-        VerifierBackendClient.RESPONSE_MODE_DIRECT_POST);
+        ResponseMode.DIRECT_POST);
   }
 
-  private void runIssuanceAndPresentationFlow(IssuanceAgent issuer, String responseMode)
+  private void runIssuanceAndPresentationFlow(IssuanceAgent issuer, ResponseMode responseMode)
       throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
@@ -77,8 +74,6 @@ public class EndToEndTest {
 
     VerifierPresentationResponse transaction =
         verifierBackend.createPresentationRequestByReference(nonce, dcqlId, responseMode);
-    String transactionId = transaction.transaction_id();
-    String requestUri = transaction.request_uri();
 
     // 2. Get authorization request
     Response authRequestResponse = given().baseUri(transaction.request_uri())
@@ -112,34 +107,8 @@ public class EndToEndTest {
         VerifiablePresentationToken.asString(rawCredential, bindingKey, nonce);
 
     // 5. Post wallet response
-    Response postWalletResponse;
-    if (VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT.equals(responseMode)) {
-      String responseJwt =
-          DirectPostJwtResponse.create(signedAuthRequest, state, dcqlId, vpToken, nonce);
-      postWalletResponse =
-          given()
-              .baseUri(responseUri)
-              .contentType(ContentType.URLENC)
-              .formParam("response", responseJwt)
-              .when()
-              .post()
-              .then()
-              .extract()
-              .response();
-    } else {
-      String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
-      postWalletResponse =
-          given()
-              .baseUri(responseUri)
-              .contentType(ContentType.URLENC)
-              .formParam("state", state)
-              .formParam("vp_token", vpTokenJson)
-              .when()
-              .post()
-              .then()
-              .extract()
-              .response();
-    }
+    Response postWalletResponse =
+        responseMode.postWalletResponse(responseUri, signedAuthRequest, state, dcqlId, vpToken);
 
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
