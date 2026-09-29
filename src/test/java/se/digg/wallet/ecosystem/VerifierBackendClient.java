@@ -56,7 +56,13 @@ public class VerifierBackendClient {
                             "format": "dc+sd-jwt",
                             "vct": "urn:eudi:pid:1",
                             "id": "%s",
-                            "meta": { "doctype_value": "eu.europa.ec.eudi.pid.1" }
+                            "meta": {},
+                            "claims": [
+                                { "path": ["family_name"] },
+                                { "path": ["given_name"] },
+                                { "path": ["personal_administrative_number"] },
+                                { "path": ["address", "street_address"] }
+                            ]
                     }],
                     "credential_sets": [ {
                             "purpose": "We need to verify your identity",
@@ -87,7 +93,13 @@ public class VerifierBackendClient {
                             "format": "dc+sd-jwt",
                             "vct": "urn:eudi:pid:1",
                             "id": "%s",
-                            "meta": { "doctype_value": "eu.europa.ec.eudi.pid.1" }
+                            "meta": {},
+                            "claims": [
+                                { "path": ["family_name"] },
+                                { "path": ["given_name"] },
+                                { "path": ["personal_administrative_number"] },
+                                { "path": ["address", "street_address"] }
+                            ]
                     }],
                     "credential_sets": [ {
                             "purpose": "We need to verify your identity",

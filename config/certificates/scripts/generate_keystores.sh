@@ -20,6 +20,7 @@ TMP_DIR="$CERT_DIR/tmp"
 : "${TRUST_SOURCE_SANS:?Environment variable TRUST_SOURCE_SANS is not set}"
 : "${PID_ISSUER_KEYSTORE_PASSWORD:?Environment variable PID_ISSUER_KEYSTORE_PASSWORD is not set}"
 : "${VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD:?Environment variable VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD is not set}"
+: "${VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD:?Environment variable VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD is not set}"
 : "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Environment variable WALLET_PROVIDER_KEYSTORE_PASSWORD is not set}"
 : "${TRUST_SOURCE_KEYSTORE_PASSWORD:?Environment variable TRUST_SOURCE_KEYSTORE_PASSWORD is not set}"
 : "${TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD:?Environment variable TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD is not set}"
@@ -83,6 +84,7 @@ generate_ca "pid-issuer" "DIGG Wallet PID Issuer CA"
 generate_ca "wallet-provider" "DIGG Wallet Provider CA"
 generate_ca "trust-source" "DIGG Wallet Trust Source CA"
 generate_ca "verifier-access-certificate" "DIGG Wallet Verifier Access Certificate CA"
+generate_ca "verifier-registration-certificate" "DIGG Wallet Verifier Registration Certificate CA"
 
 PID_ISSUER_CA_KEY="$CA_DIR/pid-issuer/ca_private_key.pem"
 PID_ISSUER_CA_PEM="$CA_DIR/pid-issuer/ca.pem"
@@ -90,8 +92,10 @@ WALLET_PROVIDER_CA_KEY="$CA_DIR/wallet-provider/ca_private_key.pem"
 WALLET_PROVIDER_CA_PEM="$CA_DIR/wallet-provider/ca.pem"
 TRUST_SOURCE_CA_KEY="$CA_DIR/trust-source/ca_private_key.pem"
 TRUST_SOURCE_CA_PEM="$CA_DIR/trust-source/ca.pem"
-VERIFIER_CA_KEY="$CA_DIR/verifier-access-certificate/ca_private_key.pem"
-VERIFIER_CA_PEM="$CA_DIR/verifier-access-certificate/ca.pem"
+VERIFIER_ACCESS_CERTIFICATE_CA_KEY="$CA_DIR/verifier-access-certificate/ca_private_key.pem"
+VERIFIER_ACCESS_CERTIFICATE_CA_PEM="$CA_DIR/verifier-access-certificate/ca.pem"
+VERIFIER_REGISTRATION_CERTIFICATE_CA_KEY="$CA_DIR/verifier-registration-certificate/ca_private_key.pem"
+VERIFIER_REGISTRATION_CERTIFICATE_CA_PEM="$CA_DIR/verifier-registration-certificate/ca.pem"
 
 # Use a separate temporary area after the per-CA CRL generation above.
 SERVICE_TMP_DIR="$TMP_DIR/services"
@@ -222,7 +226,9 @@ create_license "$JWT_PATH"
 create_license "$PRE_JWT_PATH"
 
 # 2. Verifier Backend
-generate_service_cert_ec "verifier-access-certificate" "verifier-access-certificate" "verifier_access_certificate" "$VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" verifier-access.cnf "$VERIFIER_CA_PEM" "$VERIFIER_CA_KEY" verifier-access-certificate
+generate_service_cert_ec "verifier-access-certificate" "verifier-access-certificate" "verifier_access_certificate" "$VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" verifier-access.cnf "$VERIFIER_ACCESS_CERTIFICATE_CA_PEM" "$VERIFIER_ACCESS_CERTIFICATE_CA_KEY" verifier-access-certificate
+
+generate_service_cert_ec "verifier-registration-certificate" "verifier-registration-certificate" "registration" "$VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" verifier-registration.cnf "$VERIFIER_REGISTRATION_CERTIFICATE_CA_PEM" "$VERIFIER_REGISTRATION_CERTIFICATE_CA_KEY" verifier-registration-certificate
 
 # 3. Verifier Trust Store
 echo "Creating trusted_issuers.p12 for Verifier..."
@@ -288,7 +294,7 @@ find "$CERT_DIR" -name "*.p12" -exec chmod 644 {} +
 find "$CERT_DIR" -name "*.pem" -exec chmod 644 {} +
 
 # Copy CRL to trust-source to be hosted by Nginx
-for ca_name in pid-issuer wallet-provider trust-source verifier-access-certificate; do
+for ca_name in pid-issuer wallet-provider trust-source verifier-access-certificate verifier-registration-certificate; do
   mkdir -p "${TRUST_SOURCE_OUT}/${ca_name}"
   cp "$CA_DIR/$ca_name/ca.pem" "${TRUST_SOURCE_OUT}/${ca_name}/ca.pem"
   cp "$CA_DIR/$ca_name/revocation-list.pem" "${TRUST_SOURCE_OUT}/${ca_name}/revocation-list.pem"

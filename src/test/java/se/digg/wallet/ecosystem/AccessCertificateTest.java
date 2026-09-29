@@ -11,15 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.CertificatePolicies;
@@ -32,9 +27,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class AccessCertificateTest {
-  private static final Path VERIFIER_KEYSTORE = Path.of(
-      "config/certificates/verifier-access-certificate/verifier-access-certificate.p12");
-  private static final String VERIFIER_ALIAS = "verifier_access_certificate";
   private static final String RP_CONTACT_URI = "https://localhost/demo-verifier";
   private static final int URI_SAN_TYPE = 6;
   private static final String ACCESS_CERTIFICATE_POLICY_OID = "0.4.0.194118.1.2";
@@ -121,27 +113,8 @@ class AccessCertificateTest {
 
   @BeforeAll
   static void loadVerifierCertificate() throws Exception {
-    KeyStore keyStore = KeyStore.getInstance("PKCS12");
-    try (InputStream input = Files.newInputStream(VERIFIER_KEYSTORE)) {
-      keyStore.load(input, verifierKeystorePassword());
-    }
-    verifierCertificate = (X509Certificate) keyStore.getCertificate(VERIFIER_ALIAS);
+    verifierCertificate = CertificateTestSupport.loadAccessCertificateX509();
     verifierCertificatePolicies = certificatePolicies(verifierCertificate);
-  }
-
-  private static char[] verifierKeystorePassword() throws Exception {
-    String password = System.getenv("VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD");
-    if (password == null) {
-      Properties dotenv = new Properties();
-      try (InputStream input = Files.newInputStream(Path.of(".env"))) {
-        dotenv.load(input);
-      }
-      password = dotenv.getProperty("VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD");
-      if (password == null) {
-        password = dotenv.getProperty("VERIFIER_KEYSTORE_PASSWORD", "verifier_password");
-      }
-    }
-    return password.toCharArray();
   }
 
 }

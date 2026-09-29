@@ -27,6 +27,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
+  private final OpenId4VpAuthorizationRequestValidator authorizationRequestValidator =
+      new OpenId4VpAuthorizationRequestValidator();
 
   public static Stream<Arguments> issuers() {
     return Stream.of(
@@ -51,10 +53,10 @@ public class EndToEndTest {
     // 2. Get authorization request
     Response authRequestResponse =
         given().baseUri(requestUri).when().get().then().extract().response();
-    String authRequest = authRequestResponse.body().asString();
-    SignedJWT signedAuthRequest = SignedJWT.parse(authRequest);
+    SignedJWT signedAuthRequest = SignedJWT.parse(authRequestResponse.body().asString());
     String state = signedAuthRequest.getJWTClaimsSet().getStringClaim("state");
     String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
+    authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(signedAuthRequest);
 
     // 3. Get credential
     String uniqueKid = UUID.randomUUID().toString();

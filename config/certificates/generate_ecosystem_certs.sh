@@ -39,6 +39,9 @@ export TRUST_SOURCE_SANS="DNS.1:localhost,DNS.2:trust-source"
 echo "Generating Ecosystem Keystores..."
 bash "$SCRIPT_DIR/scripts/generate_keystores.sh"
 
+echo "Generating Verifier Registration Certificate..."
+bash "$SCRIPT_DIR/scripts/generate_registration_certificate.sh"
+
 echo "Generating Ecosystem LoTE..."
 bash "$SCRIPT_DIR/scripts/generate_lote.sh"
 

@@ -17,6 +17,7 @@ import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import com.nimbusds.jwt.SignedJWT;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -35,12 +36,14 @@ class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
   private final String nonce = UUID.randomUUID().toString();
   private VerifierBackendClient verifierBackend;
+  private OpenId4VpAuthorizationRequestValidator authorizationRequestValidator;
   private IssuanceAgent issuer;
   private ECKey bindingKey;
 
   @BeforeEach
   void setUp() throws JOSEException {
     verifierBackend = new VerifierBackendClient();
+    authorizationRequestValidator = new OpenId4VpAuthorizationRequestValidator();
     issuer = new IssuanceAgent();
     bindingKey = new ECKeyGenerator(Curve.P_256)
         .algorithm(JWSAlgorithm.ES256)
@@ -71,6 +74,15 @@ class VerifierBackendTest {
     assertThat(presentationResponse.transaction_id(), notNullValue());
     assertThat(presentationResponse.request(), notNullValue());
     assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
+  }
+
+  @Test
+  void createsAuthorizationRequestCompliantWithRegistration() throws Exception {
+    var response = verifierBackend
+        .createPresentationRequestByValue(UUID.randomUUID().toString());
+
+    authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(
+        SignedJWT.parse(response.request()));
   }
 
   @Test
@@ -167,4 +179,5 @@ class VerifierBackendTest {
             () -> String.format("Could not find resource with name: '%s'", name)).toURI()),
         StandardCharsets.UTF_8);
   }
+
 }
