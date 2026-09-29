@@ -17,6 +17,7 @@ import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import com.nimbusds.jwt.SignedJWT;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -71,6 +72,37 @@ class VerifierBackendTest {
     assertThat(presentationResponse.transaction_id(), notNullValue());
     assertThat(presentationResponse.request(), notNullValue());
     assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
+  }
+
+  @Test
+  void createsPresentationRequestWithDirectPost() throws Exception {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackend.createPresentationRequestByValue(
+            dcqlId, VerifierBackendClient.RESPONSE_MODE_DIRECT_POST);
+
+    assertNotNull(presentationResponse);
+    assertThat(presentationResponse.transaction_id(), notNullValue());
+    assertThat(presentationResponse.request(), notNullValue());
+    assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
+
+    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
+    assertThat(jwt.getJWTClaimsSet().getStringClaim("response_mode"), is("direct_post"));
+  }
+
+  @Test
+  void createsPresentationRequestWithDirectPostJwt() throws Exception {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackend.createPresentationRequestByValue(
+            dcqlId, VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT);
+
+    assertNotNull(presentationResponse);
+    assertThat(presentationResponse.transaction_id(), notNullValue());
+    assertThat(presentationResponse.request(), notNullValue());
+    assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
+
+    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
+    assertThat(jwt.getJWTClaimsSet().getStringClaim("response_mode"), is("direct_post.jwt"));
+    assertThat(jwt.getJWTClaimsSet().getJSONObjectClaim("client_metadata"), notNullValue());
   }
 
   @Test

@@ -15,6 +15,8 @@ public class VerifierBackendClient {
 
   public static final String VERIFIER_AUDIENCE = Property.VERIFIER_AUDIENCE.getValue();
   public static final String DEFAULT_INTENDED_USE_ID = "1";
+  public static final String RESPONSE_MODE_DIRECT_POST = "direct_post";
+  public static final String RESPONSE_MODE_DIRECT_POST_JWT = "direct_post.jwt";
 
   private final URI base;
 
@@ -44,10 +46,19 @@ public class VerifierBackendClient {
   }
 
   public VerifierPresentationResponse createPresentationRequestByValue(String dcqlId) {
-    return postPresentation(getRequestBodyByValue(dcqlId));
+    return createPresentationRequestByValue(dcqlId, RESPONSE_MODE_DIRECT_POST);
+  }
+
+  public VerifierPresentationResponse createPresentationRequestByValue(
+      String dcqlId, String responseMode) {
+    return postPresentation(getRequestBodyByValue(dcqlId, responseMode));
   }
 
   public String getRequestBodyByValue(String dcqlId) {
+    return getRequestBodyByValue(dcqlId, RESPONSE_MODE_DIRECT_POST);
+  }
+
+  public String getRequestBodyByValue(String dcqlId, String responseMode) {
     return String.format(
         """
             {
@@ -65,20 +76,28 @@ public class VerifierBackendClient {
                 },
                 "nonce": "%s",
                 "jar_mode": "by_value",
-                "response_mode": "direct_post",
+                "response_mode": "%s",
                 "intended_use_id": "%s"
             }
             """,
-        dcqlId, dcqlId, UUID.randomUUID(), DEFAULT_INTENDED_USE_ID);
+        dcqlId, dcqlId, UUID.randomUUID(), responseMode, DEFAULT_INTENDED_USE_ID);
   }
 
   public VerifierPresentationResponse createPresentationRequestByReference(
       String nonce, String dcqlId) {
+    return createPresentationRequestByReference(nonce, dcqlId, RESPONSE_MODE_DIRECT_POST);
+  }
 
-    return postPresentation(getRequestBodyByReference(nonce, dcqlId));
+  public VerifierPresentationResponse createPresentationRequestByReference(
+      String nonce, String dcqlId, String responseMode) {
+    return postPresentation(getRequestBodyByReference(nonce, dcqlId, responseMode));
   }
 
   public String getRequestBodyByReference(String nonce, String dcqlId) {
+    return getRequestBodyByReference(nonce, dcqlId, RESPONSE_MODE_DIRECT_POST);
+  }
+
+  public String getRequestBodyByReference(String nonce, String dcqlId, String responseMode) {
     return String.format(
         """
             {
@@ -96,11 +115,11 @@ public class VerifierBackendClient {
                 },
                 "nonce": "%s",
                 "jar_mode": "by_reference",
-                "response_mode": "direct_post",
+                "response_mode": "%s",
                 "intended_use_id": "%s"
             }
             """,
-        dcqlId, dcqlId, nonce, DEFAULT_INTENDED_USE_ID);
+        dcqlId, dcqlId, nonce, responseMode, DEFAULT_INTENDED_USE_ID);
   }
 
   public Response validateSdJwtVc(String sdJwtVc, String nonce) {
