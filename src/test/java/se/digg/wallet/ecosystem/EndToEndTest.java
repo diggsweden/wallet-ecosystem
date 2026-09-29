@@ -32,23 +32,53 @@ public class EndToEndTest {
   private final OpenId4VpAuthorizationRequestValidator authorizationRequestValidator =
       new OpenId4VpAuthorizationRequestValidator();
 
-  public static Stream<Arguments> issuers() {
+  public static Stream<Arguments> testCases() {
     return Stream.of(
-        Arguments.argumentSet("Deprecated Wallet Unit Attestation",
+        Arguments.argumentSet(
+            "Deprecated Wallet Unit Attestation",
             new IssuanceAgent(InternalWalletClient.deprecatedWua())),
-        Arguments.argumentSet("Internal route", new IssuanceAgent(new InternalWalletClient())),
-        Arguments.argumentSet("Public rotue", new IssuanceAgent(new PublicWalletClient())));
+        Arguments.argumentSet("Internal route - direct_post",
+            new IssuanceAgent(new InternalWalletClient()),
+            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST),
+        Arguments.argumentSet(
+            "internal - direct_post.jwt",
+            new IssuanceAgent(new InternalWalletClient()),
+            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT),
+        Arguments.argumentSet(
+            "Public rotue - direct_post",
+            new IssuanceAgent(new PublicWalletClient()),
+            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST),
+        Arguments.argumentSet(
+            "public - direct_post.jwt",
+            new IssuanceAgent(new PublicWalletClient()),
+            VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT));
   }
 
   @ParameterizedTest
-  @MethodSource("issuers")
-  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer) throws Exception {
+  @MethodSource("testCases")
+  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, String responseMode)
+      throws Exception {
+    runIssuanceAndPresentationFlow(issuer, responseMode);
+  }
+
+  @Deprecated
+  @Test
+  void supportsIssuanceAndPresentationOfPidWithDeprecatedWalletUnitAttestation() throws Exception {
+    runIssuanceAndPresentationFlow(
+        new IssuanceAgent(InternalWalletClient.deprecatedWua()),
+        VerifierBackendClient.RESPONSE_MODE_DIRECT_POST);
+  }
+
+  private void runIssuanceAndPresentationFlow(IssuanceAgent issuer, String responseMode)
+      throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
 
     VerifierPresentationResponse transaction =
-        verifierBackend.createPresentationRequestByReference(nonce, dcqlId);
+        verifierBackend.createPresentationRequestByReference(nonce, dcqlId, responseMode);
+    String transactionId = transaction.transaction_id();
+    String requestUri = transaction.request_uri();
 
     // 2. Get authorization request
     Response authRequestResponse = given().baseUri(transaction.request_uri())
@@ -82,18 +112,34 @@ public class EndToEndTest {
         VerifiablePresentationToken.asString(rawCredential, bindingKey, nonce);
 
     // 5. Post wallet response
-    String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
-    Response postWalletResponse =
-        given()
-            .baseUri(responseUri)
-            .contentType(ContentType.URLENC)
-            .formParam("state", state)
-            .formParam("vp_token", vpTokenJson)
-            .when()
-            .post()
-            .then()
-            .extract()
-            .response();
+    Response postWalletResponse;
+    if (VerifierBackendClient.RESPONSE_MODE_DIRECT_POST_JWT.equals(responseMode)) {
+      String responseJwt =
+          DirectPostJwtResponse.create(signedAuthRequest, state, dcqlId, vpToken, nonce);
+      postWalletResponse =
+          given()
+              .baseUri(responseUri)
+              .contentType(ContentType.URLENC)
+              .formParam("response", responseJwt)
+              .when()
+              .post()
+              .then()
+              .extract()
+              .response();
+    } else {
+      String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
+      postWalletResponse =
+          given()
+              .baseUri(responseUri)
+              .contentType(ContentType.URLENC)
+              .formParam("state", state)
+              .formParam("vp_token", vpTokenJson)
+              .when()
+              .post()
+              .then()
+              .extract()
+              .response();
+    }
 
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
