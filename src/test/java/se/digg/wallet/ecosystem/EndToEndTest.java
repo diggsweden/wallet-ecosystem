@@ -16,6 +16,7 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,6 +28,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
+  private final LoteValidator loteValidator = new LoteValidator();
+  private final TrustSourceClient trustSource = new TrustSourceClient();
   private final OpenId4VpAuthorizationRequestValidator authorizationRequestValidator =
       new OpenId4VpAuthorizationRequestValidator();
 
@@ -47,16 +50,21 @@ public class EndToEndTest {
 
     VerifierPresentationResponse transaction =
         verifierBackend.createPresentationRequestByReference(nonce, dcqlId);
-    String transactionId = transaction.transaction_id();
-    String requestUri = transaction.request_uri();
 
     // 2. Get authorization request
-    Response authRequestResponse =
-        given().baseUri(requestUri).when().get().then().extract().response();
+    Response authRequestResponse = given().baseUri(transaction.request_uri())
+        .when().get()
+        .then().extract().response();
     SignedJWT signedAuthRequest = SignedJWT.parse(authRequestResponse.body().asString());
     String state = signedAuthRequest.getJWTClaimsSet().getStringClaim("state");
     String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
     authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(signedAuthRequest);
+    SignedJWT registrationCertificate = authorizationRequestValidator
+        .getRegistrationCertificate(signedAuthRequest);
+    SignedJWT lote = trustSource.fetchLote();
+    X509Certificate trustSourceCa = trustSource.fetchTrustSourceCa();
+    loteValidator.validateRegistrationCertificate(
+        registrationCertificate, lote, trustSourceCa);
 
     // 3. Get credential
     String uniqueKid = UUID.randomUUID().toString();
@@ -90,7 +98,7 @@ public class EndToEndTest {
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
     // 6. Verify the received Verifiable Presentation Token
-    Response response = verifierBackend.getPresentationsStatus(transactionId);
+    Response response = verifierBackend.getPresentationsStatus(transaction.transaction_id());
     assertThat(response.getStatusCode(), is(200));
 
     Map<String, List<String>> vpTokenMap = response.jsonPath().getMap("vp_token");
@@ -104,7 +112,8 @@ public class EndToEndTest {
     assertThat(sdJwtVc.disclosedClaims().get("personal_administrative_number"), is("195504162776"));
 
     // 7. Verify Events Response
-    Response presentationEvents = verifierBackend.getPresentationEvents(transactionId);
+    Response presentationEvents =
+        verifierBackend.getPresentationEvents(transaction.transaction_id());
     assertThat(presentationEvents.getStatusCode(), is(200));
     List<String> events = presentationEvents.jsonPath().getList("events.event");
     assertThat(events, is(List.of(

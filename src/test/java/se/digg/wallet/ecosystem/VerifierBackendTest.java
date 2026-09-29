@@ -35,6 +35,8 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
   private final String nonce = UUID.randomUUID().toString();
+  private LoteValidator loteValidator;
+  private TrustSourceClient trustSource;
   private VerifierBackendClient verifierBackend;
   private OpenId4VpAuthorizationRequestValidator authorizationRequestValidator;
   private IssuanceAgent issuer;
@@ -42,6 +44,8 @@ class VerifierBackendTest {
 
   @BeforeEach
   void setUp() throws JOSEException {
+    loteValidator = new LoteValidator();
+    trustSource = new TrustSourceClient();
     verifierBackend = new VerifierBackendClient();
     authorizationRequestValidator = new OpenId4VpAuthorizationRequestValidator();
     issuer = new IssuanceAgent();
@@ -83,6 +87,17 @@ class VerifierBackendTest {
 
     authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(
         SignedJWT.parse(response.request()));
+  }
+
+  @Test
+  void createsTrustedPresentationRequest() throws Exception {
+    var response = verifierBackend
+        .createPresentationRequestByValue(UUID.randomUUID().toString());
+    var registrationCertificate = authorizationRequestValidator
+        .getRegistrationCertificate(SignedJWT.parse(response.request()));
+
+    loteValidator.validateRegistrationCertificate(
+        registrationCertificate, trustSource.fetchLote(), trustSource.fetchTrustSourceCa());
   }
 
   @Test
