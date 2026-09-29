@@ -18,5 +18,5 @@ This script:
 * Generates one EC (P-256) CA per application trust domain (if not present).
 * Issues certificates for **PID Issuer**, **Verifier**, **Wallet Provider**, and **Trust Source**.
 * Generates a local WRPRC registration certificate as a signed JWT for the verifier after the keystores are created.
-* Creates the **Trust Validator** certificate stores and regenerates the signed LoTE for the PID Issuer, Wallet Provider, and WRPRC Provider.
+* Regenerates the signed LoTE for the PID Issuer, Wallet Provider, and WRPRC Provider.
 * Ensures generated keystores and PEM files are readable by Docker containers.
