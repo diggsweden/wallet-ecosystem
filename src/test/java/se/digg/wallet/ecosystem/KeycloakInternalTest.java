@@ -9,10 +9,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK_INTERNAL;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -21,6 +17,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeType;
 
 @DisabledIfEnvironmentVariable(
     named = "DIGG_WALLET_ECOSYSTEM_SKIP_TESTS_FOR_KEYCLOAK_INTERNAL",
@@ -60,8 +59,7 @@ class KeycloakInternalTest {
     assertThat(url, is(KEYCLOAK_INTERNAL.toString()));
   }
 
-  private static Stream<Arguments.ArgumentSet> masterAdminConsoleUrls()
-      throws JsonProcessingException {
+  private static Stream<Arguments.ArgumentSet> masterAdminConsoleUrls() {
     String environment = internalKeycloak.tryGetMasterAdminConsole()
         .then().assertThat().statusCode(is(200))
         .extract().body().htmlPath().get("html.body.script.find { it.@id == 'environment' }");
@@ -69,7 +67,7 @@ class KeycloakInternalTest {
     JsonNode root = new ObjectMapper().readTree(environment);
     assertThat(root.getNodeType(), is(JsonNodeType.OBJECT));
     return root.propertyStream()
-        .map(entry -> Map.entry(entry.getKey(), entry.getValue().asText()))
+        .map(entry -> Map.entry(entry.getKey(), entry.getValue().asString()))
         .filter(entry -> entry.getValue().startsWith("http"))
         .map(entry -> Arguments.argumentSet(entry.getKey(), entry.getValue()));
   }

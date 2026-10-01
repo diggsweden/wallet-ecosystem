@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.SignedJWT;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -14,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public record SdJwtVc(
     SignedJWT issuerJwt,
@@ -44,19 +45,17 @@ public record SdJwtVc(
             .skip(1)
             .filter(part -> !part.isBlank() && !part.contains("."))
             .map(part -> new String(Base64.getUrlDecoder().decode(part), StandardCharsets.UTF_8))
-            .map(
-                decoded -> {
-                  try {
-                    return OBJECT_MAPPER.readTree(decoded);
-                  } catch (Exception e) {
-                    throw new IllegalArgumentException("Failed to parse SD-JWT disclosure", e);
-                  }
-                })
+            .map(OBJECT_MAPPER::readTree)
             .filter(node -> node.isArray() && node.size() == 3)
-            .map(node -> List.of(node.get(1).asText(), node.get(2).asText()))
+            .map(node -> List.of(node.get(1).asString(), claimValue(node.get(2))))
             .collect(Collectors.toMap(List::getFirst, List::getLast, (a, b) -> b));
 
     return new SdJwtVc(issuerJwt, claims);
+  }
+
+  // Default container nodes to empty string
+  private static String claimValue(JsonNode node) {
+    return node.asString("");
   }
 
   public String getIssuer() {
@@ -67,7 +66,4 @@ public record SdJwtVc(
     }
   }
 
-  public String getDisclosedClaim(String claimName) {
-    return disclosedClaims.get(claimName);
-  }
 }

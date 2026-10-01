@@ -10,9 +10,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.in;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.ByteArrayInputStream;
@@ -27,15 +24,20 @@ import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1String;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 public final class OpenId4VpAuthorizationRequestValidator {
   private static final String REGISTRATION_CERTIFICATE_FORMAT = "registration_cert";
   private static final String SUBJECT_CLAIM = "sub";
   @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
   private static final String ORGANIZATION_IDENTIFIER_OID = "2.5.4.97";
-  private static final ObjectMapper OPENID4VP_CLAIMS_OBJECT_MAPPER = new ObjectMapper()
-      .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private static final ObjectMapper OPENID4VP_CLAIMS_OBJECT_MAPPER = JsonMapper.builder()
+      .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      .build();
 
   public OpenId4VpAuthorizationRequestValidator() {}
 
@@ -177,24 +179,14 @@ public final class OpenId4VpAuthorizationRequestValidator {
     }
   }
 
-  private AuthorizationRequestClaims authorizationClaims(SignedJWT jwt)
-      throws ParseException {
-    try {
-      return OPENID4VP_CLAIMS_OBJECT_MAPPER.readValue(
-          jwt.getPayload().toString(), AuthorizationRequestClaims.class);
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Authorization request claims are malformed", e);
-    }
+  private AuthorizationRequestClaims authorizationClaims(SignedJWT jwt) {
+    return OPENID4VP_CLAIMS_OBJECT_MAPPER.readValue(
+        jwt.getPayload().toString(), AuthorizationRequestClaims.class);
   }
 
-  private RegistrationCertificateClaims registrationClaims(SignedJWT jwt)
-      throws ParseException {
-    try {
-      return OPENID4VP_CLAIMS_OBJECT_MAPPER.readValue(
-          jwt.getPayload().toString(), RegistrationCertificateClaims.class);
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Registration certificate claims are malformed", e);
-    }
+  private RegistrationCertificateClaims registrationClaims(SignedJWT jwt) {
+    return OPENID4VP_CLAIMS_OBJECT_MAPPER.readValue(
+        jwt.getPayload().toString(), RegistrationCertificateClaims.class);
   }
 
   private record AuthorizationRequestClaims(

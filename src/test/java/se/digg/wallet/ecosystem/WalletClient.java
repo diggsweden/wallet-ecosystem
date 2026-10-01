@@ -4,12 +4,11 @@
 
 package se.digg.wallet.ecosystem;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.ECKey;
 
 public interface WalletClient {
 
   String createKeyAttestation(ECKey bindingKey, String nonce)
-      throws JsonProcessingException, JOSEException;
+      throws JOSEException;
 }
