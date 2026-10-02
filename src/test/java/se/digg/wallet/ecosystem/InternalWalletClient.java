@@ -4,7 +4,6 @@
 
 package se.digg.wallet.ecosystem;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.jwk.ECKey;
 
 public class InternalWalletClient implements WalletClient {
@@ -30,8 +29,7 @@ public class InternalWalletClient implements WalletClient {
   }
 
   @Override
-  public String createKeyAttestation(ECKey bindingKey, String nonce)
-      throws JsonProcessingException {
+  public String createKeyAttestation(ECKey bindingKey, String nonce) {
     return walletProvider.getKeyAttestation(bindingKey, nonce);
   }
 }

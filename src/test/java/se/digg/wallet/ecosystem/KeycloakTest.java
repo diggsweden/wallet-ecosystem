@@ -11,10 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
@@ -30,6 +26,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeType;
 
 class KeycloakTest {
 
@@ -189,8 +188,7 @@ class KeycloakTest {
         .then().assertThat().statusCode(is(200));
   }
 
-  private static Stream<String> pidIssuerRealmAccountConsoleImports()
-      throws JsonProcessingException {
+  private static Stream<String> pidIssuerRealmAccountConsoleImports() {
     String importMap = keycloak.tryGetAccountConsoleForRealm("pid-issuer-realm")
         .then().assertThat().statusCode(is(200))
         .extract().body().htmlPath().get("html.head.script.find { it.@type == 'importmap' }");
@@ -198,6 +196,6 @@ class KeycloakTest {
     JsonNode root = new ObjectMapper().readTree(importMap);
     assertThat(root.getNodeType(), is(JsonNodeType.OBJECT));
     return root.get("imports").propertyStream()
-        .map(entry -> entry.getValue().asText());
+        .map(entry -> entry.getValue().asString());
   }
 }

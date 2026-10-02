@@ -6,8 +6,6 @@ package se.digg.wallet.ecosystem;
 
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.ECKey;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -15,6 +13,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import tools.jackson.databind.ObjectMapper;
 
 public class WalletProviderClient {
 
@@ -39,7 +38,7 @@ public class WalletProviderClient {
   }
 
   @Deprecated
-  public String getWalletUnitAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
+  public String getWalletUnitAttestation(ECKey jwk, String nonce) {
     Map<String, Object> body = new HashMap<>();
     body.put("jwk", jwk.toPublicJWK().toJSONString());
     if (nonce != null) {
@@ -58,11 +57,11 @@ public class WalletProviderClient {
         .asString();
   }
 
-  public String getKeyAttestation(ECKey jwk, String nonce) throws JsonProcessingException {
+  public String getKeyAttestation(ECKey jwk, String nonce) {
     return getKeyAttestation(List.of(jwk), nonce);
   }
 
-  public String getKeyAttestation(List<ECKey> jwks, String nonce) throws JsonProcessingException {
+  public String getKeyAttestation(List<ECKey> jwks, String nonce) {
     Map<String, Object> body = new HashMap<>();
     List<Map<String, String>> jwkItems =
         jwks.stream()
