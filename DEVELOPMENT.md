@@ -297,9 +297,6 @@ rm -r config/certificates/ca/*
 # Generate new keystores and trust lists for all services
 bash config/certificates/generate_ecosystem_certs.sh
 
-# Use the existing trusted issuers instead of the newly generated ones
-git checkout config/certificates/verifier-access-certificate/trusted_issuers.p12
-
 # Restart environment
 docker compose restart
 

@@ -23,8 +23,6 @@ TMP_DIR="$CERT_DIR/tmp"
 : "${VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD:?Environment variable VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD is not set}"
 : "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Environment variable WALLET_PROVIDER_KEYSTORE_PASSWORD is not set}"
 : "${TRUST_SOURCE_KEYSTORE_PASSWORD:?Environment variable TRUST_SOURCE_KEYSTORE_PASSWORD is not set}"
-: "${TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD:?Environment variable TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD is not set}"
-: "${TRUST_VALIDATOR_TRUST_STORE_PASSWORD:?Environment variable TRUST_VALIDATOR_TRUST_STORE_PASSWORD is not set}"
 
 export status_list_url="$STATUS_LIST_URL"
 
@@ -230,19 +228,10 @@ generate_service_cert_ec "verifier-access-certificate" "verifier-access-certific
 
 generate_service_cert_ec "verifier-registration-certificate" "verifier-registration-certificate" "registration" "$VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" verifier-registration.cnf "$VERIFIER_REGISTRATION_CERTIFICATE_CA_PEM" "$VERIFIER_REGISTRATION_CERTIFICATE_CA_KEY" verifier-registration-certificate
 
-# 3. Verifier Trust Store
-echo "Creating trusted_issuers.p12 for Verifier..."
-TRUST_P12="$CERT_DIR/trust-validator/trusted_issuers.p12"
-mkdir -p "$CERT_DIR/trust-validator"
-rm -f "$TRUST_P12"
-keytool -importcert -noprompt -alias pid_issuer -file "$SERVICE_TMP_DIR/pid_issuer.crt.trust" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
-keytool -importcert -noprompt -alias pid_issuer_ca -file "$PID_ISSUER_CA_PEM" -keystore "$TRUST_P12" -storepass "$TRUST_VALIDATOR_TRUSTED_ISSUERS_PASSWORD" -storetype PKCS12
-create_license "$TRUST_P12"
-
-# 4. Wallet Provider
+# 3. Wallet Provider
 generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "$WALLET_PROVIDER_KEYSTORE_PASSWORD" "Wallet Provider (Ecosystem)" "$PROVIDER_SANS" service.cnf "$WALLET_PROVIDER_CA_PEM" "$WALLET_PROVIDER_CA_KEY" wallet-provider
 
-# 5. Trust Source
+# 4. Trust Source
 generate_service_cert_ec "trust-list-signer" "trust_source" "trust_source" "$TRUST_SOURCE_KEYSTORE_PASSWORD" "Trust Source (Ecosystem)" "$TRUST_SOURCE_SANS" signer.cnf "$TRUST_SOURCE_CA_PEM" "$TRUST_SOURCE_CA_KEY" trust-source
 cp "$SERVICE_TMP_DIR/trust_source.crt" "$CERT_DIR/trust-list-signer/trust_source_cert.pem"
 cp "$SERVICE_TMP_DIR/trust_source.key" "$CERT_DIR/trust-list-signer/trust_source_key.pem"
