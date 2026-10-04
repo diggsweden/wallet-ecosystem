@@ -259,7 +259,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer-db:
-    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
+    image: "postgres:18@sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722"
     container_name: pid-issuer-db
     restart: always
     ports:
@@ -279,7 +279,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account-db:
-    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
+    image: "postgres:18@sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722"
     container_name: wallet-account-db
     restart: always
     ports:
