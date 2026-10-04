@@ -26,7 +26,9 @@ public enum Property {
   WALLET_ACCOUNT_DB_TESTING_ENABLED("true"),
   PID_ISSUER_DB_TESTING_ENABLED("true"),
   WALLET_CLIENT_GATEWAY_API_KEY("apikey"),
-  VERIFIER_AUDIENCE("x509_san_dns:localhost");
+  VERIFIER_AUDIENCE("x509_san_dns:localhost"),
+  VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD("verifier_registration_password"),
+  VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD("verifier_password");
 
   private final String defaultValue;
 

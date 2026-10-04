@@ -9,16 +9,18 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.SignedJWT;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPrivateKey;
 import java.util.ArrayList;
-import java.util.Properties;
 
 final class CertificateTestSupport {
+  private static final char[] VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD =
+      Property.VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD.getValue().toCharArray();
+  private static final char[] VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD =
+      Property.VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD.getValue().toCharArray();
   private static final Path ACCESS_CERTIFICATE_KEYSTORE = Path.of(
       "config/certificates/verifier-access-certificate/verifier-access-certificate.p12");
   private static final String ACCESS_CERTIFICATE_ALIAS = "verifier_access_certificate";
@@ -33,7 +35,7 @@ final class CertificateTestSupport {
 
   static JWSHeader loadAccessCertificateHeader() throws Exception {
     var keyStore = loadKeyStore(
-        ACCESS_CERTIFICATE_KEYSTORE, accessCertificateKeystorePassword());
+        ACCESS_CERTIFICATE_KEYSTORE, VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD);
     var certificateChain = new ArrayList<Base64>();
     for (var certificate : keyStore.getCertificateChain(ACCESS_CERTIFICATE_ALIAS)) {
       certificateChain.add(Base64.encode(certificate.getEncoded()));
@@ -45,7 +47,7 @@ final class CertificateTestSupport {
 
   static X509Certificate loadAccessCertificateX509() throws Exception {
     var keyStore = loadKeyStore(
-        ACCESS_CERTIFICATE_KEYSTORE, accessCertificateKeystorePassword());
+        ACCESS_CERTIFICATE_KEYSTORE, VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD);
     return (X509Certificate) keyStore.getCertificate(ACCESS_CERTIFICATE_ALIAS);
   }
 
@@ -60,12 +62,15 @@ final class CertificateTestSupport {
 
   static void signRegistrationCertificateJwt(SignedJWT certificate) throws Exception {
     var privateKey = (ECPrivateKey) loadRegistrationKeyStore().getKey(
-        REGISTRATION_ALIAS, registrationKeystorePassword());
+        REGISTRATION_ALIAS,
+        VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD);
     certificate.sign(new ECDSASigner(privateKey));
   }
 
   private static KeyStore loadRegistrationKeyStore() throws Exception {
-    return loadKeyStore(REGISTRATION_KEYSTORE, registrationKeystorePassword());
+    return loadKeyStore(
+        REGISTRATION_KEYSTORE,
+        VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD);
   }
 
   private static KeyStore loadKeyStore(Path path, char[] password) throws Exception {
@@ -76,27 +81,4 @@ final class CertificateTestSupport {
     return keyStore;
   }
 
-  private static char[] accessCertificateKeystorePassword() throws IOException {
-    return readEnvironmentVariable(
-        "VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD",
-        "verifier_password").toCharArray();
-  }
-
-  private static char[] registrationKeystorePassword() throws IOException {
-    return readEnvironmentVariable(
-        "VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD",
-        "verifier_registration_password").toCharArray();
-  }
-
-  private static String readEnvironmentVariable(String key, String fallback) throws IOException {
-    var result = System.getenv(key);
-    if (result == null) {
-      var dotenv = new Properties();
-      try (var input = Files.newInputStream(Path.of(".env"))) {
-        dotenv.load(input);
-      }
-      result = dotenv.getProperty(key, fallback);
-    }
-    return result;
-  }
 }
