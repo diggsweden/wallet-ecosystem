@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+services:
+  wallet-provider:
+    image: localhost/wallet-provider:wallet-instance-attestation
+    pull_policy: never

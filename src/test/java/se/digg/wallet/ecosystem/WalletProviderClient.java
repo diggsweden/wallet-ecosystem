@@ -22,6 +22,7 @@ public class WalletProviderClient {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final String WUA_URL = "wallet-unit-attestation";
   private static final String KEY_ATTESTATIONS_URL = "v0/key-attestations";
+  private static final String WALLET_INSTANCE_ATTESTATIONS_URL = "v0/wallet-instance-attestations";
 
   public WalletProviderClient() {
     this(ServiceIdentifier.WALLET_PROVIDER.getResourceRoot());
@@ -35,6 +36,25 @@ public class WalletProviderClient {
     return given()
         .when()
         .get(base.resolve("actuator/health"));
+  }
+
+  public Response tryGetWalletInstanceAttestation(String publicKeyJwk) {
+    return given()
+        .contentType(ContentType.JSON)
+        .body(OBJECT_MAPPER.writeValueAsString(Map.of("jwk", publicKeyJwk)))
+        .when()
+        .post(base.resolve(WALLET_INSTANCE_ATTESTATIONS_URL));
+  }
+
+  public String getWalletInstanceAttestation(ECKey jwk) {
+    return tryGetWalletInstanceAttestation(jwk.toPublicJWK().toJSONString())
+        .then()
+        .assertThat()
+        .statusCode(200)
+        .contentType(ContentType.JSON)
+        .extract()
+        .jsonPath()
+        .getString("wallet_instance_attestation");
   }
 
   @Deprecated
