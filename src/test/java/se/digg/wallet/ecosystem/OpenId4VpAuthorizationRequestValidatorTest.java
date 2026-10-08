@@ -9,6 +9,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,6 +21,7 @@ import org.junit.jupiter.api.Test;
 class OpenId4VpAuthorizationRequestValidatorTest {
   private static SignedJWT registrationCertificate;
   private static JWSHeader accessCertificateHeader;
+  private static JWSSigner accessCertificateSigner;
   private final OpenId4VpAuthorizationRequestValidator validator =
       new OpenId4VpAuthorizationRequestValidator();
 
@@ -25,6 +30,7 @@ class OpenId4VpAuthorizationRequestValidatorTest {
     registrationCertificate =
         CertificateTestSupport.loadRegistrationCertificateJwt();
     accessCertificateHeader = CertificateTestSupport.loadAccessCertificateHeader();
+    accessCertificateSigner = CertificateTestSupport.loadAccessCertificateSigner();
   }
 
   @Test
@@ -55,8 +61,45 @@ class OpenId4VpAuthorizationRequestValidatorTest {
               }
             }
             """.formatted(registrationCertificate.serialize())));
+    authorizationRequest.sign(accessCertificateSigner);
 
     validator.validateRelyingPartyAuthorizationRequest(authorizationRequest);
+  }
+
+  @Test
+  void rejectsAuthorizationRequestSignedByUnexpectedKey() throws Exception {
+    var authorizationRequest = new SignedJWT(
+        accessCertificateHeader,
+        JWTClaimsSet.parse("""
+            {
+              "verifier_info": [
+                {
+                  "format": "registration_cert",
+                  "data": "%s"
+                }
+              ],
+              "dcql_query": {
+                "credentials": [
+                  {
+                    "format": "dc+sd-jwt",
+                    "vct": "urn:eudi:pid:1",
+                    "claims": [
+                      { "path": ["family_name"] },
+                      { "path": ["given_name"] },
+                      { "path": ["personal_administrative_number"] },
+                      { "path": ["address", "street_address"] }
+                    ]
+                  }
+                ]
+              }
+            }
+            """.formatted(registrationCertificate.serialize())));
+    authorizationRequest.sign(new ECDSASigner(new ECKeyGenerator(Curve.P_256).generate()));
+
+    var exception = assertThrows(AssertionError.class,
+        () -> validator.validateRelyingPartyAuthorizationRequest(authorizationRequest));
+    assertThat(exception.getMessage(),
+        containsString("OpenId4VP Authorization Request not signed by access certificate key"));
   }
 
   @Test
@@ -84,6 +127,7 @@ class OpenId4VpAuthorizationRequestValidatorTest {
               }
             }
             """.formatted(registrationCertificate.serialize())));
+    requestWithUnregisteredClaim.sign(accessCertificateSigner);
 
     var exception = assertThrows(AssertionError.class,
         () -> validator.validateRelyingPartyAuthorizationRequest(requestWithUnregisteredClaim));
@@ -112,6 +156,7 @@ class OpenId4VpAuthorizationRequestValidatorTest {
               ]
             }
             """.formatted(registrationCertificateWithDifferentOrganization.serialize())));
+    authorizationRequest.sign(accessCertificateSigner);
 
     var exception = assertThrows(AssertionError.class,
         () -> validator.validateRelyingPartyAuthorizationRequest(authorizationRequest));

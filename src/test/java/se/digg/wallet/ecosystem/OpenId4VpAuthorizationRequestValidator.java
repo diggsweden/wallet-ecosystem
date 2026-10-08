@@ -9,7 +9,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.in;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.ByteArrayInputStream;
@@ -42,13 +45,22 @@ public final class OpenId4VpAuthorizationRequestValidator {
   public OpenId4VpAuthorizationRequestValidator() {}
 
   public void validateRelyingPartyAuthorizationRequest(SignedJWT authorizationRequest)
-      throws ParseException {
+      throws ParseException, JOSEException {
     var accessCertificate = getAccessCertificate(authorizationRequest);
+    verifyAuthorizationRequestSignature(accessCertificate, authorizationRequest);
     var registrationCertificate = getRegistrationCertificate(authorizationRequest);
 
     assertRegistrationCertificateMatchesAccessCertificate(
         accessCertificate, registrationCertificate);
     assertRequestedClaimsAreRegistered(authorizationRequest, registrationCertificate);
+  }
+
+  private void verifyAuthorizationRequestSignature(X509Certificate accessCertificate,
+      SignedJWT authorizationRequest) throws JOSEException {
+    var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(
+        authorizationRequest.getHeader(), accessCertificate.getPublicKey());
+    assertTrue(authorizationRequest.verify(verifier),
+        "OpenId4VP Authorization Request not signed by access certificate key");
   }
 
   public SignedJWT getRegistrationCertificate(SignedJWT request) throws ParseException {
