@@ -59,12 +59,14 @@ public class EndToEndTest {
     String state = signedAuthRequest.getJWTClaimsSet().getStringClaim("state");
     String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
     authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(signedAuthRequest);
+    X509Certificate accessCertificate =
+        authorizationRequestValidator.getAccessCertificate(signedAuthRequest);
     SignedJWT registrationCertificate = authorizationRequestValidator
         .getRegistrationCertificate(signedAuthRequest);
     SignedJWT lote = trustSource.fetchLote();
     X509Certificate trustSourceCa = trustSource.fetchTrustSourceCa();
-    loteValidator.validateRegistrationCertificate(
-        registrationCertificate, lote, trustSourceCa);
+    loteValidator.validateWalletRelyingPartyTrust(lote, trustSourceCa,
+        accessCertificate, registrationCertificate);
 
     // 3. Get credential
     String uniqueKid = UUID.randomUUID().toString();

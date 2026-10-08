@@ -55,12 +55,13 @@ public final class OpenId4VpAuthorizationRequestValidator {
     assertRequestedClaimsAreRegistered(authorizationRequest, registrationCertificate);
   }
 
-  private void verifyAuthorizationRequestSignature(X509Certificate accessCertificate,
-      SignedJWT authorizationRequest) throws JOSEException {
-    var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(
-        authorizationRequest.getHeader(), accessCertificate.getPublicKey());
-    assertTrue(authorizationRequest.verify(verifier),
-        "OpenId4VP Authorization Request not signed by access certificate key");
+  public X509Certificate getAccessCertificate(SignedJWT request) {
+    var certificateChain = request.getHeader().getX509CertChain();
+    if (certificateChain == null || certificateChain.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Access certificate is missing from the authorization request");
+    }
+    return certificateFromBase64(certificateChain.getFirst());
   }
 
   public SignedJWT getRegistrationCertificate(SignedJWT request) throws ParseException {
@@ -80,6 +81,14 @@ public final class OpenId4VpAuthorizationRequestValidator {
     }
 
     return SignedJWT.parse(verifierInfoByFormat.get(REGISTRATION_CERTIFICATE_FORMAT).data());
+  }
+
+  private void verifyAuthorizationRequestSignature(X509Certificate accessCertificate,
+      SignedJWT authorizationRequest) throws JOSEException {
+    var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(
+        authorizationRequest.getHeader(), accessCertificate.getPublicKey());
+    assertTrue(authorizationRequest.verify(verifier),
+        "OpenId4VP Authorization Request not signed by access certificate key");
   }
 
   private void assertRequestedClaimsAreRegistered(
@@ -103,15 +112,6 @@ public final class OpenId4VpAuthorizationRequestValidator {
 
       assertThat(requestedCredential.claims(), everyItem(in(registeredClaims)));
     }
-  }
-
-  private X509Certificate getAccessCertificate(SignedJWT request) {
-    var certificateChain = request.getHeader().getX509CertChain();
-    if (certificateChain == null || certificateChain.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Access certificate is missing from the authorization request");
-    }
-    return certificateFromBase64(certificateChain.getFirst());
   }
 
   private void assertRegistrationCertificateMatchesAccessCertificate(

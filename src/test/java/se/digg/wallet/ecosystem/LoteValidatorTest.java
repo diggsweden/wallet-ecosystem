@@ -25,23 +25,21 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class LoteValidatorTest {
-  private static final Path REGISTRATION_CERTIFICATE_PATH = Path.of(
-      "config/certificates/verifier-registration-certificate/registration_certificate.jwt");
   private static final Path LOTE_PATH = Path.of(
       "config/trust-source/signed/trusted-entities.json");
   private static final Path TRUST_SOURCE_CA_PATH = Path.of(
       "config/certificates/ca/trust-source/ca.pem");
   private final LoteValidator loteValidator = new LoteValidator();
-  private static SignedJWT configuredRegistrationCertificate;
   private static SignedJWT configuredLote;
+  private static X509Certificate configuredAccessCertificate;
+  private static SignedJWT configuredRegistrationCertificate;
   private static X509Certificate configuredTrustSourceCa;
 
   @BeforeAll
   static void beforeAll() throws Exception {
-    configuredRegistrationCertificate =
-        SignedJWT.parse(Files.readString(REGISTRATION_CERTIFICATE_PATH));
-    configuredLote =
-        SignedJWT.parse(Files.readString(LOTE_PATH));
+    configuredAccessCertificate = CertificateTestSupport.loadAccessCertificateX509();
+    configuredRegistrationCertificate = CertificateTestSupport.loadRegistrationCertificateJwt();
+    configuredLote = SignedJWT.parse(Files.readString(LOTE_PATH));
     try (var input = Files.newInputStream(TRUST_SOURCE_CA_PATH)) {
       configuredTrustSourceCa =
           (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(input);
@@ -49,9 +47,46 @@ class LoteValidatorTest {
   }
 
   @Test
+  void acceptsTrustedLoteAndRequest() throws Exception {
+    loteValidator.validateWalletRelyingPartyTrust(
+        configuredLote, configuredTrustSourceCa,
+        configuredAccessCertificate, configuredRegistrationCertificate);
+  }
+
+  @Test
+  void rejectsWalletRelyingPartyTrustWithUntrustedAccessCertificate()
+      throws Exception {
+    var untrustedAccessCertificate =
+        CertificateTestSupport.loadRegistrationCertificateX509();
+
+    var exception = assertThrows(
+        CertPathValidatorException.class,
+        () -> loteValidator.validateWalletRelyingPartyTrust(
+            configuredLote, configuredTrustSourceCa,
+            untrustedAccessCertificate, configuredRegistrationCertificate));
+
+    assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
+  }
+
+  @Test
+  void acceptsConfiguredAccessCertificate() throws Exception {
+    LoteValidator.validateAccessCertificate(
+        configuredLote, configuredAccessCertificate);
+  }
+
+  @Test
+  void rejectsAccessCertificateFromAnotherCa() throws Exception {
+    var untrustedAccessCertificate = CertificateTestSupport.loadRegistrationCertificateX509();
+
+    var exception = assertThrows(CertPathValidatorException.class,
+        () -> LoteValidator.validateAccessCertificate(configuredLote, untrustedAccessCertificate));
+    assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
+  }
+
+  @Test
   void acceptsConfiguredRegistrationCertificate() throws Exception {
-    loteValidator.validateRegistrationCertificate(
-        configuredRegistrationCertificate, configuredLote, configuredTrustSourceCa);
+    LoteValidator.validateRegistrationCertificate(
+        configuredLote, configuredRegistrationCertificate);
   }
 
   @Test
@@ -60,10 +95,9 @@ class LoteValidatorTest {
         configuredRegistrationCertificate);
 
     var exception = assertThrows(AssertionError.class,
-        () -> loteValidator.validateRegistrationCertificate(
-            registrationCertificateSignedByAnotherKey,
+        () -> LoteValidator.validateRegistrationCertificate(
             configuredLote,
-            configuredTrustSourceCa));
+            registrationCertificateSignedByAnotherKey));
     assertThat(exception.getMessage(),
         containsString("The registration certificate was not signed by expected key"));
   }
@@ -72,8 +106,7 @@ class LoteValidatorTest {
   void rejectsLoteWhenSignerIsNotTrustedByTrustSourceCa() throws Exception {
     var unrelatedCertificate = CertificateTestSupport.loadAccessCertificateX509();
     var exception = assertThrows(CertPathValidatorException.class,
-        () -> loteValidator.validateRegistrationCertificate(
-            configuredRegistrationCertificate, configuredLote, unrelatedCertificate));
+        () -> LoteValidator.validateLoteSignature(configuredLote, unrelatedCertificate));
     assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
   }
 
@@ -81,8 +114,7 @@ class LoteValidatorTest {
   void rejectsLoteWithInvalidSignature() throws Exception {
     var loteWithInvalidSignature = signWithAnotherKey(configuredLote);
     var exception = assertThrows(AssertionError.class,
-        () -> loteValidator.validateRegistrationCertificate(
-            configuredRegistrationCertificate,
+        () -> LoteValidator.validateLoteSignature(
             loteWithInvalidSignature,
             configuredTrustSourceCa));
     assertThat(exception.getMessage(), containsString("LoTE was not signed by expected key"));
