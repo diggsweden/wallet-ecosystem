@@ -11,7 +11,7 @@ on:
         required: false
         type: string
         default: ''
-        description: "Git ref to checkout for wallet ecosystem (e.g., refs/pull/1/merge)"
+        description: "Git ref to checkout for wallet ecosystem (falls back to main if branch not found)"
       service-name:
         required: true
         type: string
@@ -44,11 +44,35 @@ jobs:
     name: Integration Test (${{ inputs.service-name }})
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve Wallet Ecosystem Ref
+        id: resolve-ref
+        shell: bash
+        env:
+          REQUESTED_REF: ${{ inputs.ecosystem-ref }}
+        run: |
+          REPO="https://github.com/diggsweden/wallet-ecosystem.git"
+          CLEAN_REF="${REQUESTED_REF#refs/heads/}"
+          TARGET_REF="main"
+
+          if [ -n "$CLEAN_REF" ]; then
+            if [[ "$CLEAN_REF" =~ ^[0-9a-f]{40}$ ]]; then
+              TARGET_REF="$CLEAN_REF"
+            elif git ls-remote --exit-code --heads "$REPO" "refs/heads/$CLEAN_REF" >/dev/null 2>&1; then
+              TARGET_REF="$CLEAN_REF"
+            elif git ls-remote --exit-code "$REPO" "$REQUESTED_REF" >/dev/null 2>&1; then
+              TARGET_REF="$REQUESTED_REF"
+            else
+              echo "Branch '$CLEAN_REF' not found in $REPO, falling back to main"
+            fi
+          fi
+
+          echo "resolved-ref=$TARGET_REF" >> "$GITHUB_OUTPUT"
+
       - name: Checkout Wallet Ecosystem
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: diggsweden/wallet-ecosystem
-          ref: ${{ inputs.ecosystem-ref }}
+          ref: ${{ steps.resolve-ref.outputs.resolved-ref }}
           path: wallet-ecosystem
 
       - name: Checkout Service (${{ inputs.service-name }})
