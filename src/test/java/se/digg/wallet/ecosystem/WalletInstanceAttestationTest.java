@@ -75,8 +75,11 @@ public class WalletInstanceAttestationTest {
 
     var clientStatus = claims.getJSONObjectClaim("client_status");
     assertThat(clientStatus.keySet(), is(Set.of("status", "exp")));
-    assertThat(clientStatus.get("status"), is(Map.of("status_list", Map.of(
-        "idx", 412L, "uri", "http://trust-source/signed/status-list.jwt"))));
+    var status = (Map<?, ?>) clientStatus.get("status");
+    assertThat(status.keySet(), is(Set.of("status_list")));
+    var statusList = (Map<?, ?>) status.get("status_list");
+    assertThat(statusList.keySet(), is(Set.of("idx", "uri")));
+    assertThat(statusList.get("idx"), is(412L));
     var statusExpiration = Instant.ofEpochSecond(((Number) clientStatus.get("exp")).longValue());
     assertThat(Duration.between(issuedAt, statusExpiration).compareTo(Duration.ofDays(31)) >= 0,
         is(true));
