@@ -32,7 +32,7 @@ x-kafka-common: &kafka-common
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0@sha256:2f2772b1df39a529f3683c7e82d10d03221b475e67da7b2d8cb1b9aebe6f71f9
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.12.0@sha256:b56390f2078f9ce705f2b20db86fdd52297c0a587dd4110c82f173c223a3a07f
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     env_file:
