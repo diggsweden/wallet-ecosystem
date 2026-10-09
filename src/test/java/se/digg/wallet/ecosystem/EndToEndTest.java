@@ -28,7 +28,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class EndToEndTest {
 
   private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
-  private final LoteValidator loteValidator = new LoteValidator();
   private final TrustSourceClient trustSource = new TrustSourceClient();
   private final OpenId4VpAuthorizationRequestValidator authorizationRequestValidator =
       new OpenId4VpAuthorizationRequestValidator();
@@ -65,8 +64,8 @@ public class EndToEndTest {
         .getRegistrationCertificate(signedAuthRequest);
     SignedJWT lote = trustSource.fetchLote();
     X509Certificate trustSourceCa = trustSource.fetchTrustSourceCa();
-    loteValidator.validateWalletRelyingPartyTrust(lote, trustSourceCa,
-        accessCertificate, registrationCertificate);
+    new ListOfTrustedEntities(lote).validateWalletRelyingPartyTrust(
+        trustSourceCa, accessCertificate, registrationCertificate);
 
     // 3. Get credential
     String uniqueKid = UUID.randomUUID().toString();
