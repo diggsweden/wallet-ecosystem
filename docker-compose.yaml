@@ -120,7 +120,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: ghcr.io/diggsweden/wallet-provider:v0.1.4@sha256:3267090ad1e6666130f4433e7252e1bc38a5e201b603933294f8a481b0ab0c60
+    image: ghcr.io/diggsweden/wallet-provider:v0.1.5@sha256:1ce2f7fdfbc6b5b976987eb5fa18b3b985a5ed947727b9db1209e74817b5d813
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
@@ -133,7 +133,16 @@ services:
       WUA_KEYSTORE_PATH: "file:///opt/common/wallet_provider.p12"
       WUA_KEYSTORE_PASSWORD: "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Set WALLET_PROVIDER_KEYSTORE_PASSWORD in .env}"
       WUA_KEYSTORE_ALIAS: "wallet_provider"
+      WALLET_PROVIDER_ISSUER: "Digg"
       WALLET_PROVIDER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
+      WALLET_PROVIDER_WIA_CLIENT_ID: "wallet-dev"
+      WALLET_PROVIDER_WIA_WALLET_NAME: "Digg Wallet"
+      WALLET_PROVIDER_WIA_WALLET_VERSION: "0.0.1"
+      WALLET_PROVIDER_WIA_WALLET_LINK: "${BASE_URL}/wallet-provider"
+      WALLET_PROVIDER_WIA_CERTIFICATION_INFORMATION: "UNCERTIFIED"
+      WALLET_PROVIDER_WIA_VALIDITY_MINUTES: "60"
+      WALLET_PROVIDER_WIA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
+      WALLET_PROVIDER_WIA_STATUS_MAINTENANCE_DAYS: "365"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wallet-provider.rule=PathPrefix(`/wallet-provider`)"
