@@ -9,7 +9,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.in;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.ByteArrayInputStream;
@@ -42,13 +45,23 @@ public final class OpenId4VpAuthorizationRequestValidator {
   public OpenId4VpAuthorizationRequestValidator() {}
 
   public void validateRelyingPartyAuthorizationRequest(SignedJWT authorizationRequest)
-      throws ParseException {
+      throws ParseException, JOSEException {
     var accessCertificate = getAccessCertificate(authorizationRequest);
+    verifyAuthorizationRequestSignature(accessCertificate, authorizationRequest);
     var registrationCertificate = getRegistrationCertificate(authorizationRequest);
 
     assertRegistrationCertificateMatchesAccessCertificate(
         accessCertificate, registrationCertificate);
     assertRequestedClaimsAreRegistered(authorizationRequest, registrationCertificate);
+  }
+
+  public X509Certificate getAccessCertificate(SignedJWT request) {
+    var certificateChain = request.getHeader().getX509CertChain();
+    if (certificateChain == null || certificateChain.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Access certificate is missing from the authorization request");
+    }
+    return certificateFromBase64(certificateChain.getFirst());
   }
 
   public SignedJWT getRegistrationCertificate(SignedJWT request) throws ParseException {
@@ -68,6 +81,14 @@ public final class OpenId4VpAuthorizationRequestValidator {
     }
 
     return SignedJWT.parse(verifierInfoByFormat.get(REGISTRATION_CERTIFICATE_FORMAT).data());
+  }
+
+  private void verifyAuthorizationRequestSignature(X509Certificate accessCertificate,
+      SignedJWT authorizationRequest) throws JOSEException {
+    var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(
+        authorizationRequest.getHeader(), accessCertificate.getPublicKey());
+    assertTrue(authorizationRequest.verify(verifier),
+        "OpenId4VP Authorization Request not signed by access certificate key");
   }
 
   private void assertRequestedClaimsAreRegistered(
@@ -91,15 +112,6 @@ public final class OpenId4VpAuthorizationRequestValidator {
 
       assertThat(requestedCredential.claims(), everyItem(in(registeredClaims)));
     }
-  }
-
-  private X509Certificate getAccessCertificate(SignedJWT request) {
-    var certificateChain = request.getHeader().getX509CertChain();
-    if (certificateChain == null || certificateChain.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Access certificate is missing from the authorization request");
-    }
-    return certificateFromBase64(certificateChain.getFirst());
   }
 
   private void assertRegistrationCertificateMatchesAccessCertificate(

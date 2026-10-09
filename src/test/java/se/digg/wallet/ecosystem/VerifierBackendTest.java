@@ -93,11 +93,14 @@ class VerifierBackendTest {
   void createsTrustedPresentationRequest() throws Exception {
     var response = verifierBackend
         .createPresentationRequestByValue(UUID.randomUUID().toString());
+    var authRequest = SignedJWT.parse(response.request());
+    var accessCertificate = authorizationRequestValidator.getAccessCertificate(authRequest);
     var registrationCertificate = authorizationRequestValidator
-        .getRegistrationCertificate(SignedJWT.parse(response.request()));
+        .getRegistrationCertificate(authRequest);
 
-    loteValidator.validateRegistrationCertificate(
-        registrationCertificate, trustSource.fetchLote(), trustSource.fetchTrustSourceCa());
+    loteValidator.validateWalletRelyingPartyTrust(
+        trustSource.fetchLote(), trustSource.fetchTrustSourceCa(),
+        accessCertificate, registrationCertificate);
   }
 
   @Test

@@ -6,7 +6,10 @@ package se.digg.wallet.ecosystem;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.SignedJWT;
 import java.nio.file.Files;
@@ -32,6 +35,14 @@ final class CertificateTestSupport {
   private static final String REGISTRATION_ALIAS = "registration";
 
   private CertificateTestSupport() {}
+
+  static JWSSigner loadAccessCertificateSigner() throws Exception {
+    var keyStore = loadKeyStore(
+        ACCESS_CERTIFICATE_KEYSTORE, VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD);
+    var jwk = JWK.load(
+        keyStore, ACCESS_CERTIFICATE_ALIAS, VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD);
+    return new DefaultJWSSignerFactory().createJWSSigner(jwk);
+  }
 
   static JWSHeader loadAccessCertificateHeader() throws Exception {
     var keyStore = loadKeyStore(

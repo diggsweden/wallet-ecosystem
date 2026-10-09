@@ -37,14 +37,41 @@ public final class LoteValidator {
       .build();
   private static final String WRPRC_ISSUANCE_SERVICE =
       "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance";
+  private static final String WRPAC_ISSUANCE_SERVICE =
+      "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance";
 
-  public void validateRegistrationCertificate(
-      SignedJWT registrationCertificate, SignedJWT lote, X509Certificate trustSourceCa)
+  /**
+   * Validates the LoTE, then validates the access certificate and the registration certificate
+   * against the LoTE.
+   */
+  public void validateWalletRelyingPartyTrust(
+      SignedJWT lote, X509Certificate trustSourceCa,
+      X509Certificate accessCertificate, SignedJWT registrationCertificate)
+      throws Exception {
+    validateLoteSignature(lote, trustSourceCa);
+    validateAccessCertificate(lote, accessCertificate);
+    validateRegistrationCertificate(lote, registrationCertificate);
+  }
+
+  static void validateLoteSignature(
+      SignedJWT lote, X509Certificate trustSourceCa)
+      throws JOSEException, GeneralSecurityException {
+    var loteSigner = certificateFromBase64(lote.getHeader().getX509CertChain().getFirst());
+
+    validateCertificateChainAgainstTrust(List.of(loteSigner), Set.of(trustSourceCa));
+
+    var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(
+        lote.getHeader(), loteSigner.getPublicKey());
+    assertTrue(lote.verify(verifier), "LoTE was not signed by expected key");
+  }
+
+  static void validateRegistrationCertificate(
+      SignedJWT lote, SignedJWT registrationCertificate)
       throws JOSEException, GeneralSecurityException {
     var certificateChain = registrationCertificate.getHeader().getX509CertChain().stream()
         .map(LoteValidator::certificateFromBase64)
         .toList();
-    validateLoteSignature(lote, trustSourceCa);
+
     validateRegistrationCertificateSignature(
         registrationCertificate, certificateChain.getFirst());
 
@@ -56,16 +83,11 @@ public final class LoteValidator {
     validateCertificateChainAgainstTrust(certificateChainToValidate, trustedCertificates);
   }
 
-  private static void validateLoteSignature(
-      SignedJWT lote, X509Certificate trustSourceCa)
-      throws JOSEException, GeneralSecurityException {
-    var loteSigner = certificateFromBase64(lote.getHeader().getX509CertChain().getFirst());
-
-    validateCertificateChainAgainstTrust(List.of(loteSigner), Set.of(trustSourceCa));
-
-    var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(
-        lote.getHeader(), loteSigner.getPublicKey());
-    assertTrue(lote.verify(verifier), "LoTE was not signed by expected key");
+  static void validateAccessCertificate(
+      SignedJWT lote, X509Certificate accessCertificate)
+      throws Exception {
+    var trustedCertificates = trustedCertificatesForService(lote, WRPAC_ISSUANCE_SERVICE);
+    validateCertificateChainAgainstTrust(List.of(accessCertificate), trustedCertificates);
   }
 
   private static void validateRegistrationCertificateSignature(
