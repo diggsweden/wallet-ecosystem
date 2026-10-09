@@ -30,7 +30,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.json.JsonMapper;
 
-public final class LoteValidator {
+public class ListOfTrustedEntities {
+
   private static final ObjectMapper LOTE_CLAIMS_OBJECT_MAPPER = JsonMapper.builder()
       .propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE)
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -40,42 +41,45 @@ public final class LoteValidator {
   private static final String WRPAC_ISSUANCE_SERVICE =
       "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance";
 
-  /**
-   * Validates the LoTE, then validates the access certificate and the registration certificate
-   * against the LoTE.
-   */
-  public void validateWalletRelyingPartyTrust(
-      SignedJWT lote, X509Certificate trustSourceCa,
-      X509Certificate accessCertificate, SignedJWT registrationCertificate)
-      throws Exception {
-    validateLoteSignature(lote, trustSourceCa);
-    validateAccessCertificate(lote, accessCertificate);
-    validateRegistrationCertificate(lote, registrationCertificate);
+  private final SignedJWT lote;
+
+  public ListOfTrustedEntities(SignedJWT lote) {
+    this.lote = lote;
   }
 
-  static void validateLoteSignature(
-      SignedJWT lote, X509Certificate trustSourceCa)
-      throws JOSEException, GeneralSecurityException {
+  /**
+   * Validates the signature of this list of trusted entities against the authority, then validates
+   * the access certificate and the registration certificate against this list.
+   */
+  public void validateWalletRelyingPartyTrust(
+      X509Certificate authority,
+      X509Certificate accessCertificate,
+      SignedJWT registrationCertificate) throws Exception {
+    validateSignature(authority);
+    validateAccessCertificate(accessCertificate);
+    validateRegistrationCertificate(registrationCertificate);
+  }
+
+  void validateSignature(X509Certificate certificate) throws Exception {
     var loteSigner = certificateFromBase64(lote.getHeader().getX509CertChain().getFirst());
 
-    validateCertificateChainAgainstTrust(List.of(loteSigner), Set.of(trustSourceCa));
+    validateCertificateChainAgainstTrust(List.of(loteSigner), Set.of(certificate));
 
     var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(
         lote.getHeader(), loteSigner.getPublicKey());
     assertTrue(lote.verify(verifier), "LoTE was not signed by expected key");
   }
 
-  static void validateRegistrationCertificate(
-      SignedJWT lote, SignedJWT registrationCertificate)
-      throws JOSEException, GeneralSecurityException {
+  void validateRegistrationCertificate(SignedJWT registrationCertificate)
+      throws Exception {
     var certificateChain = registrationCertificate.getHeader().getX509CertChain().stream()
-        .map(LoteValidator::certificateFromBase64)
+        .map(ListOfTrustedEntities::certificateFromBase64)
         .toList();
 
     validateRegistrationCertificateSignature(
         registrationCertificate, certificateChain.getFirst());
 
-    var trustedCertificates = trustedCertificatesForService(lote, WRPRC_ISSUANCE_SERVICE);
+    var trustedCertificates = trustedCertificatesForService(WRPRC_ISSUANCE_SERVICE);
     var certificateChainToValidate = certificateChain.stream()
         // Do not include LoTE CAs in the certificate chain
         .filter(certificate -> !trustedCertificates.contains(certificate))
@@ -83,10 +87,8 @@ public final class LoteValidator {
     validateCertificateChainAgainstTrust(certificateChainToValidate, trustedCertificates);
   }
 
-  static void validateAccessCertificate(
-      SignedJWT lote, X509Certificate accessCertificate)
-      throws Exception {
-    var trustedCertificates = trustedCertificatesForService(lote, WRPAC_ISSUANCE_SERVICE);
+  void validateAccessCertificate(X509Certificate accessCertificate) throws Exception {
+    var trustedCertificates = trustedCertificatesForService(WRPAC_ISSUANCE_SERVICE);
     validateCertificateChainAgainstTrust(List.of(accessCertificate), trustedCertificates);
   }
 
@@ -98,8 +100,7 @@ public final class LoteValidator {
         "The registration certificate was not signed by expected key");
   }
 
-  private static Set<X509Certificate> trustedCertificatesForService(
-      SignedJWT lote, String serviceType) {
+  private Set<X509Certificate> trustedCertificatesForService(String serviceType) {
     var claims = LOTE_CLAIMS_OBJECT_MAPPER.readValue(
         lote.getPayload().toString(), LoteClaims.class);
     var trustedCertificates = claims.lote().trustedEntitiesList().stream()
@@ -151,11 +152,9 @@ public final class LoteValidator {
     private record Lote(List<TrustedEntity> trustedEntitiesList) {
       private record TrustedEntity(List<TrustedService> trustedEntityServices) {
         private record TrustedService(ServiceInformation serviceInformation) {
-          private record ServiceInformation(
-              String serviceTypeIdentifier,
+          private record ServiceInformation(String serviceTypeIdentifier,
               ServiceDigitalIdentity serviceDigitalIdentity) {
-            private record ServiceDigitalIdentity(
-                List<X509CertificateEntry> x509Certificates) {
+            private record ServiceDigitalIdentity(List<X509CertificateEntry> x509Certificates) {
               private record X509CertificateEntry(
                   @JsonProperty("val") String val) {
               }
@@ -165,5 +164,4 @@ public final class LoteValidator {
       }
     }
   }
-
 }

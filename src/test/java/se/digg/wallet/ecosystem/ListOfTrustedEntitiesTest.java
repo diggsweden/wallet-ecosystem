@@ -24,12 +24,11 @@ import java.text.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class LoteValidatorTest {
+class ListOfTrustedEntitiesTest {
   private static final Path LOTE_PATH = Path.of(
       "config/trust-source/signed/trusted-entities.json");
   private static final Path TRUST_SOURCE_CA_PATH = Path.of(
       "config/certificates/ca/trust-source/ca.pem");
-  private final LoteValidator loteValidator = new LoteValidator();
   private static SignedJWT configuredLote;
   private static X509Certificate configuredAccessCertificate;
   private static SignedJWT configuredRegistrationCertificate;
@@ -46,10 +45,11 @@ class LoteValidatorTest {
     }
   }
 
+  private final ListOfTrustedEntities subject = new ListOfTrustedEntities(configuredLote);
+
   @Test
   void acceptsTrustedLoteAndRequest() throws Exception {
-    loteValidator.validateWalletRelyingPartyTrust(
-        configuredLote, configuredTrustSourceCa,
+    subject.validateWalletRelyingPartyTrust(configuredTrustSourceCa,
         configuredAccessCertificate, configuredRegistrationCertificate);
   }
 
@@ -61,8 +61,7 @@ class LoteValidatorTest {
 
     var exception = assertThrows(
         CertPathValidatorException.class,
-        () -> loteValidator.validateWalletRelyingPartyTrust(
-            configuredLote, configuredTrustSourceCa,
+        () -> subject.validateWalletRelyingPartyTrust(configuredTrustSourceCa,
             untrustedAccessCertificate, configuredRegistrationCertificate));
 
     assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
@@ -70,8 +69,7 @@ class LoteValidatorTest {
 
   @Test
   void acceptsConfiguredAccessCertificate() throws Exception {
-    LoteValidator.validateAccessCertificate(
-        configuredLote, configuredAccessCertificate);
+    subject.validateAccessCertificate(configuredAccessCertificate);
   }
 
   @Test
@@ -79,14 +77,13 @@ class LoteValidatorTest {
     var untrustedAccessCertificate = CertificateTestSupport.loadRegistrationCertificateX509();
 
     var exception = assertThrows(CertPathValidatorException.class,
-        () -> LoteValidator.validateAccessCertificate(configuredLote, untrustedAccessCertificate));
+        () -> subject.validateAccessCertificate(untrustedAccessCertificate));
     assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
   }
 
   @Test
   void acceptsConfiguredRegistrationCertificate() throws Exception {
-    LoteValidator.validateRegistrationCertificate(
-        configuredLote, configuredRegistrationCertificate);
+    subject.validateRegistrationCertificate(configuredRegistrationCertificate);
   }
 
   @Test
@@ -95,8 +92,7 @@ class LoteValidatorTest {
         configuredRegistrationCertificate);
 
     var exception = assertThrows(AssertionError.class,
-        () -> LoteValidator.validateRegistrationCertificate(
-            configuredLote,
+        () -> subject.validateRegistrationCertificate(
             registrationCertificateSignedByAnotherKey));
     assertThat(exception.getMessage(),
         containsString("The registration certificate was not signed by expected key"));
@@ -106,17 +102,15 @@ class LoteValidatorTest {
   void rejectsLoteWhenSignerIsNotTrustedByTrustSourceCa() throws Exception {
     var unrelatedCertificate = CertificateTestSupport.loadAccessCertificateX509();
     var exception = assertThrows(CertPathValidatorException.class,
-        () -> LoteValidator.validateLoteSignature(configuredLote, unrelatedCertificate));
+        () -> subject.validateSignature(unrelatedCertificate));
     assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
   }
 
   @Test
   void rejectsLoteWithInvalidSignature() throws Exception {
-    var loteWithInvalidSignature = signWithAnotherKey(configuredLote);
+    var loteWithInvalidSignature = new ListOfTrustedEntities(signWithAnotherKey(configuredLote));
     var exception = assertThrows(AssertionError.class,
-        () -> LoteValidator.validateLoteSignature(
-            loteWithInvalidSignature,
-            configuredTrustSourceCa));
+        () -> loteWithInvalidSignature.validateSignature(configuredTrustSourceCa));
     assertThat(exception.getMessage(), containsString("LoTE was not signed by expected key"));
   }
 
