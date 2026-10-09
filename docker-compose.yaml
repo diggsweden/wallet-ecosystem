@@ -73,13 +73,14 @@ services:
       - wallet-ecosystem-network
 
   trust-validator:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.2.2-alpha@sha256:9a828e2c0149ccd9fbd9ed98cb3f49fcc1ac92bbd827d3d4a35dca28598b2e70
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.3.1-alpha@sha256:99f8128fea47a4b9947cf3fca898832c5ff0acdb9b93d25ffd073a549e11c3dd
     container_name: trust-validator
     hostname: trust-validator
     environment:
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
-      TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
-      TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
+      TRUST_VALIDATOR_ENABLE_CERTIFICATE_REVOCATION_CHECK: "false"
+      TRUST_VALIDATOR_DSS_FILE_CACHE_LOCATION: "/tmp/dss-cache"
+      TRUST_VALIDATOR_LOTE_FILE_CACHE_LOCATION: "/tmp/lote-cache"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
