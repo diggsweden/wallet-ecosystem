@@ -97,7 +97,7 @@ class VerifierBackendTest {
         .getRegistrationCertificate(authRequest);
 
     new ListOfTrustedEntities(trustSource.fetchLote()).validateWalletRelyingPartyTrust(
-        trustSource.fetchTrustSourceCa(), accessCertificate, registrationCertificate);
+        accessCertificate, registrationCertificate);
   }
 
   @Test

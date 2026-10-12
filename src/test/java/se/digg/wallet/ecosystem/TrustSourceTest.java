@@ -40,6 +40,13 @@ class TrustSourceTest {
   }
 
   @Test
+  void servesLoteSignedByTrustSourceCa() throws Exception {
+    var ca = trustSource.fetchTrustSourceCa();
+    var lote = trustSource.fetchLote();
+    new ListOfTrustedEntities(lote).validateSignature(ca);
+  }
+
+  @Test
   void servesStatusListJwt() throws Exception {
     String body = trustSource.tryGet("signed/status-list.jwt")
         .then()

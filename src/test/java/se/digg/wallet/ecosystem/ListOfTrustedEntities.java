@@ -48,19 +48,19 @@ public class ListOfTrustedEntities {
   }
 
   /**
-   * Validates the signature of this list of trusted entities against the authority, then validates
-   * the access certificate and the registration certificate against this list.
+   * Validates the access certificate and the registration certificate against this list.
    */
   public void validateWalletRelyingPartyTrust(
-      X509Certificate authority,
       X509Certificate accessCertificate,
       SignedJWT registrationCertificate) throws Exception {
-    validateSignature(authority);
     validateAccessCertificate(accessCertificate);
     validateRegistrationCertificate(registrationCertificate);
   }
 
-  void validateSignature(X509Certificate certificate) throws Exception {
+  /**
+   * Validates the signature of this list of trusted entities against the authority.
+   */
+  public void validateSignature(X509Certificate certificate) throws Exception {
     var loteSigner = certificateFromBase64(lote.getHeader().getX509CertChain().getFirst());
 
     validateCertificateChainAgainstTrust(List.of(loteSigner), Set.of(certificate));

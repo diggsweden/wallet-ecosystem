@@ -49,7 +49,7 @@ class ListOfTrustedEntitiesTest {
 
   @Test
   void acceptsTrustedLoteAndRequest() throws Exception {
-    subject.validateWalletRelyingPartyTrust(configuredTrustSourceCa,
+    subject.validateWalletRelyingPartyTrust(
         configuredAccessCertificate, configuredRegistrationCertificate);
   }
 
@@ -61,7 +61,7 @@ class ListOfTrustedEntitiesTest {
 
     var exception = assertThrows(
         CertPathValidatorException.class,
-        () -> subject.validateWalletRelyingPartyTrust(configuredTrustSourceCa,
+        () -> subject.validateWalletRelyingPartyTrust(
             untrustedAccessCertificate, configuredRegistrationCertificate));
 
     assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
