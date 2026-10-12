@@ -15,7 +15,9 @@ import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +38,7 @@ class OpenId4VpAuthorizationRequestValidatorTest {
 
   @Test
   void acceptsAuthorizationRequestWithRegisteredClaims() throws Exception {
-    var authorizationRequest = validUnsignedRequest();
+    var authorizationRequest = new SignedJWT(accessCertificateHeader, validClaims().build());
     authorizationRequest.sign(accessCertificateSigner);
 
     validator.validateRelyingPartyAuthorizationRequest(authorizationRequest);
@@ -44,7 +46,8 @@ class OpenId4VpAuthorizationRequestValidatorTest {
 
   @Test
   void rejectsAuthorizationRequestSignedByUnexpectedKey() throws Exception {
-    var authorizationRequest = validUnsignedRequest();
+    var authorizationRequest = new SignedJWT(accessCertificateHeader, validClaims().build());
+
     authorizationRequest.sign(new ECDSASigner(new ECKeyGenerator(Curve.P_256).generate()));
 
     var exception = assertThrows(AssertionError.class,
@@ -55,13 +58,11 @@ class OpenId4VpAuthorizationRequestValidatorTest {
 
   @Test
   void rejectsAuthorizationRequestWithUnregisteredClaim() throws Exception {
-    var claims = """
-        [
-          { "path": ["not_registered_claim"] }
-        ]""";
     var requestWithUnregisteredClaim = new SignedJWT(
         accessCertificateHeader,
-        authorizationRequest(registrationCertificate, claims));
+        validClaims().claim("dcql_query", dcqlQueryClaim(
+            List.of(dcqlCredentialsClaim("not_registered_claim")))).build());
+
     requestWithUnregisteredClaim.sign(accessCertificateSigner);
 
     var exception = assertThrows(AssertionError.class,
@@ -81,7 +82,8 @@ class OpenId4VpAuthorizationRequestValidatorTest {
         registrationCertificateWithDifferentOrganization);
     var authorizationRequest = new SignedJWT(
         accessCertificateHeader,
-        authorizationRequest(registrationCertificateWithDifferentOrganization, "[]"));
+        validClaims().claim("verifier_info",
+            verifierInfoClaim(registrationCertificateWithDifferentOrganization)).build());
     authorizationRequest.sign(accessCertificateSigner);
 
     var exception = assertThrows(AssertionError.class,
@@ -91,19 +93,10 @@ class OpenId4VpAuthorizationRequestValidatorTest {
   }
 
   @Test
-  void rejectsAuthorizationRequestWithoutRegistrationCertificate() throws Exception {
+  void rejectsAuthorizationRequestWithoutRegistrationCertificate() {
     var authorizationRequest = new SignedJWT(
-        accessCertificateHeader,
-        JWTClaimsSet.parse("""
-            {
-              "verifier_info": [
-                {
-                  "format": "some_other_format",
-                  "data": "not-a-registration-certificate"
-                }
-              ]
-            }
-            """));
+        accessCertificateHeader, validClaims().claim("verifier_info",
+            verifierInfoClaim("some_other_format", "not-a-registration-certificate")).build());
 
     var exception = assertThrows(IllegalArgumentException.class,
         () -> validator.getRegistrationCertificate(authorizationRequest));
@@ -112,41 +105,39 @@ class OpenId4VpAuthorizationRequestValidatorTest {
     assertThat(exception.getMessage(), containsString("some_other_format"));
   }
 
-  private SignedJWT validUnsignedRequest() throws ParseException {
-    var claims = """
-        [
-          { "path": ["family_name"] },
-          { "path": ["given_name"] },
-          { "path": ["personal_administrative_number"] },
-          { "path": ["address", "street_address"] }
-        ]""";
-    var authorizationRequest = new SignedJWT(
-        accessCertificateHeader,
-        authorizationRequest(registrationCertificate, claims));
-    return authorizationRequest;
+  private JWTClaimsSet.Builder validClaims() {
+    return new JWTClaimsSet.Builder()
+        .claim("verifier_info", verifierInfoClaim(registrationCertificate))
+        .claim("dcql_query", dcqlQueryClaim(List.of(
+            dcqlCredentialsClaim("family_name"),
+            dcqlCredentialsClaim("given_name"),
+            dcqlCredentialsClaim("personal_administrative_number"),
+            dcqlCredentialsClaim("address", "street_address"))));
   }
 
-  private JWTClaimsSet authorizationRequest(SignedJWT registrationCertificate, String claimsArray)
-      throws ParseException {
-    return JWTClaimsSet.parse("""
-        {
-          "verifier_info": [
-            {
-              "format": "registration_cert",
-              "data": "%s"
-            }
-          ],
-          "dcql_query": {
-            "credentials": [
-              {
-                "format": "dc+sd-jwt",
-                "vct": "urn:eudi:pid:1",
-                "claims": %s
-              }
-            ]
-          }
-        }
-        """
-        .formatted(registrationCertificate.serialize(), claimsArray));
+  private List<Map<String, String>> verifierInfoClaim(
+      SignedJWT registrationCertificate) {
+    return verifierInfoClaim(
+        "registration_cert",
+        registrationCertificate.serialize());
+  }
+
+  private List<Map<String, String>> verifierInfoClaim(
+      String format, String data) {
+    return List.of(Map.of(
+        "format", format,
+        "data", data));
+  }
+
+  private Map<String, List<String>> dcqlCredentialsClaim(String... pathFragments) {
+    return Map.of("path", Arrays.asList(pathFragments));
+  }
+
+  private Map<String, List<Map<String, Object>>> dcqlQueryClaim(
+      List<Map<String, List<String>>> credentialsClaims) {
+    return Map.of("credentials", List.of(Map.of(
+        "format", "dc+sd-jwt",
+        "vct", "urn:eudi:pid:1",
+        "claims", credentialsClaims)));
   }
 }
