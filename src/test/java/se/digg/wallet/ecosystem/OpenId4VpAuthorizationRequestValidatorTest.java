@@ -15,6 +15,7 @@ import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.text.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -35,32 +36,7 @@ class OpenId4VpAuthorizationRequestValidatorTest {
 
   @Test
   void acceptsAuthorizationRequestWithRegisteredClaims() throws Exception {
-    var authorizationRequest = new SignedJWT(
-        accessCertificateHeader,
-        JWTClaimsSet.parse("""
-            {
-              "verifier_info": [
-                {
-                  "format": "registration_cert",
-                  "data": "%s"
-                }
-              ],
-              "dcql_query": {
-                "credentials": [
-                  {
-                    "format": "dc+sd-jwt",
-                    "vct": "urn:eudi:pid:1",
-                    "claims": [
-                      { "path": ["family_name"] },
-                      { "path": ["given_name"] },
-                      { "path": ["personal_administrative_number"] },
-                      { "path": ["address", "street_address"] }
-                    ]
-                  }
-                ]
-              }
-            }
-            """.formatted(registrationCertificate.serialize())));
+    var authorizationRequest = validUnsignedRequest();
     authorizationRequest.sign(accessCertificateSigner);
 
     validator.validateRelyingPartyAuthorizationRequest(authorizationRequest);
@@ -68,32 +44,7 @@ class OpenId4VpAuthorizationRequestValidatorTest {
 
   @Test
   void rejectsAuthorizationRequestSignedByUnexpectedKey() throws Exception {
-    var authorizationRequest = new SignedJWT(
-        accessCertificateHeader,
-        JWTClaimsSet.parse("""
-            {
-              "verifier_info": [
-                {
-                  "format": "registration_cert",
-                  "data": "%s"
-                }
-              ],
-              "dcql_query": {
-                "credentials": [
-                  {
-                    "format": "dc+sd-jwt",
-                    "vct": "urn:eudi:pid:1",
-                    "claims": [
-                      { "path": ["family_name"] },
-                      { "path": ["given_name"] },
-                      { "path": ["personal_administrative_number"] },
-                      { "path": ["address", "street_address"] }
-                    ]
-                  }
-                ]
-              }
-            }
-            """.formatted(registrationCertificate.serialize())));
+    var authorizationRequest = validUnsignedRequest();
     authorizationRequest.sign(new ECDSASigner(new ECKeyGenerator(Curve.P_256).generate()));
 
     var exception = assertThrows(AssertionError.class,
@@ -104,29 +55,13 @@ class OpenId4VpAuthorizationRequestValidatorTest {
 
   @Test
   void rejectsAuthorizationRequestWithUnregisteredClaim() throws Exception {
+    var claims = """
+        [
+          { "path": ["not_registered_claim"] }
+        ]""";
     var requestWithUnregisteredClaim = new SignedJWT(
         accessCertificateHeader,
-        JWTClaimsSet.parse("""
-            {
-              "verifier_info": [
-                {
-                  "format": "registration_cert",
-                  "data": "%s"
-                }
-              ],
-              "dcql_query": {
-                "credentials": [
-                  {
-                    "format": "dc+sd-jwt",
-                    "vct": "urn:eudi:pid:1",
-                    "claims": [
-                      { "path": ["not_registered_claim"] }
-                    ]
-                  }
-                ]
-              }
-            }
-            """.formatted(registrationCertificate.serialize())));
+        authorizationRequest(registrationCertificate, claims));
     requestWithUnregisteredClaim.sign(accessCertificateSigner);
 
     var exception = assertThrows(AssertionError.class,
@@ -146,16 +81,7 @@ class OpenId4VpAuthorizationRequestValidatorTest {
         registrationCertificateWithDifferentOrganization);
     var authorizationRequest = new SignedJWT(
         accessCertificateHeader,
-        JWTClaimsSet.parse("""
-            {
-              "verifier_info": [
-                {
-                  "format": "registration_cert",
-                  "data": "%s"
-                }
-              ]
-            }
-            """.formatted(registrationCertificateWithDifferentOrganization.serialize())));
+        authorizationRequest(registrationCertificateWithDifferentOrganization, "[]"));
     authorizationRequest.sign(accessCertificateSigner);
 
     var exception = assertThrows(AssertionError.class,
@@ -186,4 +112,41 @@ class OpenId4VpAuthorizationRequestValidatorTest {
     assertThat(exception.getMessage(), containsString("some_other_format"));
   }
 
+  private SignedJWT validUnsignedRequest() throws ParseException {
+    var claims = """
+        [
+          { "path": ["family_name"] },
+          { "path": ["given_name"] },
+          { "path": ["personal_administrative_number"] },
+          { "path": ["address", "street_address"] }
+        ]""";
+    var authorizationRequest = new SignedJWT(
+        accessCertificateHeader,
+        authorizationRequest(registrationCertificate, claims));
+    return authorizationRequest;
+  }
+
+  private JWTClaimsSet authorizationRequest(SignedJWT registrationCertificate, String claimsArray)
+      throws ParseException {
+    return JWTClaimsSet.parse("""
+        {
+          "verifier_info": [
+            {
+              "format": "registration_cert",
+              "data": "%s"
+            }
+          ],
+          "dcql_query": {
+            "credentials": [
+              {
+                "format": "dc+sd-jwt",
+                "vct": "urn:eudi:pid:1",
+                "claims": %s
+              }
+            ]
+          }
+        }
+        """
+        .formatted(registrationCertificate.serialize(), claimsArray));
+  }
 }
