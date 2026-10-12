@@ -32,7 +32,7 @@ x-kafka-common: &kafka-common
 
 services:
   refimpl-verifier-backend:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.11.0@sha256:2f2772b1df39a529f3683c7e82d10d03221b475e67da7b2d8cb1b9aebe6f71f9
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.12.0@sha256:b56390f2078f9ce705f2b20db86fdd52297c0a587dd4110c82f173c223a3a07f
     container_name: refimpl-verifier-backend
     hostname: refimpl-verifier-backend
     env_file:
@@ -73,13 +73,14 @@ services:
       - wallet-ecosystem-network
 
   trust-validator:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.2.2-alpha@sha256:9a828e2c0149ccd9fbd9ed98cb3f49fcc1ac92bbd827d3d4a35dca28598b2e70
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-trust-validator:0.3.1-alpha@sha256:99f8128fea47a4b9947cf3fca898832c5ff0acdb9b93d25ffd073a549e11c3dd
     container_name: trust-validator
     hostname: trust-validator
     environment:
       SPRING_WEBFLUX_BASE_PATH: "/trust-validator"
-      TRUST_VALIDATOR_DSS_CACHE_LOCATION: "/tmp/dss-cache"
-      TRUST_VALIDATOR_LOTE_CACHE_LOCATION: "/tmp/lote-cache"
+      TRUST_VALIDATOR_ENABLE_CERTIFICATE_REVOCATION_CHECK: "false"
+      TRUST_VALIDATOR_DSS_FILE_CACHE_LOCATION: "/tmp/dss-cache"
+      TRUST_VALIDATOR_LOTE_FILE_CACHE_LOCATION: "/tmp/lote-cache"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_PID_PROVIDERS_LOTE_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/PID/Revocation"
@@ -177,7 +178,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.0@sha256:90a8d77a27e3dca9fa83386d75400b30f53508c0cc59f7af08f1a44c4c3c394c
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.1@sha256:2e6176a00f3bea3266d79cdf8182c2fcad96436f5a7a463ad504eb533a6e06f2
     container_name: pid-issuer
     depends_on:
       keycloak:
