@@ -358,11 +358,12 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.11@sha256:074e05a5809752f7702a1966417cfb91fe9de1014e55d546fdfc4bfd73337f7f
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.13@sha256:4a9dbd6199907f7aab74c11df79e791bba213053f46142b54ebee52b4ce0e5fc
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
       - ./config/common/Healthcheck.class:/opt/Healthcheck.class:ro
+      - ./config/wallet-client-gateway:/etc/wallet-client-gateway:ro
     environment:
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-client-gateway"
@@ -374,6 +375,8 @@ services:
       PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
       PROPERTIES_WALLETR2PS_BASEURL: "http://wallet-bff:8088"
+      PROPERTIES_FEATUREFLAGS_FILEPATH: "/etc/wallet-client-gateway/feature-flags.json"
+      PROPERTIES_CLIENTCONFIG_FEATURES: "example"
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
       SERVER_FORWARD_HEADERS_STRATEGY: "framework"

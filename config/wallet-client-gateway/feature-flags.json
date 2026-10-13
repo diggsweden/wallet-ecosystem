@@ -1,0 +1,42 @@
+{
+  "$schema": "https://flagd.dev/schema/v0/flags.json",
+  "flags": {
+    "client.cache-generation": {
+      "state": "ENABLED",
+      "variants": { "current": 6 },
+      "defaultVariant": "current"
+    },
+    "client.feature.example": {
+      "state": "ENABLED",
+      "variants": { "on": true, "off": false },
+      "defaultVariant": "off",
+      "targeting": {
+        "if": [
+          {
+            "and": [
+              { "==": [{ "var": "os" }, "Android"] },
+              { "sem_ver": [{ "var": "appVersion" }, ">=", "2.0.0"] }
+            ]
+          },
+          "on",
+          "off"
+        ]
+      }
+    },
+    "gateway.maintenance.enabled": {
+      "state": "ENABLED",
+      "variants": { "on": true, "off": false },
+      "defaultVariant": "off"
+    },
+    "gateway.maintenance.starts-at": {
+      "state": "DISABLED",
+      "variants": { "planned": "2026-10-05T18:00:00Z" },
+      "defaultVariant": "planned"
+    },
+    "gateway.maintenance.ends-at": {
+      "state": "DISABLED",
+      "variants": { "planned": "2026-10-05T20:00:00Z" },
+      "defaultVariant": "planned"
+    }
+  }
+}

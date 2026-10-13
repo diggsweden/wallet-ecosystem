@@ -24,6 +24,22 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
+  public Response tryGetClientConfig(String deviceOs, String appVersion) {
+    return given()
+        .when()
+        .header("X-API-KEY", API_KEY)
+        .header("Wallet-Device-OS", deviceOs)
+        .header("Wallet-App-Version", appVersion)
+        .get(base.resolve("util/v0/client-configs"));
+  }
+
+  public Response tryGetMaintenanceWindow() {
+    return given()
+        .when()
+        .header("X-API-KEY", API_KEY)
+        .get(base.resolve("util/v0/maintenance-windows"));
+  }
+
   public String createAccount(String postBody) {
     return given()
         .when()

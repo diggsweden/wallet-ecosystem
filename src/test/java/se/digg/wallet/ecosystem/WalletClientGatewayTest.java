@@ -26,14 +26,13 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-@TestMethodOrder(OrderAnnotation.class)
 public class WalletClientGatewayTest {
 
   private static final WalletClientGatewayClient walletClientGateway =
@@ -55,6 +54,31 @@ public class WalletClientGatewayTest {
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "Android, 2.0.0, 6, true",
+      "iOS, 2.0.0, 6, false"
+  })
+  @DisabledIfEnvironmentVariable(
+      named = "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_LOCAL_FEATURE_FLAGS_TESTING_ENABLED",
+      matches = "(?i)false")
+  void getClientConfig_shouldReturnTargetedFeatureFlags(String os, String version,
+      int expectedCacheGenerationValue, boolean expectedExampleValue) {
+    walletClientGateway.tryGetClientConfig(os, version).then()
+        .assertThat().statusCode(200)
+        .and().body("cacheGeneration", equalTo(expectedCacheGenerationValue))
+        .and().body("features.example", equalTo(expectedExampleValue));
+  }
+
+  @Test
+  @DisabledIfEnvironmentVariable(
+      named = "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_LOCAL_FEATURE_FLAGS_TESTING_ENABLED",
+      matches = "(?i)false")
+  void getMaintenanceWindow_whenNoMaintenance_shouldReturnNoContent() {
+    walletClientGateway.tryGetMaintenanceWindow().then()
+        .assertThat().statusCode(204);
   }
 
   @Test
@@ -187,4 +211,5 @@ public class WalletClientGatewayTest {
 
     return signedJwt.serialize();
   }
+
 }
