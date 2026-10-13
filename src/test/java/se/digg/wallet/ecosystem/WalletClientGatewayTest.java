@@ -9,7 +9,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
@@ -28,7 +27,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -55,38 +56,29 @@ public class WalletClientGatewayTest {
         .and().body("status", equalTo("UP"));
   }
 
-  @Test
-  void getClientConfig_shouldReturnTargetedFeatureFlags() {
-    assumeLocalFeatureFlags();
-
-    walletClientGateway.tryGetClientConfig("Android", "2.0.0")
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .body("cacheGeneration", equalTo(6))
-        .body("features.example", equalTo(true));
+  @ParameterizedTest
+  @CsvSource({
+      "Android, 2.0.0, 6, true",
+      "iOS, 2.0.0, 6, false"
+  })
+  @DisabledIfEnvironmentVariable(
+      named = "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_LOCAL_FEATURE_FLAGS_TESTING_ENABLED",
+      matches = "(?i)false")
+  void getClientConfig_shouldReturnTargetedFeatureFlags(String os, String version,
+      int expectedCacheGenerationValue, boolean expectedExampleValue) {
+    walletClientGateway.tryGetClientConfig(os, version).then()
+        .assertThat().statusCode(200)
+        .and().body("cacheGeneration", equalTo(expectedCacheGenerationValue))
+        .and().body("features.example", equalTo(expectedExampleValue));
   }
 
   @Test
-  void getClientConfig_whenOsDoesNotMatch_shouldReturnFeatureDisabled() {
-    assumeLocalFeatureFlags();
-
-    walletClientGateway.tryGetClientConfig("iOS", "2.0.0")
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .body("cacheGeneration", equalTo(6))
-        .body("features.example", equalTo(false));
-  }
-
-  @Test
+  @DisabledIfEnvironmentVariable(
+      named = "DIGG_WALLET_ECOSYSTEM_WALLET_CLIENT_GATEWAY_LOCAL_FEATURE_FLAGS_TESTING_ENABLED",
+      matches = "(?i)false")
   void getMaintenanceWindow_whenNoMaintenance_shouldReturnNoContent() {
-    assumeLocalFeatureFlags();
-
-    walletClientGateway.tryGetMaintenanceWindow()
-        .then()
-        .assertThat()
-        .statusCode(204);
+    walletClientGateway.tryGetMaintenanceWindow().then()
+        .assertThat().statusCode(204);
   }
 
   @Test
@@ -218,12 +210,6 @@ public class WalletClientGatewayTest {
     signedJwt.sign(new ECDSASigner(ecJwk));
 
     return signedJwt.serialize();
-  }
-
-  private static void assumeLocalFeatureFlags() {
-    assumeTrue(Boolean.parseBoolean(
-        Property.WALLET_CLIENT_GATEWAY_LOCAL_FEATURE_FLAGS_TESTING_ENABLED.getValue()),
-        "Requires the gateway to use the local feature-flags.json fixture");
   }
 
 }
