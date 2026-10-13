@@ -24,12 +24,6 @@ public class WalletClientGatewayClient {
         .get(base.resolve("actuator/health"));
   }
 
-  public Response tryGetApiInfo() {
-    return given()
-        .when()
-        .get(base.resolve("api-info"));
-  }
-
   public Response tryGetClientConfig(String deviceOs, String appVersion) {
     return given()
         .when()
