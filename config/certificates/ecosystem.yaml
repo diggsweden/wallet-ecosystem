@@ -1,0 +1,145 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+schemaVersion: 1
+stateDirectory: ./config/certificates
+# All artifact paths below are relative to outputDirectory.
+outputDirectory: ./config
+
+organization:
+  name: DIGG
+  country: SE
+  identifier: VATSE-12345678
+
+authorities:
+  pidIssuer:
+    commonName: DIGG Wallet PID Issuer CA
+  walletAttestationIssuer:
+    commonName: DIGG Wallet Provider CA
+  verifierAccess:
+    commonName: DIGG Wallet Verifier Access Certificate CA
+  verifierRegistration:
+    commonName: DIGG Wallet Verifier Registration Certificate CA
+  trustSource:
+    commonName: DIGG Wallet Trust Source CA
+
+caDistribution:
+  baseUrl: http://trust-source
+  directory: trust-source
+  rootCrlFile: trust-source/revocation-list.pem
+
+pidIssuer:
+  keystoreFile: certificates/issuer/pid_issuer.p12
+  signing:
+    commonName: PID Issuer (Ecosystem)
+    subjectAlternativeNames:
+      dns: [localhost, pid-issuer]
+  encryption:
+    subjectAlternativeNames:
+      dns: [localhost]
+  keystorePassword:
+    env: PID_ISSUER_KEYSTORE_PASSWORD
+  registration:
+    jwtFile: pid-issuer/issuer_wrprc.jwt
+    jsonFile: pid-issuer/issuer_wrprc.json
+    issuer: did:web:localhost
+    subject: did:web:localhost
+
+walletAttestationIssuer:
+  keystoreFile: certificates/wallet-attestation-issuer/wallet_attestation_issuer.p12
+  signing:
+    commonName: Wallet Attestation Issuer (Ecosystem)
+    subjectAlternativeNames:
+      dns: [localhost, wallet-attestation-issuer]
+  keystorePassword:
+    env: WALLET_ATTESTATION_ISSUER_KEYSTORE_PASSWORD
+
+verifier:
+  access:
+    keystoreFile: certificates/verifier-access-certificate/verifier-access-certificate.p12
+    commonName: DIGG Verifier
+    subjectAlternativeNames:
+      dns: [localhost, verifier-backend, refimpl-verifier-backend]
+      ip: [10.0.2.2]
+      uri: ['https://localhost/demo-verifier']
+    keystorePassword:
+      env: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD
+
+  registration:
+    keystoreFile: certificates/verifier-registration-certificate/verifier-registration-certificate.p12
+    commonName: DIGG Verifier
+    keystorePassword:
+      env: VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD
+    registration:
+      jwtFile: certificates/verifier-registration-certificate/registration_certificate.jwt
+      environmentFile: certificates/verifier-registration-certificate/registration_certificate.env
+      name: DIGG Verifier
+      serviceIdentifier: wallet-ecosystem
+      intendedUseId: "1"
+      publicBaseUrl: https://localhost/local-registration-certificate
+      validityDays: 365
+      description:
+        - lang: en
+          value: Local wallet ecosystem service
+        - lang: sv
+          value: Lokal wallet-ekosystemtjänst
+      purpose:
+        - lang: en
+          value: Identification with credentials
+        - lang: sv
+          value: Identifiering med intyg
+      requestedPidClaims:
+        - personal_administrative_number
+        - family_name
+        - given_name
+        - birthdate
+        - address.street_address
+        - address.postal_code
+        - address.locality
+        - address.country
+      supervisoryAuthority:
+        name: Local Wallet Ecosystem
+        country: SE
+        email: walletecosystem@example.com
+
+trustSource:
+  signer:
+    keystoreFile: certificates/trust-list-signer/trust_source.p12
+    certificateFile: certificates/trust-list-signer/trust_source_cert.pem
+    commonName: Trust Source (Ecosystem)
+    keystorePassword:
+      env: TRUST_SOURCE_KEYSTORE_PASSWORD
+
+  lote:
+    outputFile: trust-source/signed/trusted-entities.json
+    name: Local LoTE
+    sequenceNumber: 2
+    validityDays: 365
+    trustedAuthorities:
+      pidIssuer:
+        - entityName: Local PID Provider
+          serviceName: Local PID Issuance
+          informationUrl: http://localhost
+          streetAddress: Local
+      walletAttestationIssuer:
+        - entityName: Local Wallet Attestation Issuer
+          serviceName: Local Wallet Attestation Issuance
+          informationUrl: http://localhost
+          streetAddress: Local
+        # Keep legacy WP trusted while its existing identity remains in use.
+        - entityName: Local Wallet Provider
+          serviceName: Local Wallet Issuance
+          informationUrl: http://localhost
+          streetAddress: Local
+          certificateFile: ./config/certificates/ca/wallet-provider/ca.pem
+      verifierAccess:
+        - entityName: Local WRPAC Provider
+          serviceName: Local WRPAC Issuance
+          informationUrl: http://localhost
+          streetAddress: Local
+      verifierRegistration:
+        - entityName: Local WRPRC Provider
+          serviceName: Local WRPRC Issuance
+          informationUrl: http://localhost
+          streetAddress: Local

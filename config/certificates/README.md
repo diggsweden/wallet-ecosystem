@@ -2,21 +2,52 @@
 
 ## Generate Internal Service Certificates and Keystores
 
-The ecosystem uses separate local self-signed CAs for the PID Issuer, Wallet Provider, Trust Source, Verifier access certificates and Verifier registration certificate trust domains.
-These certificates are separate from the Traefik/mkcert TLS certificate and are managed via an automation script.
+The ecosystem keeps development CAs, keystores and signed trust documents in Git
+so a fresh checkout and CI can start the services. Internal PKI is separate from
+the Traefik/mkcert TLS certificates managed by `just certs-tls`.
 
-### Automated Generation
+### Generate PKI artifacts
 
-To (re)generate all ecosystem certificates, keystores, and REUSE-compliant license files, run:
+Copy `.env.example` to `.env` if needed, then run from the ecosystem root:
 
 ```shell
-./config/certificates/generate_ecosystem_certs.sh
+just pki-generate
 ```
 
-This script:
+`pki-generate` runs the `wallet-pki-tool` container, pulling the image when absent.
+It passes `.env` through `--env-file` and uses
+[ecosystem.yaml](ecosystem.yaml). Ordinary `just up` does not regenerate keys.
+`just certs` generates TLS and service PKI.
 
-* Generates one EC (P-256) CA per application trust domain (if not present).
-* Issues certificates for **PID Issuer**, **Verifier**, **Wallet Provider**, and **Trust Source**.
-* Generates a local WRPRC registration certificate as a signed JWT for the verifier after the keystores are created.
-* Regenerates the signed LoTE for the PID Issuer, Wallet Provider, and WRPRC Provider.
-* Ensures generated keystores and PEM files are readable by Docker containers.
+The PKI image and `.env` path are fixed in the [justfile](../../justfile).
+
+The generator runs as the host user. It mounts this repository at `/workspace`
+and existing `config/certificates/ca` material read-only at
+`/workspace/config/certificates/ca`, preserving the configured relative paths.
+Generation reuses the existing roots and fails if their
+required files are missing or invalid. CA initialization or replacement is a
+separate, deliberate PKI-tool operation with a writable authority mount.
+
+### Generated artifacts
+
+Each generation replaces keys and artifacts for the PID issuer, wallet
+attestation issuer, verifier access, verifier registration and trust source.
+
+Output paths and aliases match the Compose consumers. Public certificates,
+CRLs and signed documents are container-readable. Static trust-source assets
+and the verifier CPS remain in place. The signed status-list JWT is an all-valid
+development fixture. Increase `trustSource.lote.sequenceNumber` in `ecosystem.yaml`
+when publishing an updated LoTE.
+
+Keep regenerated development artifacts and their existing `.license` sidecars
+in Git. Before generating committed fixtures, set the passwords in `.env` to
+the development values from `.env.example`. Use the same passwords when running
+those fixtures.
+Recreate the consumers after replacing their mounted files and run the suite:
+
+```shell
+just down
+just pull
+just up
+just test
+```

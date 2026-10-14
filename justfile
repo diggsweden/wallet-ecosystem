@@ -14,6 +14,9 @@ colors := devtools_dir + "/utils/colors.sh"
 
 maven_opts := "--batch-mode --no-transfer-progress --errors -Dstyle.color=always"
 
+pki_image := "ghcr.io/diggsweden/wallet-pki-tool:v0.1.3"
+pki_env_file := ".env"
+
 # Color variables
 CYAN_BOLD := "\\033[1;36m"
 GREEN := "\\033[1;32m"
@@ -309,16 +312,32 @@ produce-test-report:
 # CERTS - Certificate management
 # ==================================================================================== #
 
-# Generate TLS certificates (requires mkcert)
+# Generate Traefik TLS certificates using mkcert
 [group('setup')]
-certs:
+certs-tls:
     #!/usr/bin/env bash
     set -euo pipefail
-    source set-host.sh
+    if [[ -f set-host.sh ]]; then
+        source set-host.sh
+    fi
     mkdir -p config/traefik/certs
     mkcert --cert-file ./config/traefik/certs/wallet-cert.pem \
            --key-file ./config/traefik/certs/wallet-key.pem \
            localhost 127.0.0.1 ::1
+
+# Regenerate service PKI using existing CAs and wallet-pki-tool
+[group('pki')]
+pki-generate:
+    podman run --rm --pull=missing --userns=keep-id --user "$(id -u):$(id -g)" \
+        --env-file "{{pki_env_file}}" \
+        --volume "$PWD:/workspace:z" \
+        --volume "$PWD/config/certificates/ca:/workspace/config/certificates/ca:ro,z" \
+        --workdir /workspace "{{pki_image}}" \
+        ecosystem generate --config config/certificates/ecosystem.yaml
+
+# Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
+[group('setup')]
+certs: certs-tls pki-generate
 
 # ==================================================================================== #
 # INTERNAL

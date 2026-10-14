@@ -160,13 +160,14 @@ When running the ecosystem locally via `just up`, the Keycloak Admin Console is 
 
 ### Managing Certificates and Trust Lists
 
-If you need to regenerate the certificates and trust lists for the ecosystem (e.g., when they expire or when setting up a fresh environment), you can run the following wrapper script:
+To regenerate service certificates, keystores and trust lists, run the
+wallet-pki-tool container against the existing CAs:
 
 ```shell
-bash config/certificates/generate_ecosystem_certs.sh
+just pki-generate
 ```
 
-After updating the certificates, restart the ecosystem and run the tests to verify the changes:
+After updating the certificates, recreate the ecosystem and run the tests:
 
 ```shell
 just down
@@ -262,7 +263,7 @@ TraefikTest and WalletAccountTest.
 
 #### Checking that the verifier rejects untrusted issuers
 
-In `VerifierBackendTest` we have a way to check that
+In `VerifierBackendTest` we have a way to check that TEST THIS SHIT
 the local verifier rejects credentials issued by an untrusted party.
 Specifically, that the verifier reject credentials issued by
 a party not in the configured list of trust sources. There are two tests related
@@ -287,20 +288,12 @@ env \
 ```
 
 The live test can be used to generate data for the second test.
-In order to do so, we can manipulate the certificates
-so that they are not trusted by the verifier.
+Use a separate environment whose PID issuer has a different CA from the verifier's
+trust list. The generator reuses existing CAs, so prepare that environment's CA
+material separately before generating its service PKI.
 
 ```shell
-# Remove the application CAs so that new ones are generated
-rm -r config/certificates/ca/*
-
-# Generate new keystores and trust lists for all services
-bash config/certificates/generate_ecosystem_certs.sh
-
-# Restart environment
-docker compose restart
-
-# Run test
+# Run against the separately prepared untrusted environment
 env \
 	DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER=true \
 	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI=https://localhost/wallet-provider \
@@ -368,6 +361,6 @@ just lint-java-fmt-fix  # Fix Java formatting
 
 6. Verify CI passes in the updated PR
 
-**Note:** Integration tests are NOT run in CI since they require the full
-docker-compose stack. Run tests locally before submitting PRs that affect
-service integration.
+**Note:** CI starts the full Podman stack and runs integration tests using the
+checked-in development PKI fixtures. Run the suite locally before submitting PRs
+that affect service integration.
