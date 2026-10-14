@@ -155,7 +155,7 @@ services:
       - wallet-ecosystem-network
 
   demo-verifier:
-    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.16@sha256:3624f0725969e0e9898fb56285e18a51e945b4a226e0fd4389f5643c13789de0
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.17@sha256:d0a9a35b346d7c5626c4505263adae00195e62050398f1c556562982ba3aa967
     container_name: demo-verifier
     hostname: demo-verifier
     environment:
