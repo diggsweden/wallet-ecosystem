@@ -1,0 +1,98 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+environment: local
+outputDir: ./config/certificates
+
+authorities:
+  - id: pid-issuer
+    commonName: "DIGG Wallet PID Issuer CA"
+  - id: wallet-provider
+    commonName: "DIGG Wallet Provider CA"
+  - id: trust-source
+    commonName: "DIGG Wallet Trust Source CA"
+  - id: verifier-access-certificate
+    commonName: "DIGG Wallet Verifier Access Certificate CA"
+  - id: verifier-registration-certificate
+    commonName: "DIGG Wallet Verifier Registration Certificate CA"
+
+certificates:
+  - id: pid-issuer
+    type: pid-issuer-service
+    ca: pid-issuer
+    keystore: ./issuer/pid_issuer.p12
+    alias: pid_issuer
+    passwordEnv: PID_ISSUER_KEYSTORE_PASSWORD
+    sans:
+      - "localhost"
+      - "pid-issuer"
+
+  - id: verifier-access-certificate
+    type: relying-party-access
+    ca: verifier-access-certificate
+    keystore: ./verifier-access-certificate/verifier-access-certificate.p12
+    alias: verifier_access_certificate
+    passwordEnv: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD
+    sans:
+      - "localhost"
+      - "verifier-backend"
+      - "refimpl-verifier-backend"
+      - "10.0.2.2"
+      - "URI:https://localhost/demo-verifier"
+    tradeName: "DIGG Verifier"
+    country: "SE"
+    organizationIdentifier: "VATSE-12345678"
+
+  - id: verifier-registration-certificate
+    type: relying-party-registration
+    ca: verifier-registration-certificate
+    keystore: ./verifier-registration-certificate/verifier-registration-certificate.p12
+    alias: registration
+    passwordEnv: VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD
+    sans:
+      - "localhost"
+      - "verifier-backend"
+      - "refimpl-verifier-backend"
+      - "10.0.2.2"
+      - "URI:https://localhost/demo-verifier"
+    tradeName: "DIGG Verifier"
+    country: "SE"
+    organizationIdentifier: "VATSE-12345678"
+
+  - id: wallet-provider
+    type: wallet-provider-service
+    ca: wallet-provider
+    keystore: ./wallet-provider/wallet_provider.p12
+    alias: wallet_provider
+    passwordEnv: WALLET_PROVIDER_KEYSTORE_PASSWORD
+    sans:
+      - "localhost"
+      - "wallet-provider"
+
+  - id: trust-list-signer
+    type: trust-source-signer
+    ca: trust-source
+    keystore: ./trust-list-signer/trust_source.p12
+    alias: trust_source
+    passwordEnv: TRUST_SOURCE_KEYSTORE_PASSWORD
+    sans:
+      - "localhost"
+      - "trust-source"
+
+trustLists:
+  - id: lote
+    type: etsi-119-602-lote
+    signerAuthority: trust-source
+    outputFile: ../trust-source/signed/trusted-entities.json
+    entities:
+      - wallet-provider
+      - pid-issuer
+      - verifier-access-certificate
+      - verifier-registration-certificate
+
+  - id: status-list
+    type: oauth-status-list
+    signerAuthority: trust-source
+    outputFile: ../trust-source/signed/status-list.jwt
+    url: "http://trust-source/signed/status-list.jwt"

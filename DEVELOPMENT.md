@@ -160,10 +160,10 @@ When running the ecosystem locally via `just up`, the Keycloak Admin Console is 
 
 ### Managing Certificates and Trust Lists
 
-If you need to regenerate the certificates and trust lists for the ecosystem (e.g., when they expire or when setting up a fresh environment), you can run the following wrapper script:
+To regenerate certificates and trust lists for the ecosystem (e.g. upon expiration or in a fresh environment), run:
 
 ```shell
-bash config/certificates/generate_ecosystem_certs.sh
+just certs
 ```
 
 After updating the certificates, restart the ecosystem and run the tests to verify the changes:
@@ -295,7 +295,7 @@ so that they are not trusted by the verifier.
 rm -r config/certificates/ca/*
 
 # Generate new keystores and trust lists for all services
-bash config/certificates/generate_ecosystem_certs.sh
+just certs
 
 # Restart environment
 docker compose restart

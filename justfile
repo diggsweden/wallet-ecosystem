@@ -309,16 +309,27 @@ produce-test-report:
 # CERTS - Certificate management
 # ==================================================================================== #
 
-# Generate TLS certificates (requires mkcert)
+# Generate TLS and ecosystem certificates
 [group('setup')]
 certs:
     #!/usr/bin/env bash
     set -euo pipefail
-    source set-host.sh
+    if [[ -f set-host.sh ]]; then
+        source set-host.sh
+    fi
     mkdir -p config/traefik/certs
     mkcert --cert-file ./config/traefik/certs/wallet-cert.pem \
            --key-file ./config/traefik/certs/wallet-key.pem \
            localhost 127.0.0.1 ::1
+    pki_image="${WALLET_PKI_TOOL_IMAGE:-ghcr.io/diggsweden/wallet-pki-tool:latest}"
+    podman run --rm \
+      --userns=keep-id \
+      --user "$(id -u):$(id -g)" \
+      -v "$PWD":/workspace:z \
+      -w /workspace \
+      --env-file .env \
+      "$pki_image" \
+      generate --config config/certificates/ecosystem.yaml
 
 # ==================================================================================== #
 # INTERNAL
