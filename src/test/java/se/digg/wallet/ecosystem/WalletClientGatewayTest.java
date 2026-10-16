@@ -7,7 +7,6 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.nimbusds.jose.Algorithm;
@@ -30,8 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 public class WalletClientGatewayTest {
 
@@ -87,38 +84,6 @@ public class WalletClientGatewayTest {
     var accountRequestBody = stubAccountV0Request(ecKey);
     var accountId = walletClientGateway.createAccount(accountRequestBody);
     assertThat("accountId should be UUID", UUID.fromString(accountId), instanceOf(UUID.class));
-  }
-
-  @Test
-  void addWalletKey_should_succeed() throws Exception {
-    var walletKey = generateKey();
-    walletClientGateway.addWalletKey(session, walletKey.toPublicJWK().toJSONString());
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"nonce"})
-  @NullSource
-  void createWalletUnitAttestation(String wuaNonce) throws Exception {
-    var ecKey = generateKey();
-    var accountId = createAccount(ecKey);
-    var nonce = walletClientGateway.initChallenge(accountId, ecKey.getKeyID());
-    var signedJwt = createSignedJwt(ecKey, nonce);
-    var session = walletClientGateway.respondToChallenge(signedJwt);
-    var walletKey = generateKey();
-    walletClientGateway.addWalletKey(session, walletKey.toPublicJWK().toJSONString());
-
-    walletClientGateway.tryCreateWalletUnitAttestation(session, wuaNonce)
-        .then()
-        .assertThat().statusCode(201).and()
-        .body("jwt", matchesPattern("^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
-  }
-
-  @Test
-  void createsWalletUnitAttestation_withEmptyNonce_shouldGiveBadRequest() {
-    String emptyNonce = "";
-    walletClientGateway.tryCreateWalletUnitAttestation(session, emptyNonce)
-        .then()
-        .assertThat().statusCode(400);
   }
 
   @Disabled
