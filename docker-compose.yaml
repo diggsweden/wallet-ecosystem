@@ -272,7 +272,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer-db:
-    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
+    image: "postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d"
     container_name: pid-issuer-db
     restart: always
     ports:
@@ -292,7 +292,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-account-db:
-    image: "postgres:16@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
+    image: "postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d"
     container_name: wallet-account-db
     restart: always
     ports:
@@ -345,7 +345,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway-valkey:
-    image: "valkey/valkey:9.1.2-alpine@sha256:a0dbf4c1d5708782907c10e2c72deff317518518b5288a58416981d9db95d30b"
+    image: "valkey/valkey:9.1.2-alpine@sha256:48332870af354a799964c0012ae1194a0bf2bf894eb508f945810596dc2d8d11"
     container_name: wallet-client-gateway-valkey
     restart: always
     healthcheck:
