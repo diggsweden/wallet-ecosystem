@@ -74,6 +74,7 @@ public final class DirectPostJwtPayload {
 
     JWEHeader jweHeader =
         new JWEHeader.Builder(alg, enc)
+            .keyID(verifierKey.getKeyID())
             .agreementPartyVInfo(Base64URL.encode(nonce))
             .build();
 
