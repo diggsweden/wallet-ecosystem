@@ -32,26 +32,24 @@ public class EndToEndTest {
       new OpenId4VpAuthorizationRequestValidator();
 
   public static Stream<Arguments> testCases() {
+    // The first case is the most common combination. Each other case varies exactly one thing.
     return Stream.of(
-        Arguments.argumentSet(
-            "Deprecated Wallet Unit Attestation - direct_post",
-            new IssuanceAgent(InternalWalletClient.deprecatedWua()),
-            ResponseMode.DIRECT_POST),
-        Arguments.argumentSet("Internal route - direct_post",
-            new IssuanceAgent(new InternalWalletClient()),
-            ResponseMode.DIRECT_POST),
-        Arguments.argumentSet(
-            "Internal route - direct_post.jwt",
-            new IssuanceAgent(new InternalWalletClient()),
-            ResponseMode.DIRECT_POST_JWT),
         Arguments.argumentSet(
             "Public route - direct_post",
             new IssuanceAgent(new PublicWalletClient()),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
+            "Internal route - direct_post",
+            new IssuanceAgent(new InternalWalletClient()),
+            ResponseMode.DIRECT_POST),
+        Arguments.argumentSet(
             "Public route - direct_post.jwt",
             new IssuanceAgent(new PublicWalletClient()),
-            ResponseMode.DIRECT_POST_JWT));
+            ResponseMode.DIRECT_POST_JWT),
+        Arguments.argumentSet(
+            "Internal route - direct_post - Deprecated Wallet Unit Attestation",
+            new IssuanceAgent(InternalWalletClient.deprecatedWua()),
+            ResponseMode.DIRECT_POST));
   }
 
   @ParameterizedTest
