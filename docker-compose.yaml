@@ -107,6 +107,7 @@ services:
     hostname: trust-source
     volumes:
       - ./config/trust-source/:/usr/share/nginx/html/:ro
+      - ./config/nginx/trust-source.conf:/etc/nginx/conf.d/default.conf:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.trust-source.rule=PathPrefix(`/trust-source`)"

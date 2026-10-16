@@ -33,6 +33,7 @@ class TrustSourceTest {
     String body = trustSource.tryGet("signed/trusted-entities.json")
         .then()
         .assertThat().statusCode(200)
+        .assertThat().contentType("application/jose")
         .extract().body().asString();
 
     // The JSON is actually just a raw JWT string
