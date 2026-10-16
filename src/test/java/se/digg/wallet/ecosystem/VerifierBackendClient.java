@@ -44,10 +44,19 @@ public class VerifierBackendClient {
   }
 
   public VerifierPresentationResponse createPresentationRequestByValue(String dcqlId) {
-    return postPresentation(getRequestBodyByValue(dcqlId));
+    return createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST);
+  }
+
+  public VerifierPresentationResponse createPresentationRequestByValue(
+      String dcqlId, ResponseMode responseMode) {
+    return postPresentation(getRequestBodyByValue(dcqlId, responseMode));
   }
 
   public String getRequestBodyByValue(String dcqlId) {
+    return getRequestBodyByValue(dcqlId, ResponseMode.DIRECT_POST);
+  }
+
+  public String getRequestBodyByValue(String dcqlId, ResponseMode responseMode) {
     return String.format(
         """
             {
@@ -71,20 +80,28 @@ public class VerifierBackendClient {
                 },
                 "nonce": "%s",
                 "jar_mode": "by_value",
-                "response_mode": "direct_post",
+                "response_mode": "%s",
                 "intended_use_id": "%s"
             }
             """,
-        dcqlId, dcqlId, UUID.randomUUID(), DEFAULT_INTENDED_USE_ID);
+        dcqlId, dcqlId, UUID.randomUUID(), responseMode.getValue(), DEFAULT_INTENDED_USE_ID);
   }
 
   public VerifierPresentationResponse createPresentationRequestByReference(
       String nonce, String dcqlId) {
+    return createPresentationRequestByReference(nonce, dcqlId, ResponseMode.DIRECT_POST);
+  }
 
-    return postPresentation(getRequestBodyByReference(nonce, dcqlId));
+  public VerifierPresentationResponse createPresentationRequestByReference(
+      String nonce, String dcqlId, ResponseMode responseMode) {
+    return postPresentation(getRequestBodyByReference(nonce, dcqlId, responseMode));
   }
 
   public String getRequestBodyByReference(String nonce, String dcqlId) {
+    return getRequestBodyByReference(nonce, dcqlId, ResponseMode.DIRECT_POST);
+  }
+
+  public String getRequestBodyByReference(String nonce, String dcqlId, ResponseMode responseMode) {
     return String.format(
         """
             {
@@ -108,11 +125,11 @@ public class VerifierBackendClient {
                 },
                 "nonce": "%s",
                 "jar_mode": "by_reference",
-                "response_mode": "direct_post",
+                "response_mode": "%s",
                 "intended_use_id": "%s"
             }
             """,
-        dcqlId, dcqlId, nonce, DEFAULT_INTENDED_USE_ID);
+        dcqlId, dcqlId, nonce, responseMode.getValue(), DEFAULT_INTENDED_USE_ID);
   }
 
   public Response validateSdJwtVc(String sdJwtVc, String nonce) {

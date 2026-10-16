@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -18,6 +19,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,12 +27,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
@@ -98,6 +103,46 @@ class VerifierBackendTest {
 
     new ListOfTrustedEntities(trustSource.fetchLote()).validateWalletRelyingPartyTrust(
         accessCertificate, registrationCertificate);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "DIRECT_POST,     direct_post",
+      "DIRECT_POST_JWT, direct_post.jwt"
+  })
+  void createsPresentationRequestWithSpecificResponseMode(
+      ResponseMode requestedMode, String expectedModeInResponse)
+      throws Exception {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackend.createPresentationRequestByValue(dcqlId, requestedMode);
+
+    assertNotNull(presentationResponse);
+    assertThat(presentationResponse.transaction_id(), notNullValue());
+    assertThat(presentationResponse.request(), notNullValue());
+    assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
+
+    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
+    assertThat(jwt.getJWTClaimsSet().getStringClaim("response_mode"), is(expectedModeInResponse));
+    assertThat(jwt.getJWTClaimsSet().getJSONObjectClaim("client_metadata"), notNullValue());
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      nullValues = {"null"},
+      value = {
+          "DIRECT_POST_JWT, 200, null",
+
+          // Identical to the case above (same request, response_uri, state and valid credential),
+          // except that the wallet response is posted as plain form fields instead of an
+          // encrypted JWT.
+          "DIRECT_POST,     400, UnexpectedResponseMode",
+      })
+  void rejectsUnencryptedResponseWhenDirectPostJwtExpected(
+      ResponseMode mode, int expectedStatus, String expectedError) throws Exception {
+    Response response = postWalletResponseToDirectPostJwtRequest(mode);
+
+    assertThat(response.getStatusCode(), is(expectedStatus));
+    assertThat(response.jsonPath().getString("error"), is(expectedError));
   }
 
   @Test
@@ -185,6 +230,25 @@ class VerifierBackendTest {
         .and().body(".", hasSize(1))
         .and().body("[0].error", is("IssuerCertificateIsNotTrusted"))
         .and().body("[0].description", is("sd-jwt vc issuer certificate is not trusted"));
+  }
+
+  private Response postWalletResponseToDirectPostJwtRequest(ResponseMode wireFormat)
+      throws Exception {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST_JWT);
+
+    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
+    String responseUri = jwt.getJWTClaimsSet().getStringClaim("response_uri");
+    String requestNonce = jwt.getJWTClaimsSet().getStringClaim("nonce");
+
+    String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
+    String vpToken = VerifiablePresentationToken.asString(sdJwtVc, bindingKey, requestNonce);
+
+    return given()
+        .baseUri(responseUri).contentType(ContentType.URLENC)
+        .formParams(wireFormat.getFormParams(jwt, Map.of(dcqlId, List.of(vpToken))))
+        .when().post()
+        .then().extract().response();
   }
 
   private String readResourceAsString(String name) throws IOException, URISyntaxException {

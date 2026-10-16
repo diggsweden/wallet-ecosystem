@@ -32,30 +32,48 @@ public class EndToEndTest {
   private final OpenId4VpAuthorizationRequestValidator authorizationRequestValidator =
       new OpenId4VpAuthorizationRequestValidator();
 
-  public static Stream<Arguments> issuers() {
+  public static Stream<Arguments> testCases() {
+    // The first case is the most common combination. Each other case varies exactly one thing.
     return Stream.of(
-        Arguments.argumentSet("Deprecated Wallet Unit Attestation",
-            new IssuanceAgent(InternalWalletClient.deprecatedWua())),
-        Arguments.argumentSet("Internal route", new IssuanceAgent(new InternalWalletClient())),
-        Arguments.argumentSet("Public rotue", new IssuanceAgent(new PublicWalletClient())));
+        Arguments.argumentSet(
+            "Public route - direct_post",
+            new IssuanceAgent(new PublicWalletClient()),
+            ResponseMode.DIRECT_POST),
+        Arguments.argumentSet(
+            "Internal route - direct_post",
+            new IssuanceAgent(new InternalWalletClient()),
+            ResponseMode.DIRECT_POST),
+        Arguments.argumentSet(
+            "Public route - direct_post.jwt",
+            new IssuanceAgent(new PublicWalletClient()),
+            ResponseMode.DIRECT_POST_JWT),
+        Arguments.argumentSet(
+            "Internal route - direct_post - Deprecated Wallet Unit Attestation",
+            new IssuanceAgent(InternalWalletClient.deprecatedWua()),
+            ResponseMode.DIRECT_POST));
   }
 
   @ParameterizedTest
-  @MethodSource("issuers")
-  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer) throws Exception {
+  @MethodSource("testCases")
+  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, ResponseMode responseMode)
+      throws Exception {
+    runIssuanceAndPresentationFlow(issuer, responseMode);
+  }
+
+  private void runIssuanceAndPresentationFlow(IssuanceAgent issuer, ResponseMode responseMode)
+      throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
 
     VerifierPresentationResponse transaction =
-        verifierBackend.createPresentationRequestByReference(nonce, dcqlId);
+        verifierBackend.createPresentationRequestByReference(nonce, dcqlId, responseMode);
 
     // 2. Get authorization request
     Response authRequestResponse = given().baseUri(transaction.request_uri())
         .when().get()
         .then().extract().response();
     SignedJWT signedAuthRequest = SignedJWT.parse(authRequestResponse.body().asString());
-    String state = signedAuthRequest.getJWTClaimsSet().getStringClaim("state");
     String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
     authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(signedAuthRequest);
     X509Certificate accessCertificate =
@@ -82,18 +100,13 @@ public class EndToEndTest {
         VerifiablePresentationToken.asString(rawCredential, bindingKey, nonce);
 
     // 5. Post wallet response
-    String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
     Response postWalletResponse =
         given()
-            .baseUri(responseUri)
-            .contentType(ContentType.URLENC)
-            .formParam("state", state)
-            .formParam("vp_token", vpTokenJson)
-            .when()
-            .post()
-            .then()
-            .extract()
-            .response();
+            .baseUri(responseUri).contentType(ContentType.URLENC)
+            .formParams(responseMode.getFormParams(
+                signedAuthRequest, Map.of(dcqlId, List.of(vpToken))))
+            .when().post()
+            .then().extract().response();
 
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
