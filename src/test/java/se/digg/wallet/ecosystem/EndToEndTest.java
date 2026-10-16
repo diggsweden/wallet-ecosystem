@@ -14,6 +14,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -100,8 +101,12 @@ public class EndToEndTest {
 
     // 5. Post wallet response
     Response postWalletResponse =
-        verifierBackend.postWalletResponse(
-            responseMode, responseUri, signedAuthRequest, Map.of(dcqlId, List.of(vpToken)));
+        given()
+            .baseUri(responseUri).contentType(ContentType.URLENC)
+            .formParams(responseMode.getFormParams(
+                signedAuthRequest, Map.of(dcqlId, List.of(vpToken))))
+            .when().post()
+            .then().extract().response();
 
     assertThat(postWalletResponse.getStatusCode(), is(200));
 

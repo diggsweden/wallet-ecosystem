@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -18,6 +19,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -246,8 +248,11 @@ class VerifierBackendTest {
     String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
     String vpToken = VerifiablePresentationToken.asString(sdJwtVc, bindingKey, requestNonce);
 
-    return verifierBackend.postWalletResponse(
-        wireFormat, responseUri, jwt, Map.of(dcqlId, List.of(vpToken)));
+    return given()
+        .baseUri(responseUri).contentType(ContentType.URLENC)
+        .formParams(wireFormat.getFormParams(jwt, Map.of(dcqlId, List.of(vpToken))))
+        .when().post()
+        .then().extract().response();
   }
 
   private String readResourceAsString(String name) throws IOException, URISyntaxException {

@@ -6,12 +6,9 @@ package se.digg.wallet.ecosystem;
 
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
-import com.nimbusds.jwt.SignedJWT;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class VerifierBackendClient {
@@ -31,19 +28,6 @@ public class VerifierBackendClient {
 
   public Response tryGetHealth() {
     return given().when().get(base.resolve("actuator/health"));
-  }
-
-  public Response postWalletResponse(
-      ResponseMode responseMode,
-      String responseUri,
-      SignedJWT signedAuthRequest,
-      Map<String, List<String>> vpToken)
-      throws Exception {
-    return given()
-        .baseUri(responseUri).contentType(ContentType.URLENC)
-        .formParams(responseMode.getFormParams(signedAuthRequest, vpToken))
-        .when().post()
-        .then().extract().response();
   }
 
   private VerifierPresentationResponse postPresentation(String body) {
