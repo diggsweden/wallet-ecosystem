@@ -18,7 +18,6 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -131,27 +130,20 @@ class VerifierBackendTest {
   }
 
   @Test
+  void acceptsEncryptedResponseWhenDirectPostJwtExpected() throws Exception {
+    Response response = postWalletResponseToDirectPostJwtRequest(ResponseMode.DIRECT_POST_JWT);
+
+    assertThat(response.getStatusCode(), is(200));
+  }
+
+  @Test
   void rejectsUnencryptedResponseWhenDirectPostJwtExpected() throws Exception {
-    VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST_JWT);
-
-    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
-    String responseUri = jwt.getJWTClaimsSet().getStringClaim("response_uri");
-    String state = jwt.getJWTClaimsSet().getStringClaim("state");
-
-    Response response =
-        RestAssuredSugar.given()
-            .baseUri(responseUri)
-            .contentType(ContentType.URLENC)
-            .formParam("state", state)
-            .formParam("vp_token", String.format("{ \"%s\": [ \"mock-token\" ] }", dcqlId))
-            .when()
-            .post()
-            .then()
-            .extract()
-            .response();
+    // Identical to the test above (same request, response_uri, state and valid credential),
+    // except that the wallet response is posted as plain form fields instead of an encrypted JWT.
+    Response response = postWalletResponseToDirectPostJwtRequest(ResponseMode.DIRECT_POST);
 
     assertThat(response.getStatusCode(), is(400));
+    assertThat(response.jsonPath().getString("error"), is("UnexpectedResponseMode"));
   }
 
   @Test
@@ -239,6 +231,23 @@ class VerifierBackendTest {
         .and().body(".", hasSize(1))
         .and().body("[0].error", is("IssuerCertificateIsNotTrusted"))
         .and().body("[0].description", is("sd-jwt vc issuer certificate is not trusted"));
+  }
+
+  private Response postWalletResponseToDirectPostJwtRequest(ResponseMode wireFormat)
+      throws Exception {
+    VerifierPresentationResponse presentationResponse =
+        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST_JWT);
+
+    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
+    String responseUri = jwt.getJWTClaimsSet().getStringClaim("response_uri");
+    String state = jwt.getJWTClaimsSet().getStringClaim("state");
+    String requestNonce = jwt.getJWTClaimsSet().getStringClaim("nonce");
+
+    String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
+    String vpToken = VerifiablePresentationToken.asString(sdJwtVc, bindingKey, requestNonce);
+
+    return verifierBackend.postWalletResponse(
+        wireFormat, responseUri, jwt, state, dcqlId, vpToken);
   }
 
   private String readResourceAsString(String name) throws IOException, URISyntaxException {
