@@ -15,9 +15,6 @@ public class VerifierBackendClient {
 
   public static final String VERIFIER_AUDIENCE = Property.VERIFIER_AUDIENCE.getValue();
   public static final String DEFAULT_INTENDED_USE_ID = "1";
-  public static final String RESPONSE_MODE_DIRECT_POST = ResponseMode.DIRECT_POST.getValue();
-  public static final String RESPONSE_MODE_DIRECT_POST_JWT =
-      ResponseMode.DIRECT_POST_JWT.getValue();
 
   private final URI base;
 

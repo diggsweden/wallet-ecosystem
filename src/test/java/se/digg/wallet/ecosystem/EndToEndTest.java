@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,19 +33,23 @@ public class EndToEndTest {
 
   public static Stream<Arguments> testCases() {
     return Stream.of(
+        Arguments.argumentSet(
+            "Deprecated Wallet Unit Attestation - direct_post",
+            new IssuanceAgent(InternalWalletClient.deprecatedWua()),
+            ResponseMode.DIRECT_POST),
         Arguments.argumentSet("Internal route - direct_post",
             new IssuanceAgent(new InternalWalletClient()),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
-            "internal - direct_post.jwt",
+            "Internal route - direct_post.jwt",
             new IssuanceAgent(new InternalWalletClient()),
             ResponseMode.DIRECT_POST_JWT),
         Arguments.argumentSet(
-            "Public rotue - direct_post",
+            "Public route - direct_post",
             new IssuanceAgent(new PublicWalletClient()),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
-            "public - direct_post.jwt",
+            "Public route - direct_post.jwt",
             new IssuanceAgent(new PublicWalletClient()),
             ResponseMode.DIRECT_POST_JWT));
   }
@@ -56,14 +59,6 @@ public class EndToEndTest {
   void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, ResponseMode responseMode)
       throws Exception {
     runIssuanceAndPresentationFlow(issuer, responseMode);
-  }
-
-  @Deprecated
-  @Test
-  void supportsIssuanceAndPresentationOfPidWithDeprecatedWalletUnitAttestation() throws Exception {
-    runIssuanceAndPresentationFlow(
-        new IssuanceAgent(InternalWalletClient.deprecatedWua()),
-        ResponseMode.DIRECT_POST);
   }
 
   private void runIssuanceAndPresentationFlow(IssuanceAgent issuer, ResponseMode responseMode)
