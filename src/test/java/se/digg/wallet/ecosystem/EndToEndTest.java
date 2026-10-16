@@ -37,7 +37,7 @@ public class EndToEndTest {
         Arguments.argumentSet("Deprecated Wallet Unit Attestation",
             new IssuanceAgent(InternalWalletClient.deprecatedWua())),
         Arguments.argumentSet("Internal route", new IssuanceAgent(new InternalWalletClient())),
-        Arguments.argumentSet("Public rotue", new IssuanceAgent(new PublicWalletClient())));
+        Arguments.argumentSet("Public route", new IssuanceAgent(new PublicWalletClient())));
   }
 
   @ParameterizedTest
