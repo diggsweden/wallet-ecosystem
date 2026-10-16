@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -240,14 +241,13 @@ class VerifierBackendTest {
 
     SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
     String responseUri = jwt.getJWTClaimsSet().getStringClaim("response_uri");
-    String state = jwt.getJWTClaimsSet().getStringClaim("state");
     String requestNonce = jwt.getJWTClaimsSet().getStringClaim("nonce");
 
     String sdJwtVc = issuer.issuePidCredential(bindingKey, "tneal", "password");
     String vpToken = VerifiablePresentationToken.asString(sdJwtVc, bindingKey, requestNonce);
 
     return verifierBackend.postWalletResponse(
-        wireFormat, responseUri, jwt, state, dcqlId, vpToken);
+        wireFormat, responseUri, jwt, Map.of(dcqlId, List.of(vpToken)));
   }
 
   private String readResourceAsString(String name) throws IOException, URISyntaxException {

@@ -75,7 +75,6 @@ public class EndToEndTest {
         .when().get()
         .then().extract().response();
     SignedJWT signedAuthRequest = SignedJWT.parse(authRequestResponse.body().asString());
-    String state = signedAuthRequest.getJWTClaimsSet().getStringClaim("state");
     String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
     authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(signedAuthRequest);
     X509Certificate accessCertificate =
@@ -104,7 +103,7 @@ public class EndToEndTest {
     // 5. Post wallet response
     Response postWalletResponse =
         verifierBackend.postWalletResponse(
-            responseMode, responseUri, signedAuthRequest, state, dcqlId, vpToken);
+            responseMode, responseUri, signedAuthRequest, Map.of(dcqlId, List.of(vpToken)));
 
     assertThat(postWalletResponse.getStatusCode(), is(200));
 

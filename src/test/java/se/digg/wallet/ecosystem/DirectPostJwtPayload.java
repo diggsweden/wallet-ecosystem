@@ -24,13 +24,7 @@ public final class DirectPostJwtPayload {
   private DirectPostJwtPayload() {}
 
   public static String create(
-      SignedJWT signedAuthRequest, String state, String dcqlId, String vpToken)
-      throws ParseException, JOSEException {
-    return create(signedAuthRequest, state, Map.of(dcqlId, List.of(vpToken)));
-  }
-
-  public static String create(
-      SignedJWT signedAuthRequest, String state, Map<String, List<String>> vpTokens)
+      SignedJWT signedAuthRequest, Map<String, List<String>> vpTokens)
       throws ParseException, JOSEException {
 
     JWTClaimsSet authClaims = signedAuthRequest.getJWTClaimsSet();
@@ -83,6 +77,7 @@ public final class DirectPostJwtPayload {
             .agreementPartyVInfo(Base64URL.encode(nonce))
             .build();
 
+    String state = authClaims.getStringClaim("state");
     JWTClaimsSet responseClaims =
         new JWTClaimsSet.Builder()
             .claim("state", state)

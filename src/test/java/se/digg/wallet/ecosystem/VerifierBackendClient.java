@@ -10,6 +10,8 @@ import com.nimbusds.jwt.SignedJWT;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class VerifierBackendClient {
@@ -35,13 +37,11 @@ public class VerifierBackendClient {
       ResponseMode responseMode,
       String responseUri,
       SignedJWT signedAuthRequest,
-      String state,
-      String dcqlId,
-      String vpToken)
+      Map<String, List<String>> vpToken)
       throws Exception {
     return given()
         .baseUri(responseUri).contentType(ContentType.URLENC)
-        .formParams(responseMode.getFormParams(signedAuthRequest, state, dcqlId, vpToken))
+        .formParams(responseMode.getFormParams(signedAuthRequest, vpToken))
         .when().post()
         .then().extract().response();
   }
