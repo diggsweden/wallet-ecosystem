@@ -4,54 +4,27 @@
 
 package se.digg.wallet.ecosystem;
 
-import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
-
 import com.nimbusds.jwt.SignedJWT;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
+import java.util.Map;
 
 public enum ResponseMode {
   DIRECT_POST("direct_post") {
     @Override
-    public Response postWalletResponse(
-        String responseUri,
-        SignedJWT signedAuthRequest,
-        String state,
-        String dcqlId,
-        String vpToken) {
-      String vpTokenJson = String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken);
-      return given()
-          .baseUri(responseUri)
-          .contentType(ContentType.URLENC)
-          .formParam("state", state)
-          .formParam("vp_token", vpTokenJson)
-          .when()
-          .post()
-          .then()
-          .extract()
-          .response();
+    public Map<String, String> getFormParams(
+        SignedJWT signedAuthRequest, String state, String dcqlId, String vpToken) {
+      return Map.of(
+          "state", state,
+          "vp_token", String.format("{ \"%s\": [ \"%s\" ] }", dcqlId, vpToken));
     }
   },
 
   DIRECT_POST_JWT("direct_post.jwt") {
     @Override
-    public Response postWalletResponse(
-        String responseUri,
-        SignedJWT signedAuthRequest,
-        String state,
-        String dcqlId,
-        String vpToken)
+    public Map<String, String> getFormParams(
+        SignedJWT signedAuthRequest, String state, String dcqlId, String vpToken)
         throws Exception {
-      String responseJwt = DirectPostJwtPayload.create(signedAuthRequest, state, dcqlId, vpToken);
-      return given()
-          .baseUri(responseUri)
-          .contentType(ContentType.URLENC)
-          .formParam("response", responseJwt)
-          .when()
-          .post()
-          .then()
-          .extract()
-          .response();
+      return Map.of(
+          "response", DirectPostJwtPayload.create(signedAuthRequest, state, dcqlId, vpToken));
     }
   };
 
@@ -65,13 +38,8 @@ public enum ResponseMode {
     return value;
   }
 
-  public abstract Response postWalletResponse(
-      String responseUri,
-      SignedJWT signedAuthRequest,
-      String state,
-      String dcqlId,
-      String vpToken)
-      throws Exception;
+  public abstract Map<String, String> getFormParams(
+      SignedJWT signedAuthRequest, String state, String dcqlId, String vpToken) throws Exception;
 
   @Override
   public String toString() {

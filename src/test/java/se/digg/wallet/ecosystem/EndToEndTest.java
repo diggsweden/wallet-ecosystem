@@ -103,7 +103,8 @@ public class EndToEndTest {
 
     // 5. Post wallet response
     Response postWalletResponse =
-        responseMode.postWalletResponse(responseUri, signedAuthRequest, state, dcqlId, vpToken);
+        verifierBackend.postWalletResponse(
+            responseMode, responseUri, signedAuthRequest, state, dcqlId, vpToken);
 
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
