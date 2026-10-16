@@ -34,6 +34,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class VerifierBackendTest {
   private static final String dcqlId = UUID.randomUUID().toString();
@@ -103,10 +105,16 @@ class VerifierBackendTest {
         accessCertificate, registrationCertificate);
   }
 
-  @Test
-  void createsPresentationRequestWithDirectPost() throws Exception {
+  @ParameterizedTest
+  @CsvSource({
+      "DIRECT_POST,     direct_post",
+      "DIRECT_POST_JWT, direct_post.jwt"
+  })
+  void createsPresentationRequestWithSpecificResponseMode(
+      ResponseMode requestedMode, String expectedModeInResponse)
+      throws Exception {
     VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST);
+        verifierBackend.createPresentationRequestByValue(dcqlId, requestedMode);
 
     assertNotNull(presentationResponse);
     assertThat(presentationResponse.transaction_id(), notNullValue());
@@ -114,39 +122,27 @@ class VerifierBackendTest {
     assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
 
     SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
-    assertThat(jwt.getJWTClaimsSet().getStringClaim("response_mode"), is("direct_post"));
-  }
-
-  @Test
-  void createsPresentationRequestWithDirectPostJwt() throws Exception {
-    VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST_JWT);
-
-    assertNotNull(presentationResponse);
-    assertThat(presentationResponse.transaction_id(), notNullValue());
-    assertThat(presentationResponse.request(), notNullValue());
-    assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
-
-    SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
-    assertThat(jwt.getJWTClaimsSet().getStringClaim("response_mode"), is("direct_post.jwt"));
+    assertThat(jwt.getJWTClaimsSet().getStringClaim("response_mode"), is(expectedModeInResponse));
     assertThat(jwt.getJWTClaimsSet().getJSONObjectClaim("client_metadata"), notNullValue());
   }
 
-  @Test
-  void acceptsEncryptedResponseWhenDirectPostJwtExpected() throws Exception {
-    Response response = postWalletResponseToDirectPostJwtRequest(ResponseMode.DIRECT_POST_JWT);
+  @ParameterizedTest
+  @CsvSource(
+      nullValues = {"null"},
+      value = {
+          "DIRECT_POST_JWT, 200, null",
 
-    assertThat(response.getStatusCode(), is(200));
-  }
+          // Identical to the case above (same request, response_uri, state and valid credential),
+          // except that the wallet response is posted as plain form fields instead of an
+          // encrypted JWT.
+          "DIRECT_POST,     400, UnexpectedResponseMode",
+      })
+  void rejectsUnencryptedResponseWhenDirectPostJwtExpected(
+      ResponseMode mode, int expectedStatus, String expectedError) throws Exception {
+    Response response = postWalletResponseToDirectPostJwtRequest(mode);
 
-  @Test
-  void rejectsUnencryptedResponseWhenDirectPostJwtExpected() throws Exception {
-    // Identical to the test above (same request, response_uri, state and valid credential),
-    // except that the wallet response is posted as plain form fields instead of an encrypted JWT.
-    Response response = postWalletResponseToDirectPostJwtRequest(ResponseMode.DIRECT_POST);
-
-    assertThat(response.getStatusCode(), is(400));
-    assertThat(response.jsonPath().getString("error"), is("UnexpectedResponseMode"));
+    assertThat(response.getStatusCode(), is(expectedStatus));
+    assertThat(response.jsonPath().getString("error"), is(expectedError));
   }
 
   @Test
