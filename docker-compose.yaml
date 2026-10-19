@@ -126,15 +126,15 @@ services:
     container_name: wallet-attestation-issuer
     hostname: wallet-attestation-issuer
     volumes:
-      - ./config/certificates/wallet-provider/wallet_provider.p12:/opt/common/wallet_provider.p12
+      - ./config/certificates/wallet-attestation-issuer/wallet_attestation_issuer.p12:/opt/common/wallet_attestation_issuer.p12
     environment:
       SERVER_SERVLET_CONTEXT_PATH: "/wallet-attestation-issuer"
       SPRING_PROFILES_ACTIVE: "prod"
       TZ: "Europe/Stockholm"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
-      WUA_KEYSTORE_PATH: "file:///opt/common/wallet_provider.p12"
-      WUA_KEYSTORE_PASSWORD: "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Set WALLET_PROVIDER_KEYSTORE_PASSWORD in .env}"
-      WUA_KEYSTORE_ALIAS: "wallet_provider"
+      WUA_KEYSTORE_PATH: "file:///opt/common/wallet_attestation_issuer.p12"
+      WUA_KEYSTORE_PASSWORD: "${WALLET_ATTESTATION_ISSUER_KEYSTORE_PASSWORD:?Set WALLET_ATTESTATION_ISSUER_KEYSTORE_PASSWORD in .env}"
+      WUA_KEYSTORE_ALIAS: "wallet_attestation_issuer"
       WALLET_ATTESTATION_ISSUER_ISSUER: "Digg"
       WALLET_ATTESTATION_ISSUER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
       WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "wallet-dev"

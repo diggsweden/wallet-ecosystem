@@ -116,7 +116,7 @@ public class WalletAttestationIssuerTest {
     var signer = (X509Certificate) certificateFactory.generateCertificate(
         new ByteArrayInputStream(certificates.getFirst().decode()));
     var providerCa = (X509Certificate) certificateFactory.generateCertificate(
-        new ByteArrayInputStream(trustSource.tryGet("wallet-provider/ca.pem")
+        new ByteArrayInputStream(trustSource.tryGet("wallet-attestation-issuer/ca.pem")
             .then().assertThat().statusCode(200).extract().asByteArray()));
     signer.checkValidity();
     signer.verify(providerCa.getPublicKey());
