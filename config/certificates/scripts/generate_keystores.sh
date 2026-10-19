@@ -79,6 +79,7 @@ generate_ca() {
 }
 
 generate_ca "pid-issuer" "DIGG Wallet PID Issuer CA"
+generate_ca "wallet-attestation-issuer" "DIGG Wallet Provider CA"
 generate_ca "wallet-provider" "DIGG Wallet Provider CA"
 generate_ca "trust-source" "DIGG Wallet Trust Source CA"
 generate_ca "verifier-access-certificate" "DIGG Wallet Verifier Access Certificate CA"
@@ -86,6 +87,8 @@ generate_ca "verifier-registration-certificate" "DIGG Wallet Verifier Registrati
 
 PID_ISSUER_CA_KEY="$CA_DIR/pid-issuer/ca_private_key.pem"
 PID_ISSUER_CA_PEM="$CA_DIR/pid-issuer/ca.pem"
+WALLET_ATTESTATION_ISSUER_CA_KEY="$CA_DIR/wallet-attestation-issuer/ca_private_key.pem"
+WALLET_ATTESTATION_ISSUER_CA_PEM="$CA_DIR/wallet-attestation-issuer/ca.pem"
 WALLET_PROVIDER_CA_KEY="$CA_DIR/wallet-provider/ca_private_key.pem"
 WALLET_PROVIDER_CA_PEM="$CA_DIR/wallet-provider/ca.pem"
 TRUST_SOURCE_CA_KEY="$CA_DIR/trust-source/ca_private_key.pem"
@@ -228,6 +231,9 @@ generate_service_cert_ec "verifier-access-certificate" "verifier-access-certific
 
 generate_service_cert_ec "verifier-registration-certificate" "verifier-registration-certificate" "registration" "$VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD" "Verifier Backend (Ecosystem)" "$VERIFIER_SANS" verifier-registration.cnf "$VERIFIER_REGISTRATION_CERTIFICATE_CA_PEM" "$VERIFIER_REGISTRATION_CERTIFICATE_CA_KEY" verifier-registration-certificate
 
+# 3. Wallet Attestation Issuer
+generate_service_cert_ec "wallet-attestation-issuer" "wallet_attestation_issuer" "wallet_attestation_issuer" "$WALLET_ATTESTATION_ISSUER_KEYSTORE_PASSWORD" "Wallet Attestation Issuer (Ecosystem)" "$WALLET_ATTESTATION_ISSUER_SANS" service.cnf "$WALLET_ATTESTATION_ISSUER_CA_PEM" "$WALLET_ATTESTATION_ISSUER_CA_KEY" wallet-attestation-issuer
+
 # 3. Wallet Provider
 generate_service_cert_ec "wallet-provider" "wallet_provider" "wallet_provider" "$WALLET_PROVIDER_KEYSTORE_PASSWORD" "Wallet Provider (Ecosystem)" "$PROVIDER_SANS" service.cnf "$WALLET_PROVIDER_CA_PEM" "$WALLET_PROVIDER_CA_KEY" wallet-provider
 
@@ -283,7 +289,7 @@ find "$CERT_DIR" -name "*.p12" -exec chmod 644 {} +
 find "$CERT_DIR" -name "*.pem" -exec chmod 644 {} +
 
 # Copy CRL to trust-source to be hosted by Nginx
-for ca_name in pid-issuer wallet-provider trust-source verifier-access-certificate verifier-registration-certificate; do
+for ca_name in pid-issuer wallet-attestation-issuer wallet-provider trust-source verifier-access-certificate verifier-registration-certificate; do
   mkdir -p "${TRUST_SOURCE_OUT}/${ca_name}"
   cp "$CA_DIR/$ca_name/ca.pem" "${TRUST_SOURCE_OUT}/${ca_name}/ca.pem"
   cp "$CA_DIR/$ca_name/revocation-list.pem" "${TRUST_SOURCE_OUT}/${ca_name}/revocation-list.pem"
