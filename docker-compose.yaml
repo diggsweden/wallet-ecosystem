@@ -122,7 +122,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-provider:
-    image: ghcr.io/diggsweden/wallet-provider:v0.1.9@sha256:4e34138f4685eaaf262223ce976e37b83bdbba2de624fb9502a0e5840d9acc8d
+    image: ghcr.io/diggsweden/wallet-attestation-issuer:v0.2.1@sha256:dc3483b328c1f6ea51398b31d8327576163f3de0bbdfc9a8b8f795e68fa346f4
     container_name: wallet-provider
     hostname: wallet-provider
     volumes:
@@ -135,16 +135,16 @@ services:
       WUA_KEYSTORE_PATH: "file:///opt/common/wallet_provider.p12"
       WUA_KEYSTORE_PASSWORD: "${WALLET_PROVIDER_KEYSTORE_PASSWORD:?Set WALLET_PROVIDER_KEYSTORE_PASSWORD in .env}"
       WUA_KEYSTORE_ALIAS: "wallet_provider"
-      WALLET_PROVIDER_ISSUER: "Digg"
-      WALLET_PROVIDER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
-      WALLET_PROVIDER_WIA_CLIENT_ID: "wallet-dev"
-      WALLET_PROVIDER_WIA_WALLET_NAME: "Digg Wallet"
-      WALLET_PROVIDER_WIA_WALLET_VERSION: "0.0.1"
-      WALLET_PROVIDER_WIA_WALLET_LINK: "${BASE_URL}/wallet-provider"
-      WALLET_PROVIDER_WIA_CERTIFICATION_INFORMATION: "UNCERTIFIED"
-      WALLET_PROVIDER_WIA_VALIDITY_MINUTES: "60"
-      WALLET_PROVIDER_WIA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
-      WALLET_PROVIDER_WIA_STATUS_MAINTENANCE_DAYS: "365"
+      WALLET_ATTESTATION_ISSUER_ISSUER: "Digg"
+      WALLET_ATTESTATION_ISSUER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
+      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "wallet-dev"
+      WALLET_ATTESTATION_ISSUER_WIA_WALLET_NAME: "Digg Wallet"
+      WALLET_ATTESTATION_ISSUER_WIA_WALLET_VERSION: "0.0.1"
+      WALLET_ATTESTATION_ISSUER_WIA_WALLET_LINK: "${BASE_URL}/wallet-provider"
+      WALLET_ATTESTATION_ISSUER_WIA_CERTIFICATION_INFORMATION: "UNCERTIFIED"
+      WALLET_ATTESTATION_ISSUER_WIA_VALIDITY_MINUTES: "60"
+      WALLET_ATTESTATION_ISSUER_WIA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
+      WALLET_ATTESTATION_ISSUER_WIA_STATUS_MAINTENANCE_DAYS: "365"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wallet-provider.rule=PathPrefix(`/wallet-provider`)"
