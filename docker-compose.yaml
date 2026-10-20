@@ -179,7 +179,7 @@ services:
       - wallet-ecosystem-network
 
   pid-issuer:
-    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.1@sha256:2e6176a00f3bea3266d79cdf8182c2fcad96436f5a7a463ad504eb533a6e06f2
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-pid-issuer:v0.11.2@sha256:fa864aa2deaf22845ca935fc4ccf2fb51ece57f2ea8691119c42f847dee883cb
     container_name: pid-issuer
     depends_on:
       keycloak:
