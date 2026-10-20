@@ -8,10 +8,15 @@ import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.not;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
+import com.nimbusds.jose.jwk.ECKey;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import tools.jackson.databind.ObjectMapper;
 
 public class WalletClientGatewayClient {
 
@@ -100,6 +105,21 @@ public class WalletClientGatewayClient {
         // Deprecated header
         .and().header("session", not(blankOrNullString()))
         .extract().body().jsonPath().get("sessionId");
+  }
+
+  public Response tryCreateKeyAttestation(String sessionId, ECKey bindingKey, String nonce) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("keys", List.of(bindingKey.toPublicJWK().toJSONObject()));
+    if (nonce != null) {
+      body.put("nonce", nonce);
+    }
+    return given()
+        .contentType(ContentType.JSON)
+        .body(new ObjectMapper().writeValueAsString(body))
+        .header("Session", sessionId)
+        .header("X-API-KEY", API_KEY)
+        .when()
+        .post(base.resolve("attestation/v0/key-attestations"));
   }
 
   public Response tryCreateWalletUnitAttestation(String sessionId, String nonce) {

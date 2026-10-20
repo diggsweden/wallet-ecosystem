@@ -52,10 +52,8 @@ public class PublicWalletClient implements WalletClient {
     var signedJwt = createSignedJwt(deviceKey, sessionNonce);
     var session = gateway.respondToChallenge(signedJwt);
 
-    gateway.addWalletKey(session, bindingKey.toPublicJWK().toJSONString());
-
     return gateway
-        .tryCreateWalletUnitAttestation(session, nonce)
+        .tryCreateKeyAttestation(session, bindingKey, nonce)
         .then()
         .assertThat()
         .statusCode(201)

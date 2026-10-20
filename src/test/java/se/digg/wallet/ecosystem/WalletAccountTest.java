@@ -59,22 +59,6 @@ public class WalletAccountTest {
   }
 
   @Test
-  void addWalletKey_isReadableOnAccount() {
-    String id = createAccount(randomKid());
-    String kid = "wallet-" + UUID.randomUUID();
-
-    given()
-        .contentType(ContentType.JSON).body(keyBody(kid))
-        .when().post(BASE + "/v0/accounts/" + id + "/wallet-keys")
-        .then().statusCode(201);
-
-    given()
-        .when().get(BASE + "/v0/accounts/" + id + "/wallet-keys")
-        .then().statusCode(200)
-        .body("items.kid", hasItem(kid));
-  }
-
-  @Test
   void addSecurityEnvelope_isReadableOnAccount() {
     String id = createAccount(randomKid());
     String content = "envelope-" + UUID.randomUUID();
