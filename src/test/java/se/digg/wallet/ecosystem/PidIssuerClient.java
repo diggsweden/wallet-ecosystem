@@ -118,7 +118,16 @@ public class PidIssuerClient {
             is("EU Digital Identity Wallet :: Generate new Credentials Offer"))
         .and().extract().body().asString();
 
-    return Jsoup.parse(responseBody).selectStream(".table tbody tr")
+    org.jsoup.nodes.Document doc = Jsoup.parse(responseBody);
+    org.jsoup.select.Elements listGroupItems = doc.select(".list-group .list-group-item");
+    if (!listGroupItems.isEmpty()) {
+      return listGroupItems.stream()
+          .collect(Collectors.toMap(
+              item -> item.select(".fw-semibold").text().trim(),
+              item -> item.select("a.useful-link-url").attr("href").trim()));
+    }
+
+    return doc.selectStream(".table tbody tr")
         .map(row -> Stream.concat(
             row.selectStream("td").map(Element::text).map(String::trim),
             Stream.of("UNKNOWN", "UNKNOWN")).limit(2).toList())
