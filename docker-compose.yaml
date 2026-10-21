@@ -89,6 +89,8 @@ services:
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Revocation"
+      JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
+      JAVA_TOOL_OPTIONS: "-XX:MaxDirectMemorySize=128M"
     depends_on:
       - trust-source
     labels:
@@ -137,7 +139,7 @@ services:
       WUA_KEYSTORE_ALIAS: "wallet_attestation_issuer"
       WALLET_ATTESTATION_ISSUER_ISSUER: "Digg"
       WALLET_ATTESTATION_ISSUER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
-      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "wallet-dev"
+      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "eudiw"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_NAME: "Digg Wallet"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_VERSION: "0.0.1"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_LINK: "${BASE_URL}/wallet-attestation-issuer"
@@ -171,7 +173,7 @@ services:
       WUA_KEYSTORE_ALIAS: "wallet_provider"
       WALLET_ATTESTATION_ISSUER_ISSUER: "Digg"
       WALLET_ATTESTATION_ISSUER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
-      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "wallet-dev"
+      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "eudiw"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_NAME: "Digg Wallet"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_VERSION: "0.0.1"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_LINK: "${BASE_URL}/wallet-provider"
