@@ -442,12 +442,15 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7.1@sha256:f1f1f01e472c8a78df40d8f2a49a925274eda4d3d80d5f6edbb5c880ee3c01c6
+    build:
+      context: ./config/keycloak
+      dockerfile: Containerfile
+    pull_policy: build
     container_name: keycloak
     command:
       - start
+      - --optimized
       - --import-realm
-      - --features=dpop
     environment:
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
