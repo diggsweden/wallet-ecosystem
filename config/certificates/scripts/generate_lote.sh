@@ -86,6 +86,7 @@ main() {
 
   local wallet_cacert issuer_cacert
   local verifier_access_cacert verifier_registration_cacert trust_source_cert
+  wallet_attestation_issuer_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/wallet-attestation-issuer/ca.pem")
   wallet_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/wallet-provider/ca.pem")
   issuer_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/pid-issuer/ca.pem")
   verifier_access_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/verifier-access-certificate/ca.pem")
@@ -121,6 +122,19 @@ main() {
           "TEInformationURI": [{"lang": "en", "uriValue": "http://localhost"}]
         },
         "TrustedEntityServices": [
+          {
+            "ServiceInformation": {
+              "ServiceName": [{"lang": "en", "value": "Local Wallet Attestation Issuer"}],
+              "ServiceDigitalIdentity": {
+                "X509Certificates": [
+                  {"val": "${wallet_attestation_issuer_cacert}"}
+                ]
+              },
+              "ServiceTypeIdentifier": "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance",
+              "ServiceStatus": "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted",
+              "StatusStartingTime": "${now}"
+            }
+          },
           {
             "ServiceInformation": {
               "ServiceName": [{"lang": "en", "value": "Local Wallet Issuance"}],
