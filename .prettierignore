@@ -6,6 +6,7 @@
 **/*.yml
 **/*.yaml
 .rumdl_cache
+.rumdl-cache
 megalinter-reports
 target
 development/format/eclipse-java-google-style.xml
@@ -15,3 +16,4 @@ development/sast/pmd_default_java.xml
 # It is imperative to preserve the formatting of the signed files
 # in order to have a successful signature verification
 config/trust-source
+config/pid-issuer/issuer_wrprc.json
