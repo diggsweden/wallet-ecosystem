@@ -55,6 +55,10 @@ public class EndToEndTest {
         Arguments.argumentSet(
             "Internal route - direct_post - Deprecated Wallet Unit Attestation",
             new IssuanceAgent(InternalWalletClient.deprecatedWua()),
+            ResponseMode.DIRECT_POST),
+        Arguments.argumentSet(
+            "Legacy client - wallet-dev - direct_post",
+            new IssuanceAgent(new InternalWalletClient(), IssuanceAgent.LEGACY_CLIENT_ID),
             ResponseMode.DIRECT_POST));
   }
 
