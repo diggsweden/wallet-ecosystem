@@ -17,7 +17,6 @@ public enum Property {
   WALLET_ATTESTATION_ISSUER_BASE_URI("https://localhost/wallet-attestation-issuer"),
   UNTRUSTED_WALLET_ATTESTATION_ISSUER_BASE_URI(
       "https://localhost/untrusted-wallet-attestation-issuer"),
-  WALLET_PROVIDER_BASE_URI("https://localhost/wallet-provider"),
   VERIFIER_BACKEND_BASE_URI("https://localhost/refimpl-verifier-backend"),
   VERIFIER_FRONTEND_BASE_URI("https://localhost/demo-verifier"),
   TRUST_VALIDATOR_BASE_URI("https://localhost/trust-validator"),
