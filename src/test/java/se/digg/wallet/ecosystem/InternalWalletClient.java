@@ -8,28 +8,28 @@ import com.nimbusds.jose.jwk.ECKey;
 
 public class InternalWalletClient implements WalletClient {
 
-  private final WalletProviderClient walletProvider;
+  private final WalletAttestationIssuerClient attestationIssuer;
 
   public InternalWalletClient() {
-    this(new WalletProviderClient());
+    this(new WalletAttestationIssuerClient());
   }
 
-  public InternalWalletClient(WalletProviderClient walletProvider) {
-    this.walletProvider = walletProvider;
+  public InternalWalletClient(WalletAttestationIssuerClient attestationIssuer) {
+    this.attestationIssuer = attestationIssuer;
   }
 
   @Deprecated
   public static WalletClient deprecatedWua() {
-    return deprecatedWua(new WalletProviderClient());
+    return deprecatedWua(new WalletAttestationIssuerClient());
   }
 
   @Deprecated
-  public static WalletClient deprecatedWua(WalletProviderClient walletProvider) {
-    return (bindingKey, nonce) -> walletProvider.getWalletUnitAttestation(bindingKey, nonce);
+  public static WalletClient deprecatedWua(WalletAttestationIssuerClient attestationIssuer) {
+    return (bindingKey, nonce) -> attestationIssuer.getWalletUnitAttestation(bindingKey, nonce);
   }
 
   @Override
   public String createKeyAttestation(ECKey bindingKey, String nonce) {
-    return walletProvider.getKeyAttestation(bindingKey, nonce);
+    return attestationIssuer.getKeyAttestation(bindingKey, nonce);
   }
 }

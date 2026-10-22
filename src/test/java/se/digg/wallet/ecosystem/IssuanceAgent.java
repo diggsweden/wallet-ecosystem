@@ -33,14 +33,14 @@ public class IssuanceAgent {
   }
 
   static IssuanceAgent untrusted() {
-    WalletProviderClient untrustedWalletProvider =
-        new WalletProviderClient(
+    var untrustedAttestationIssuer =
+        new WalletAttestationIssuerClient(
             ServiceIdentifier.UNTRUSTED_WALLET_ATTESTATION_ISSUER.getResourceRoot());
     return builder()
-        .wallet(new InternalWalletClient(untrustedWalletProvider))
+        .wallet(new InternalWalletClient(untrustedAttestationIssuer))
         .keycloak(new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()))
         .pidIssuer(new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()))
-        .walletProvider(untrustedWalletProvider)
+        .attestationIssuer(untrustedAttestationIssuer)
         .audience(ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString())
         .build();
   }
@@ -48,7 +48,7 @@ public class IssuanceAgent {
   private final WalletClient wallet;
   private final KeycloakClient keycloak;
   private final PidIssuerClient pidIssuer;
-  private final WalletProviderClient walletProvider;
+  private final WalletAttestationIssuerClient attestationIssuer;
   private final String audience;
   private final String clientId;
 
@@ -56,14 +56,14 @@ public class IssuanceAgent {
     this.wallet = builder.wallet;
     this.keycloak = builder.keycloak;
     this.pidIssuer = builder.pidIssuer;
-    this.walletProvider = builder.walletProvider;
+    this.attestationIssuer = builder.attestationIssuer;
     this.audience = builder.audience;
     this.clientId = builder.clientId;
   }
 
   public static class Builder {
-    private WalletProviderClient walletProvider = new WalletProviderClient();
-    private WalletClient wallet = new InternalWalletClient(walletProvider);
+    private WalletAttestationIssuerClient attestationIssuer = new WalletAttestationIssuerClient();
+    private WalletClient wallet = new InternalWalletClient(attestationIssuer);
     private KeycloakClient keycloak = new KeycloakClient();
     private PidIssuerClient pidIssuer = new PidIssuerClient();
     private String audience = ServiceIdentifier.PID_ISSUER.toString();
@@ -84,8 +84,8 @@ public class IssuanceAgent {
       return this;
     }
 
-    public Builder walletProvider(WalletProviderClient walletProvider) {
-      this.walletProvider = walletProvider;
+    public Builder attestationIssuer(WalletAttestationIssuerClient attestationIssuer) {
+      this.attestationIssuer = attestationIssuer;
       return this;
     }
 
@@ -114,7 +114,7 @@ public class IssuanceAgent {
 
     String accessToken;
     if (DEFAULT_CLIENT_ID.equals(clientId)) {
-      String wia = walletProvider.getWalletInstanceAttestation(bindingKey);
+      String wia = attestationIssuer.getWalletInstanceAttestation(bindingKey);
       accessToken =
           keycloak.getDpopAccessTokenWithClientAttestation(
               "pid-issuer-realm",
