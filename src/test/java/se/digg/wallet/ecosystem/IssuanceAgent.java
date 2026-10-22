@@ -29,7 +29,7 @@ public class IssuanceAgent {
     return new IssuanceAgent(
         new InternalWalletClient(
             new WalletProviderClient(
-                ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot())),
+                ServiceIdentifier.UNTRUSTED_WALLET_ATTESTATION_ISSUER.getResourceRoot())),
         new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
         new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
         ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
