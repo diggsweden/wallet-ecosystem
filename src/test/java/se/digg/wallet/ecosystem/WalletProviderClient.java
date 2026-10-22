@@ -25,7 +25,7 @@ public class WalletProviderClient {
   private static final String WALLET_INSTANCE_ATTESTATIONS_URL = "v0/wallet-instance-attestations";
 
   public WalletProviderClient() {
-    this(ServiceIdentifier.WALLET_PROVIDER.getResourceRoot());
+    this(ServiceIdentifier.WALLET_ATTESTATION_ISSUER.getResourceRoot());
   }
 
   public WalletProviderClient(URI base) {
