@@ -35,7 +35,7 @@ public class IssuanceAgent {
   static IssuanceAgent untrusted() {
     WalletProviderClient untrustedWalletProvider =
         new WalletProviderClient(
-            ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot());
+            ServiceIdentifier.UNTRUSTED_WALLET_ATTESTATION_ISSUER.getResourceRoot());
     return builder()
         .wallet(new InternalWalletClient(untrustedWalletProvider))
         .keycloak(new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()))
