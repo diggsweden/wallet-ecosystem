@@ -34,9 +34,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class WalletAttestationIssuerTest {
 
-  private final WalletProviderClient walletProvider = new WalletProviderClient(
-      ServiceIdentifier.WALLET_ATTESTATION_ISSUER.getResourceRoot());
-
+  private final WalletProviderClient walletProvider = new WalletProviderClient();
   private final TrustSourceClient trustSource = new TrustSourceClient();
 
   @Test
