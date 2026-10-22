@@ -121,6 +121,40 @@ services:
     networks:
       - wallet-ecosystem-network
 
+  wallet-attestation-issuer:
+    image: ghcr.io/diggsweden/wallet-attestation-issuer:v0.2.1@sha256:dc3483b328c1f6ea51398b31d8327576163f3de0bbdfc9a8b8f795e68fa346f4
+    container_name: wallet-attestation-issuer
+    hostname: wallet-attestation-issuer
+    volumes:
+      - ./config/certificates/wallet-attestation-issuer/wallet_attestation_issuer.p12:/opt/common/wallet_attestation_issuer.p12
+    environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/wallet-attestation-issuer"
+      SPRING_PROFILES_ACTIVE: "prod"
+      TZ: "Europe/Stockholm"
+      JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      WUA_KEYSTORE_PATH: "file:///opt/common/wallet_attestation_issuer.p12"
+      WUA_KEYSTORE_PASSWORD: "${WALLET_ATTESTATION_ISSUER_KEYSTORE_PASSWORD:?Set WALLET_ATTESTATION_ISSUER_KEYSTORE_PASSWORD in .env}"
+      WUA_KEYSTORE_ALIAS: "wallet_attestation_issuer"
+      WALLET_ATTESTATION_ISSUER_ISSUER: "Digg"
+      WALLET_ATTESTATION_ISSUER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
+      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "wallet-dev"
+      WALLET_ATTESTATION_ISSUER_WIA_WALLET_NAME: "Digg Wallet"
+      WALLET_ATTESTATION_ISSUER_WIA_WALLET_VERSION: "0.0.1"
+      WALLET_ATTESTATION_ISSUER_WIA_WALLET_LINK: "${BASE_URL}/wallet-attestation-issuer"
+      WALLET_ATTESTATION_ISSUER_WIA_CERTIFICATION_INFORMATION: "UNCERTIFIED"
+      WALLET_ATTESTATION_ISSUER_WIA_VALIDITY_MINUTES: "60"
+      WALLET_ATTESTATION_ISSUER_WIA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
+      WALLET_ATTESTATION_ISSUER_WIA_STATUS_MAINTENANCE_DAYS: "365"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallet-attestation-issuer.rule=PathPrefix(`/wallet-attestation-issuer`)"
+      - "traefik.http.routers.wallet-attestation-issuer.entrypoints=websecure"
+      - "traefik.http.routers.wallet-attestation-issuer.tls=true"
+      - "traefik.http.routers.wallet-attestation-issuer.service=wallet-attestation-issuer"
+      - "traefik.http.services.wallet-attestation-issuer.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
   wallet-provider:
     image: ghcr.io/diggsweden/wallet-attestation-issuer:v0.2.1@sha256:dc3483b328c1f6ea51398b31d8327576163f3de0bbdfc9a8b8f795e68fa346f4
     container_name: wallet-provider
