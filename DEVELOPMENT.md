@@ -219,7 +219,7 @@ In order to run the tests on alternate hosts,
 you can configure the location of those hosts using environment variables like so:
 
 ```shell
-env DIGG_WALLET_ECOSYSTEM_WALLET_PROVIDER_BASE_URI=https://wallet-provider.example.com \
+env DIGG_WALLET_ECOSYSTEM_WALLET_ATTESTATION_ISSUER_BASE_URI=https://wallet-attestation-issuer.example.com \
     DIGG_WALLET_ECOSYSTEM_PID_ISSUER_BASE_URI=https://pid-issuer.example.com \
     DIGG_WALLET_ECOSYSTEM_KEYCLOAK_BASE_URI=https://keycloak.example.com \
     just test
