@@ -28,8 +28,8 @@ public class IssuanceAgent {
   static IssuanceAgent untrusted() {
     return new IssuanceAgent(
         new InternalWalletClient(
-            new WalletProviderClient(
-                ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot())),
+            new WalletAttestationIssuerClient(
+                ServiceIdentifier.UNTRUSTED_WALLET_ATTESTATION_ISSUER.getResourceRoot())),
         new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
         new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
         ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
@@ -41,7 +41,7 @@ public class IssuanceAgent {
   private final String audience;
 
   public IssuanceAgent() {
-    this(new InternalWalletClient(new WalletProviderClient()));
+    this(new InternalWalletClient(new WalletAttestationIssuerClient()));
   }
 
   public IssuanceAgent(WalletClient wallet) {

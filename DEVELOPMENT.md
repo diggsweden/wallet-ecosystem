@@ -280,7 +280,7 @@ You can run it like so:
 ```shell
 env \
 	DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER=true \
-	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI=https://example.com/untrusted-wallet-provider \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_ATTESTATION_ISSUER_BASE_URI=https://example.com/untrusted-wallet-attestation-issuer \
 	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_PID_ISSUER_BASE_URI=https://example.com/untrusted-pid-issuer \
 	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_KEYCLOAK_BASE_URI=https://example.com/untrusted-idp \
 	mvn test -Dtest=VerifierBackendTest#rejectsUntrustedPidIssuer
@@ -303,7 +303,7 @@ docker compose restart
 # Run test
 env \
 	DIGG_WALLET_ECOSYSTEM_INCLUDE_TESTS_WITH_UNTRUSTED_ISSUER=true \
-	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_PROVIDER_BASE_URI=https://localhost/wallet-provider \
+	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_WALLET_ATTESTATION_ISSUER_BASE_URI=https://localhost/wallet-attestation-issuer \
 	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_PID_ISSUER_BASE_URI=https://localhost/pid-issuer \
 	DIGG_WALLET_ECOSYSTEM_UNTRUSTED_KEYCLOAK_BASE_URI=https://localhost/idp \
 	mvn test -Dtest=VerifierBackendTest#rejectsUntrustedPidIssuer
