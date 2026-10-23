@@ -407,7 +407,7 @@ services:
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
       SERVER_PORT: "8080"
       PROPERTIES_APISECRET: "apikey"
-      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-provider:8080/wallet-provider"
+      PROPERTIES_WALLETPROVIDER_BASEURL: "http://wallet-attestation-issuer:8080/wallet-attestation-issuer"
       PROPERTIES_WALLETACCOUNT_BASEURL: "http://wallet-account:8080/wallet-account"
       PROPERTIES_WALLETR2PS_BASEURL: "http://wallet-bff:8088"
       PROPERTIES_FEATUREFLAGS_FILEPATH: "/etc/wallet-client-gateway/feature-flags.json"
@@ -420,7 +420,7 @@ services:
     depends_on:
       wallet-bff:
         condition: service_started
-      wallet-provider:
+      wallet-attestation-issuer:
         condition: service_started
       wallet-account:
         condition: service_started
