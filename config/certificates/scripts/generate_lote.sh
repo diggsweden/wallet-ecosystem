@@ -84,10 +84,9 @@ main() {
 
   echo "Extracting certificates..."
 
-  local wallet_attestation_issuer_cacert wallet_cacert issuer_cacert
+  local wallet_attestation_issuer_cacert issuer_cacert
   local verifier_access_cacert verifier_registration_cacert trust_source_cert
   wallet_attestation_issuer_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/wallet-attestation-issuer/ca.pem")
-  wallet_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/wallet-provider/ca.pem")
   issuer_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/pid-issuer/ca.pem")
   verifier_access_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/verifier-access-certificate/ca.pem")
   verifier_registration_cacert=$(get_pem_cert_base64 \
@@ -128,19 +127,6 @@ main() {
               "ServiceDigitalIdentity": {
                 "X509Certificates": [
                   {"val": "${wallet_attestation_issuer_cacert}"}
-                ]
-              },
-              "ServiceTypeIdentifier": "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance",
-              "ServiceStatus": "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted",
-              "StatusStartingTime": "${now}"
-            }
-          },
-          {
-            "ServiceInformation": {
-              "ServiceName": [{"lang": "en", "value": "Local Wallet Issuance"}],
-              "ServiceDigitalIdentity": {
-                "X509Certificates": [
-                  {"val": "${wallet_cacert}"}
                 ]
               },
               "ServiceTypeIdentifier": "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance",
