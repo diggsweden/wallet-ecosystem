@@ -633,7 +633,7 @@
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": true,
-      "clientAuthenticatorType": "client-secret",
+      "clientAuthenticatorType": "abca-draft07",
       "redirectUris": [
         "urn:ietf:wg:oauth:2.0:oob",
         "eudi-openid4ci://authorize",
@@ -647,9 +647,9 @@
       "consentRequired": false,
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
-      "publicClient": true,
+      "publicClient": false,
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
@@ -677,6 +677,33 @@
         "eu.europa.ec.eudi.pid_mso_mdoc",
         "org.iso.18013.5.1.mDL",
         "urn:eudi:ehic:1:dc+sd-jwt"
+      ],
+      "protocolMappers": [
+        {
+          "name": "aud-pid-issuer-srv",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "pid-issuer-srv",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "client-status-attestation",
+          "protocol": "openid-connect",
+          "protocolMapper": "client-status-protocol-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "false",
+            "access.token.response.claim": "true",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        }
       ]
     },
     {
@@ -2064,8 +2091,59 @@
   "browserFlow": "browser",
   "directGrantFlow": "direct grant",
   "resetCredentialsFlow": "reset credentials",
-  "clientAuthenticationFlow": "clients",
+  "clientAuthenticationFlow": "custom-clients",
   "dockerAuthenticationFlow": "docker auth",
+  "authenticatorConfig": [
+    {
+      "id": "cee3e64e-4d87-476c-bbd5-03a584ad2875",
+      "alias": "abca-flow-config",
+      "config": {
+        "clientStatus.verifyIssuer": "false",
+        "clientAttestation.maxAge": "86400",
+        "clientAttestationPoP.maxAge": "300",
+        "clientAttestation.verifyIssuer": "true",
+        "trustValidator.serviceUrl": "http://trust-validator:8080/trust-validator/trust",
+        "clock.skew": "0"
+      }
+    }
+  ],
+  "authenticationFlows": [
+    {
+      "id": "edda5863-4c65-4393-a7e3-bde721a117fe",
+      "alias": "custom-clients",
+      "description": "Client authentication flow supporting ABCA",
+      "providerId": "client-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "client-secret",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "client-jwt",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 20,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorConfig": "abca-flow-config",
+          "authenticator": "abca-draft07",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 30,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ],
   "attributes": {
     "cibaBackchannelTokenDeliveryMode": "poll",
     "cibaExpiresIn": "120",
