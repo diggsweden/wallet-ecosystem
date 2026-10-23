@@ -84,7 +84,7 @@ main() {
 
   echo "Extracting certificates..."
 
-  local wallet_cacert issuer_cacert
+  local wallet_attestation_issuer_cacert wallet_cacert issuer_cacert
   local verifier_access_cacert verifier_registration_cacert trust_source_cert
   wallet_attestation_issuer_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/wallet-attestation-issuer/ca.pem")
   wallet_cacert=$(get_pem_cert_base64 "$CERT_DIR/ca/wallet-provider/ca.pem")
