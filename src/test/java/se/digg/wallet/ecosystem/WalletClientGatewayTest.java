@@ -22,7 +22,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -153,14 +152,8 @@ public class WalletClientGatewayTest {
   private static String stubAccountV0Request(ECKey ecKey) {
     return """
         {
-          "deviceKey": %s,
-          "personalIdentityNumber": "%s"
-        }""".formatted(ecKey.toPublicJWK().toJSONString(), randomPersonalIdentityNumber());
-  }
-
-  private static String randomPersonalIdentityNumber() {
-    return Long.toString(
-        ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L));
+          "deviceKey": %s
+        }""".formatted(ecKey.toPublicJWK().toJSONString());
   }
 
   private static String createSignedJwt(ECKey ecJwk, String nonce)

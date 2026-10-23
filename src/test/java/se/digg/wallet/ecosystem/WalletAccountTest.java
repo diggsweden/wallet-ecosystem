@@ -40,10 +40,7 @@ public class WalletAccountTest {
         .contentType(ContentType.JSON).body(accountBody(randomKid()))
         .when().post(BASE + "/v0/accounts")
         .then().statusCode(201)
-        .body("id", matchesPattern(UUID_PATTERN))
-        .body("personalIdentityNumber", equalTo(null))
-        .body("email", equalTo(null))
-        .body("phoneNumber", equalTo(null));
+        .body("id", matchesPattern(UUID_PATTERN));
   }
 
   @Test
