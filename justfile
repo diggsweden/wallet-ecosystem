@@ -14,6 +14,10 @@ colors := devtools_dir + "/utils/colors.sh"
 
 maven_opts := "--batch-mode --no-transfer-progress --errors -Dstyle.color=always"
 
+pki_source := env("PKI_SOURCE_DIRECTORY", "../wallet-pki-tool")
+pki_image := env("PKI_IMAGE", "localhost/wallet-pki-tool:local")
+pki_env_file := env("PKI_ENV_FILE", ".env")
+
 # Color variables
 CYAN_BOLD := "\\033[1;36m"
 GREEN := "\\033[1;32m"
@@ -308,6 +312,22 @@ produce-test-report:
 # ==================================================================================== #
 # CERTS - Certificate management
 # ==================================================================================== #
+
+# Build the local PKI image from its source checkout
+[group('pki')]
+[positional-arguments]
+pki-build *args:
+    podman build "$@" --file "{{pki_source}}/Containerfile" --tag "{{pki_image}}" "{{pki_source}}"
+
+# Regenerate service PKI using the existing CAs and the locally built image
+[group('pki')]
+pki-generate:
+    podman run --rm --pull=never --userns=keep-id --user "$(id -u):$(id -g)" \
+        --env-file "{{pki_env_file}}" \
+        --volume "$PWD:/workspace:z" \
+        --volume "$PWD/config/certificates/ca:/pki-state/authorities:ro,z" \
+        --workdir /workspace "{{pki_image}}" \
+        ecosystem generate --config config/certificates/pki.yaml
 
 # Generate TLS certificates (requires mkcert)
 [group('setup')]

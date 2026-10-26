@@ -83,6 +83,9 @@ Review the variables in `.env` and update them as needed for your local setup.
 The key variable is `BASE_URL`, which defines the root URL used by all cluster
 services and defaults to `https://localhost`.
 
+Development PKI fixtures are checked in. To regenerate them with a locally built
+`wallet-pki-tool` container, follow [the certificate guide](config/certificates/README.md).
+
 > **Android emulator note:** Android emulators cannot reach `localhost` on the host machine. If you are developing for Android, set `BASE_URL=https://10.0.2.2` so the emulator can resolve requests to the running services.
 
 ### 2. Corporate Proxy Note
