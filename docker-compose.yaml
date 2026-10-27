@@ -393,7 +393,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-client-gateway:
-    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.15@sha256:0a4075eda80993602efad06a4528fcc0f8b96948316b11dc1cbe1f083104dd1a
+    image: ghcr.io/diggsweden/wallet-client-gateway:v0.6.16@sha256:fdf068ea96043581c366e3e52b844ee42be4b08371e1b17139c0f13a71edf788
     container_name: wallet-client-gateway
     hostname: wallet-client-gateway
     volumes:
