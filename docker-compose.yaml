@@ -444,10 +444,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    build:
-      context: ./config/keycloak
-      dockerfile: Containerfile
-    pull_policy: build
+    image: ghcr.io/diggsweden/wallet-keycloak:latest
     container_name: keycloak
     command:
       - start
@@ -475,7 +472,6 @@ services:
       start_period: 120s
     volumes:
       - ./config/keycloak/themes/:/opt/keycloak/themes
-      - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:
       - "traefik.enable=true"
       # Whitelist: pid-issuer-realm and shared resources
