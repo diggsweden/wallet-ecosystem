@@ -122,20 +122,8 @@ public class KeycloakClient {
     String challenge = getChallenge(realm);
     String pop = createClientAttestationPop(realm, clientId, walletKey, challenge);
 
-    URI tokenEndpoint = base.resolve("realms/" + realm + "/protocol/openid-connect/token");
-    String dpopProof = DpopUtil.createDpopProof(dpopKey, tokenEndpoint.toString(), "POST");
-
-    Map<String, String> allParams = new HashMap<>(parameters);
-    allParams.put("client_id", clientId);
-
-    return given()
-        .when()
-        .contentType(ContentType.URLENC)
-        .header("DPoP", dpopProof)
-        .header("OAuth-Client-Attestation", walletInstanceAttestation)
-        .header("OAuth-Client-Attestation-PoP", pop)
-        .formParams(allParams)
-        .post(tokenEndpoint)
+    return tryGetDpopAccessTokenWithClientAttestation(
+        realm, clientId, dpopKey, walletInstanceAttestation, pop, parameters)
         .then()
         .assertThat()
         .statusCode(200)
@@ -144,6 +132,42 @@ public class KeycloakClient {
         .body("token_type", org.hamcrest.CoreMatchers.equalTo("DPoP"))
         .extract()
         .path("access_token");
+  }
+
+  public Response tryGetDpopAccessTokenWithClientAttestation(
+      String realm,
+      String clientId,
+      ECKey dpopKey,
+      String walletInstanceAttestation,
+      String clientAttestationPop,
+      Map<String, String> parameters) {
+
+    URI tokenEndpoint = base.resolve("realms/" + realm + "/protocol/openid-connect/token");
+    String dpopProof;
+    try {
+      dpopProof = DpopUtil.createDpopProof(dpopKey, tokenEndpoint.toString(), "POST");
+    } catch (JOSEException e) {
+      throw new RuntimeException(e);
+    }
+
+    Map<String, String> allParams = new HashMap<>(parameters);
+    allParams.put("client_id", clientId);
+
+    var request = given()
+        .contentType(ContentType.URLENC)
+        .header("DPoP", dpopProof);
+
+    if (walletInstanceAttestation != null) {
+      request.header("OAuth-Client-Attestation", walletInstanceAttestation);
+    }
+    if (clientAttestationPop != null) {
+      request.header("OAuth-Client-Attestation-PoP", clientAttestationPop);
+    }
+
+    return request
+        .formParams(allParams)
+        .when()
+        .post(tokenEndpoint);
   }
 
   public String getAccessToken(String realm, Map<String, String> parameters) {

@@ -37,6 +37,65 @@ class KeycloakAbcaTest {
   private final WalletProviderClient walletProvider = new WalletProviderClient();
   private final KeycloakClient keycloak = new KeycloakClient();
 
+  private static final Map<String, String> TOKEN_PARAMETERS = Map.of(
+      "grant_type", "password",
+      "username", "tneal",
+      "password", "password",
+      "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt");
+
+  @Test
+  void rejectsUntrustedWalletInstanceAttestation() throws Exception {
+    ECKey walletKey = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
+    ECKey untrustedKey = new ECKeyGenerator(Curve.P_256).keyID("untrusted").generate();
+
+    JWTClaimsSet wiaClaims = new JWTClaimsSet.Builder()
+        .issuer("https://untrusted-wallet-provider.example.com")
+        .subject("eudiw")
+        .claim("cnf", Map.of("jwk", walletKey.toPublicJWK().toJSONObject()))
+        .claim("wallet_name", "Untrusted Wallet")
+        .issueTime(Date.from(Instant.now()))
+        .expirationTime(Date.from(Instant.now().plusSeconds(3600)))
+        .build();
+
+    SignedJWT untrustedWia = new SignedJWT(
+        new JWSHeader.Builder(JWSAlgorithm.ES256)
+            .type(new JOSEObjectType("oauth-client-attestation+jwt"))
+            .build(),
+        wiaClaims);
+    untrustedWia.sign(new ECDSASigner(untrustedKey));
+
+    String challenge = keycloak.getChallenge("pid-issuer-realm");
+    String pop =
+        keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", walletKey, challenge);
+
+    Response response = keycloak.tryGetDpopAccessTokenWithClientAttestation(
+        "pid-issuer-realm", "eudiw", walletKey, untrustedWia.serialize(), pop, TOKEN_PARAMETERS);
+
+    response.then()
+        .assertThat()
+        .statusCode(401)
+        .body("error", is("invalid_client"));
+  }
+
+  @Test
+  void rejectsMismatchedProofOfPossessionKey() throws Exception {
+    ECKey walletKey = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
+    ECKey differentKey = new ECKeyGenerator(Curve.P_256).keyID("different").generate();
+
+    String wia = walletProvider.getWalletInstanceAttestation(walletKey);
+    String challenge = keycloak.getChallenge("pid-issuer-realm");
+    String pop =
+        keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", differentKey, challenge);
+
+    Response response = keycloak.tryGetDpopAccessTokenWithClientAttestation(
+        "pid-issuer-realm", "eudiw", walletKey, wia, pop, TOKEN_PARAMETERS);
+
+    response.then()
+        .assertThat()
+        .statusCode(401)
+        .body("error", is("invalid_client"));
+  }
+
   @Test
   void authenticatesWithWalletInstanceAttestationAndPop() throws Exception {
     ECKey walletKey = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
