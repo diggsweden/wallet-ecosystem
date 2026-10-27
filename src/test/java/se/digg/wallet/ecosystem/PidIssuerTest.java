@@ -165,7 +165,7 @@ public class PidIssuerTest {
                 "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
-    WalletClient wallet = new InternalWalletClient(new WalletProviderClient());
+    WalletClient wallet = new InternalWalletClient(new WalletAttestationIssuerClient());
     String walletAttestation = wallet.createKeyAttestation(bindingKey, nonce);
 
     // Create an invalid proof with a mismatched keyID ("invalid-kid" instead of "0")

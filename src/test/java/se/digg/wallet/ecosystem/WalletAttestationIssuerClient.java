@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import tools.jackson.databind.ObjectMapper;
 
-public class WalletProviderClient {
+public class WalletAttestationIssuerClient {
 
   private final URI base;
 
@@ -24,11 +24,11 @@ public class WalletProviderClient {
   private static final String KEY_ATTESTATIONS_URL = "v0/key-attestations";
   private static final String WALLET_INSTANCE_ATTESTATIONS_URL = "v0/wallet-instance-attestations";
 
-  public WalletProviderClient() {
+  public WalletAttestationIssuerClient() {
     this(ServiceIdentifier.WALLET_ATTESTATION_ISSUER.getResourceRoot());
   }
 
-  public WalletProviderClient(URI base) {
+  public WalletAttestationIssuerClient(URI base) {
     this.base = base;
   }
 
