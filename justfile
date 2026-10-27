@@ -325,15 +325,20 @@ certs-tls:
            --key-file ./config/traefik/certs/wallet-key.pem \
            localhost 127.0.0.1 ::1
 
-# Regenerate service PKI using existing CAs and wallet-pki-tool
+# Run wallet-pki-tool with custom arguments
 [group('pki')]
-pki-generate:
+[positional-arguments]
+pki *args:
     podman run --rm --pull=missing --userns=keep-id --user "$(id -u):$(id -g)" \
         --env-file "{{pki_env_file}}" \
         --volume "$PWD:/workspace:z" \
         --volume "$PWD/config/certificates/ca:/workspace/config/certificates/ca:ro,z" \
         --workdir /workspace "{{pki_image}}" \
-        ecosystem generate --config config/certificates/ecosystem.yaml
+        "$@"
+
+# Regenerate service PKI using existing CAs and wallet-pki-tool
+[group('pki')]
+pki-generate: (pki "ecosystem" "generate" "--config" "config/certificates/ecosystem.yaml")
 
 # Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
 [group('setup')]

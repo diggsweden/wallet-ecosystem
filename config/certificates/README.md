@@ -28,6 +28,15 @@ Generation reuses the existing roots and fails if their
 required files are missing or invalid. CA initialization or replacement is a
 separate, deliberate PKI-tool operation with a writable authority mount.
 
+### Run other PKI commands
+
+Pass arguments directly to the tool with `just pki`:
+
+```shell
+just pki --help
+just pki verifier access generate --config config/certificates/ecosystem.yaml
+```
+
 ### Generated artifacts
 
 Each generation replaces keys and artifacts for the PID issuer, wallet
