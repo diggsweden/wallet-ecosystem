@@ -467,7 +467,6 @@ services:
       - PID_ISSUER_ROOT_URL=http://localhost:8080
       - PID_ISSUER_ADMIN_URL=http://localhost:8080
       - PID_ISSUER_SRV_SECRET=cow3go8W5gbI5HcR5mim7O00DAYaAmfv
-      - KEYCLOAK_PID_ISSUER_CLIENT_SECRET=cow3go8W5gbI5HcR5mim7O00DAYaAmfv
       - KEYCLOAK_STATUS_LIST_URI=http://trust-source/signed/status-list.jwt
       - KEYCLOAK_ABCA_TRUST_VALIDATOR_URL=http://trust-validator:8080/trust-validator/trust
     healthcheck:
