@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# Python PID issuer frontend (eudi-srv-web-issuing-frontend-eudiw-py).
+# This is the public credential issuer; backend_url and oauth_url end up in its
+# metadata and are also called server-side, so they must be public URLs.
+
+service_url: "https://10.0.2.2:9443"
+log_dir: "/tmp/issuer_frontend/logs/logs.log"
+
+frontend_id: "5d725b3c-6d42-448e-8bfd-1eff1fcf152d"
+
+backend_url: "https://10.0.2.2:9444"
+oauth_url: "https://10.0.2.2:9445"
+
+credentials_supported:
+  - "eu.europa.ec.eudi.pid_vc_sd_jwt"

@@ -1,0 +1,89 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# Python PID issuer backend (eudi-srv-web-issuing-eudiw-py).
+# Public URLs use 10.0.2.2 so the Android emulator can reach them; containers
+# reach the same address through Traefik's static IP on py-issuer-hairpin.
+# frontend :9443, backend :9444, authorization server :9445
+
+service_url: "https://10.0.2.2:9444"
+
+wallet_tester_url: "https://10.0.2.2:9443"
+
+revocation:
+  take_url: "http://unused.invalid/token_status_list/take"
+  set_url: "http://unused.invalid/token_status_list/set"
+  api_key: "unused"
+  enabled: false
+
+frontend:
+  default: "5d725b3c-6d42-448e-8bfd-1eff1fcf152d"
+
+  frontends_config:
+    "5d725b3c-6d42-448e-8bfd-1eff1fcf152d":
+      url: "https://10.0.2.2:9443"
+      metadata_signing_key_path: "/etc/eudiw/keys/pid_issuer.key.pem"
+      metadata_access_certificate_path: "/etc/eudiw/keys/pid_issuer.cert.pem"
+      metadata_signing_key_password: null
+      registration_certificate_path: "/etc/eudiw/registration/issuer_wrprc.jwt"
+
+authorization_server:
+  base_url: "https://10.0.2.2:9445"
+  internal_url: "http://py-issuer-oidc:5000"
+  user_verify_endpoint: "https://10.0.2.2:9445/verify/user"
+
+dynamic_presentation_url: "http://refimpl-verifier-backend:8080/refimpl-verifier-backend/ui/presentations"
+intended_use_id: "1"
+registration_certificate_jwt:
+
+trust_validator:
+  url: "http://trust-validator:8080/trust-validator/trust"
+  enabled: true
+
+status_validator:
+  url: "http://unused.invalid/status"
+  enabled: false
+
+oid4vp_scheme: "openid4vp://"
+
+credential_offer_scheme: "openid-credential-offer://"
+
+postgres:
+  host: "pid-issuer-db"
+  port: 5432
+  dbname: "pid-issuer"
+  user: "pid-issuer"
+  password: "pass"
+
+logging:
+  backend_path: "/tmp/log_dev/logs.log"
+  log_level: "DEBUG"
+
+expiry:
+  revocation_code: 60
+  form: 60
+  session: 60
+
+keys:
+  nonce_path: "/etc/eudiw/keys/nonce_rsa2048.pem"
+  credential_request_path: "/etc/eudiw/keys/credential_request.pem"
+
+trusted_CAs_path: "/etc/eudiw/keys/trusted-cas/"
+
+credential_auth_methods:
+  PID_login: []
+  country_selection:
+    - eu.europa.ec.eudi.pid_vc_sd_jwt
+
+countries:
+  FC:
+    name: "FormEU"
+    keys:
+      _default:
+        private_key_path: "/etc/eudiw/keys/pid_issuer.key.pem"
+        private_key_password: null
+        certificate_path: "/etc/eudiw/keys/pid_issuer.cert.der"
+    un_distinguishing_sign: "FC"
+    supported_credential_ids:
+      - "eu.europa.ec.eudi.pid_vc_sd_jwt"
