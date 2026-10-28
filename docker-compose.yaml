@@ -446,10 +446,6 @@ services:
   keycloak:
     image: ghcr.io/diggsweden/wallet-keycloak:latest
     container_name: keycloak
-    command:
-      - start
-      - --optimized
-      - --import-realm
     environment:
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
