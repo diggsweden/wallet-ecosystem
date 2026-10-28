@@ -444,7 +444,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: ghcr.io/diggsweden/wallet-keycloak:latest
+    image: ghcr.io/diggsweden/wallet-keycloak:v0.1.4@sha256:50b0351497a056e6d38d32022fed3c95fde2c8a2b7bd2019099d4060e489c959
     container_name: keycloak
     environment:
       - KC_PROXY_HEADERS=xforwarded
