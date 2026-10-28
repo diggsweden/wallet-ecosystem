@@ -51,6 +51,11 @@ COPY . .
 
 ENV FLASK_APP=app
 
+
+RUN useradd --system --uid 10001 issuer \
+ && chown -R issuer /app /tmp
+USER issuer
+
 EXPOSE 5000
 
 CMD ["flask", "run", "--host=0.0.0.0"]

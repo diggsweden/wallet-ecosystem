@@ -42,6 +42,11 @@ COPY . .
 RUN chmod +x run.sh \
  && mkdir -p /tmp/oidc_log_dev
 
+
+RUN useradd --system --uid 10001 issuer \
+ && chown -R issuer /app /tmp
+USER issuer
+
 EXPOSE 5000
 
 CMD ["python3", "server.py", "/etc/issuer_config/authorization_config.json"]

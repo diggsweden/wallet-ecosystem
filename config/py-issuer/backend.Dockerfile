@@ -54,6 +54,11 @@ RUN mkdir -p /etc/eudiw/pid-issuer-dev/cert/ \
 
 ENV FLASK_APP="app:create_app"
 
+
+RUN useradd --system --uid 10001 issuer \
+ && chown -R issuer /app /tmp
+USER issuer
+
 EXPOSE 5000
 
 CMD ["flask", "run", "--host=0.0.0.0"]

@@ -3,10 +3,7 @@
     "version": 1,
     "disable_existing_loggers": false,
     "root": {
-      "handlers": [
-        "console",
-        "file"
-      ],
+      "handlers": ["console", "file"],
       "level": "DEBUG"
     },
     "loggers": {
@@ -64,9 +61,7 @@
               "PS384",
               "PS512"
             ],
-            "allowed_htu": [
-              "https://10.0.2.2:9445/token"
-            ]
+            "allowed_htu": ["https://10.0.2.2:9445/token"]
           }
         }
       },
@@ -76,10 +71,7 @@
           "grant_config": {
             "usage_rules": {
               "authorization_code": {
-                "supports_minting": [
-                  "access_token",
-                  "refresh_token"
-                ],
+                "supports_minting": ["access_token", "refresh_token"],
                 "max_usage": 1,
                 "expires_in": 3600
               },
@@ -87,10 +79,7 @@
                 "expires_in": 300
               },
               "refresh_token": {
-                "supports_minting": [
-                  "access_token",
-                  "refresh_token"
-                ],
+                "supports_minting": ["access_token", "refresh_token"],
                 "expires_in": 600
               }
             },
@@ -105,10 +94,7 @@
         }
       },
       "preference": {
-        "subject_types_supported": [
-          "public",
-          "pairwise"
-        ],
+        "subject_types_supported": ["public", "pairwise"],
         "grant_types_supported": [
           "authorization_code",
           "implicit",
@@ -142,16 +128,12 @@
             "key_defs": [
               {
                 "type": "OCT",
-                "use": [
-                  "enc"
-                ],
+                "use": ["enc"],
                 "kid": "enc"
               },
               {
                 "type": "OCT",
-                "use": [
-                  "sig"
-                ],
+                "use": ["sig"],
                 "kid": "sig"
               }
             ],
@@ -191,9 +173,7 @@
           "path": "registration_api",
           "class": "idpyoidc.server.oidc.read_registration.RegistrationRead",
           "kwargs": {
-            "client_authn_method": [
-              "bearer_header"
-            ]
+            "client_authn_method": ["bearer_header"]
           }
         },
         "introspection": {
@@ -201,9 +181,7 @@
           "class": "idpyoidc.server.oauth2.introspection.Introspection",
           "kwargs": {
             "client_authn_method": null,
-            "release": [
-              "username"
-            ]
+            "release": ["username"]
           }
         },
         "authorization": {
@@ -224,11 +202,7 @@
               "code id_token token",
               "none"
             ],
-            "response_modes_supported": [
-              "query",
-              "fragment",
-              "form_post"
-            ]
+            "response_modes_supported": ["query", "fragment", "form_post"]
           }
         },
         "token": {
@@ -251,11 +225,7 @@
           "path": "userinfo",
           "class": "idpyoidc.server.oidc.userinfo.UserInfo",
           "kwargs": {
-            "claim_types_supported": [
-              "normal",
-              "aggregated",
-              "distributed"
-            ]
+            "claim_types_supported": ["normal", "aggregated", "distributed"]
           }
         },
         "end_session": {
@@ -297,16 +267,12 @@
         "key_defs": [
           {
             "type": "RSA",
-            "use": [
-              "sig"
-            ]
+            "use": ["sig"]
           },
           {
             "type": "EC",
             "crv": "P-256",
-            "use": [
-              "sig"
-            ]
+            "use": ["sig"]
           }
         ],
         "public_path": "static/jwks.json",
@@ -332,18 +298,14 @@
               "phone_number_verified"
             ],
             "add_claims_by_scope": true,
-            "aud": [
-              "https://example.org/appl"
-            ]
+            "aud": ["https://example.org/appl"]
           }
         },
         "refresh": {
           "class": "idpyoidc.server.token.jwt_token.JWTToken",
           "kwargs": {
             "lifetime": 3600,
-            "aud": [
-              "https://example.org/appl"
-            ]
+            "aud": ["https://example.org/appl"]
           }
         },
         "id_token": {
