@@ -50,3 +50,6 @@ pnpm-debug.log*
 .npm
 node_modules
 **/megalinter-reports
+
+# Python PID issuer keys exported from the PID keystore (just py-issuer-keys)
+config/py-issuer/keys/

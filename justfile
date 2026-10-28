@@ -340,9 +340,40 @@ pki *args:
 [group('pki')]
 pki-generate: (pki "ecosystem" "generate" "--config" "config/certificates/ecosystem.yaml")
 
+# Export PEM/DER keys for the Python PID issuer from the PID keystore
+[group('pki')]
+py-issuer-keys:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a; source "{{pki_env_file}}"; set +a
+    p12=config/certificates/issuer/pid_issuer.p12
+    out=config/py-issuer/keys
+    mkdir -p "$out/trusted-cas"
+    export_key() {
+        openssl pkcs12 -in "$p12" -passin env:PID_ISSUER_KEYSTORE_PASSWORD -nocerts -nodes 2>/dev/null \
+            | awk -v name="$1" '/friendlyName:/ { found = ($2 == name) } found && /-----BEGIN/,/-----END/' \
+            | openssl pkey -out "$2"
+    }
+    export_key pid_issuer "$out/pid_issuer.key.pem"
+    export_key request-encryption "$out/credential_request.pem"
+    openssl pkcs12 -in "$p12" -passin env:PID_ISSUER_KEYSTORE_PASSWORD -nokeys -clcerts 2>/dev/null \
+        | awk '/friendlyName: pid_issuer/ { found = 1 } found && /-----BEGIN/,/-----END/ { print } /-----END/ { found = 0 }' \
+        > "$out/pid_issuer.cert.pem"
+    openssl x509 -in "$out/pid_issuer.cert.pem" -outform DER -out "$out/pid_issuer.cert.der"
+    openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$out/nonce_rsa2048.pem" 2>/dev/null
+    cp config/trust-source/pid-issuer/ca.pem "$out/trusted-cas/pid-issuer-ca.pem"
+    # The auth server trusts WIAs by their signing (leaf) certificate, not the CA.
+    mkdir -p "$out/trusted-attesters"
+    openssl pkcs12 -in config/certificates/wallet-provider/wallet_provider.p12 \
+        -passin env:WALLET_PROVIDER_KEYSTORE_PASSWORD -nokeys -clcerts 2>/dev/null \
+        | awk '/-----BEGIN/,/-----END/' > "$out/trusted-attesters/wallet-provider.pem"
+    cp "$(mkcert -CAROOT)/rootCA.pem" "$out/tls-ca.pem"
+    chmod 644 "$out"/*.pem "$out"/*/*.pem
+    echo "Wrote Python issuer keys to $out"
+
 # Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
 [group('setup')]
-certs: certs-tls pki-generate
+certs: certs-tls pki-generate py-issuer-keys
 
 # ==================================================================================== #
 # INTERNAL
