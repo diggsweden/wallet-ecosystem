@@ -28,17 +28,21 @@ public class IssuanceAgent {
 
   private static final String DEFAULT_WUA_KEY_ID = "0";
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   static IssuanceAgent untrusted() {
-    return new IssuanceAgent(
-        new InternalWalletClient(
-            new WalletProviderClient(
-                ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot())),
-        new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
-        new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
+    WalletProviderClient untrustedWalletProvider =
         new WalletProviderClient(
-            ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot()),
-        ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString(),
-        DEFAULT_CLIENT_ID);
+            ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot());
+    return builder()
+        .wallet(new InternalWalletClient(untrustedWalletProvider))
+        .keycloak(new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()))
+        .pidIssuer(new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()))
+        .walletProvider(untrustedWalletProvider)
+        .audience(ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString())
+        .build();
   }
 
   private final WalletClient wallet;
@@ -49,35 +53,15 @@ public class IssuanceAgent {
   private final String clientId;
 
   public IssuanceAgent() {
-    this(new InternalWalletClient(new WalletProviderClient()));
+    this(builder());
   }
 
   public IssuanceAgent(WalletClient wallet) {
-    this(wallet, DEFAULT_CLIENT_ID);
+    this(builder().wallet(wallet));
   }
 
   public IssuanceAgent(WalletClient wallet, String clientId) {
-    this(
-        wallet,
-        new KeycloakClient(),
-        new PidIssuerClient(),
-        new WalletProviderClient(),
-        ServiceIdentifier.PID_ISSUER.toString(),
-        clientId);
-  }
-
-  public IssuanceAgent(
-      WalletClient wallet,
-      KeycloakClient keycloak,
-      PidIssuerClient pidIssuer,
-      String audience) {
-    this(
-        wallet,
-        keycloak,
-        pidIssuer,
-        new WalletProviderClient(),
-        audience,
-        DEFAULT_CLIENT_ID);
+    this(builder().wallet(wallet).clientId(clientId));
   }
 
   public IssuanceAgent(
@@ -94,6 +78,58 @@ public class IssuanceAgent {
     this.walletProvider = walletProvider;
     this.audience = audience;
     this.clientId = clientId;
+  }
+
+  private IssuanceAgent(Builder builder) {
+    this.wallet = builder.wallet;
+    this.keycloak = builder.keycloak;
+    this.pidIssuer = builder.pidIssuer;
+    this.walletProvider = builder.walletProvider;
+    this.audience = builder.audience;
+    this.clientId = builder.clientId;
+  }
+
+  public static class Builder {
+    private WalletProviderClient walletProvider = new WalletProviderClient();
+    private WalletClient wallet = new InternalWalletClient(walletProvider);
+    private KeycloakClient keycloak = new KeycloakClient();
+    private PidIssuerClient pidIssuer = new PidIssuerClient();
+    private String audience = ServiceIdentifier.PID_ISSUER.toString();
+    private String clientId = DEFAULT_CLIENT_ID;
+
+    public Builder wallet(WalletClient wallet) {
+      this.wallet = wallet;
+      return this;
+    }
+
+    public Builder keycloak(KeycloakClient keycloak) {
+      this.keycloak = keycloak;
+      return this;
+    }
+
+    public Builder pidIssuer(PidIssuerClient pidIssuer) {
+      this.pidIssuer = pidIssuer;
+      return this;
+    }
+
+    public Builder walletProvider(WalletProviderClient walletProvider) {
+      this.walletProvider = walletProvider;
+      return this;
+    }
+
+    public Builder audience(String audience) {
+      this.audience = audience;
+      return this;
+    }
+
+    public Builder clientId(String clientId) {
+      this.clientId = clientId;
+      return this;
+    }
+
+    public IssuanceAgent build() {
+      return new IssuanceAgent(this);
+    }
   }
 
   public String issuePidCredential(ECKey bindingKey, String username, String password)
