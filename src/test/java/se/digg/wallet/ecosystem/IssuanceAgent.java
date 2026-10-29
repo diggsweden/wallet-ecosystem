@@ -108,7 +108,6 @@ public class IssuanceAgent {
 
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
-            .issuer("wallet-dev")
             .audience(audience)
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
