@@ -33,11 +33,8 @@ pidIssuer:
   keystoreFile: certificates/issuer/pid_issuer.p12
   signing:
     commonName: PID Issuer (Ecosystem)
-    subjectAlternativeNames:
-      dns: [localhost, pid-issuer]
   encryption:
-    subjectAlternativeNames:
-      dns: [localhost]
+    subjectAlternativeNames: {}
   keystorePassword:
     env: PID_ISSUER_KEYSTORE_PASSWORD
   registration:
@@ -50,8 +47,6 @@ walletAttestationIssuer:
   keystoreFile: certificates/wallet-attestation-issuer/wallet_attestation_issuer.p12
   signing:
     commonName: Wallet Attestation Issuer (Ecosystem)
-    subjectAlternativeNames:
-      dns: [localhost, wallet-attestation-issuer]
   keystorePassword:
     env: WALLET_ATTESTATION_ISSUER_KEYSTORE_PASSWORD
 
@@ -60,7 +55,7 @@ verifier:
     keystoreFile: certificates/verifier-access-certificate/verifier-access-certificate.p12
     commonName: DIGG Verifier
     subjectAlternativeNames:
-      dns: [localhost, verifier-backend, refimpl-verifier-backend]
+      dns: [localhost]
       ip: [10.0.2.2]
       uri: ['https://localhost/demo-verifier']
     keystorePassword:
