@@ -178,7 +178,6 @@ public class PidIssuerTest {
 
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
-            .issuer("wallet-dev")
             .audience(IDENTIFIER.toString())
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
