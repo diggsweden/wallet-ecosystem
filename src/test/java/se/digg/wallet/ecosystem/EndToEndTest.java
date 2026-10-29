@@ -37,28 +37,33 @@ public class EndToEndTest {
     return Stream.of(
         Arguments.argumentSet(
             "Public route - direct_post",
-            new IssuanceAgent(new PublicWalletClient()),
+            IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
             "Internal route - direct_post",
-            new IssuanceAgent(new InternalWalletClient()),
+            IssuanceAgent.builder().wallet(new InternalWalletClient()).build(),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
             "Internal route - wallet-attestation-issuer",
-            new IssuanceAgent(new InternalWalletClient(new WalletProviderClient(
-                ServiceIdentifier.WALLET_ATTESTATION_ISSUER.getResourceRoot()))),
+            IssuanceAgent.builder()
+                .wallet(new InternalWalletClient(new WalletProviderClient(
+                    ServiceIdentifier.WALLET_ATTESTATION_ISSUER.getResourceRoot())))
+                .build(),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
             "Public route - direct_post.jwt",
-            new IssuanceAgent(new PublicWalletClient()),
+            IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
             ResponseMode.DIRECT_POST_JWT),
         Arguments.argumentSet(
             "Internal route - direct_post - Deprecated Wallet Unit Attestation",
-            new IssuanceAgent(InternalWalletClient.deprecatedWua()),
+            IssuanceAgent.builder().wallet(InternalWalletClient.deprecatedWua()).build(),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
             "Legacy client - wallet-dev - direct_post",
-            new IssuanceAgent(new InternalWalletClient(), IssuanceAgent.LEGACY_CLIENT_ID),
+            IssuanceAgent.builder()
+                .wallet(new InternalWalletClient())
+                .clientId(IssuanceAgent.LEGACY_CLIENT_ID)
+                .build(),
             ResponseMode.DIRECT_POST));
   }
 

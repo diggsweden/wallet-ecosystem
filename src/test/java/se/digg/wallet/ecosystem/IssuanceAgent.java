@@ -52,34 +52,6 @@ public class IssuanceAgent {
   private final String audience;
   private final String clientId;
 
-  public IssuanceAgent() {
-    this(builder());
-  }
-
-  public IssuanceAgent(WalletClient wallet) {
-    this(builder().wallet(wallet));
-  }
-
-  public IssuanceAgent(WalletClient wallet, String clientId) {
-    this(builder().wallet(wallet).clientId(clientId));
-  }
-
-  public IssuanceAgent(
-      WalletClient wallet,
-      KeycloakClient keycloak,
-      PidIssuerClient pidIssuer,
-      WalletProviderClient walletProvider,
-      String audience,
-      String clientId) {
-
-    this.wallet = wallet;
-    this.keycloak = keycloak;
-    this.pidIssuer = pidIssuer;
-    this.walletProvider = walletProvider;
-    this.audience = audience;
-    this.clientId = clientId;
-  }
-
   private IssuanceAgent(Builder builder) {
     this.wallet = builder.wallet;
     this.keycloak = builder.keycloak;

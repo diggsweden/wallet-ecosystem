@@ -51,7 +51,7 @@ class VerifierBackendTest {
     trustSource = new TrustSourceClient();
     verifierBackend = new VerifierBackendClient();
     authorizationRequestValidator = new OpenId4VpAuthorizationRequestValidator();
-    issuer = new IssuanceAgent();
+    issuer = IssuanceAgent.builder().build();
     bindingKey = new ECKeyGenerator(Curve.P_256)
         .algorithm(JWSAlgorithm.ES256)
         .keyUse(KeyUse.SIGNATURE)
