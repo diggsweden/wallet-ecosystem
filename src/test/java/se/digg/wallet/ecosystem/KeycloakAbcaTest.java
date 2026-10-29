@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -30,7 +31,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class KeycloakAbcaTest {
 
@@ -43,38 +48,51 @@ class KeycloakAbcaTest {
       "password", "password",
       "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt");
 
-  @Test
-  void rejectsUntrustedWalletInstanceAttestation() throws Exception {
-    ECKey walletKey = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
+  private static final ECKey WALLET_KEY;
+
+  static {
+    try {
+      WALLET_KEY = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
+    } catch (JOSEException e) {
+      throw new IllegalStateException("Failed to generate test wallet key", e);
+    }
+  }
+
+  public static Stream<Arguments> wiasAndExpectedStatus() throws Exception {
+    String validWiaString = new WalletProviderClient().getWalletInstanceAttestation(WALLET_KEY);
+    SignedJWT validWia = SignedJWT.parse(validWiaString);
+
     ECKey untrustedKey = new ECKeyGenerator(Curve.P_256).keyID("untrusted").generate();
+    SignedJWT resignedWia =
+        new SignedJWT(validWia.getHeader(), validWia.getJWTClaimsSet());
+    resignedWia.sign(new ECDSASigner(untrustedKey));
 
-    JWTClaimsSet wiaClaims = new JWTClaimsSet.Builder()
-        .issuer("https://untrusted-wallet-provider.example.com")
-        .subject("eudiw")
-        .claim("cnf", Map.of("jwk", walletKey.toPublicJWK().toJSONObject()))
-        .claim("wallet_name", "Untrusted Wallet")
-        .issueTime(Date.from(Instant.now()))
-        .expirationTime(Date.from(Instant.now().plusSeconds(3600)))
-        .build();
+    return Stream.of(
+        Arguments.argumentSet("trusted WIA from wallet provider", validWia, 200),
+        Arguments.argumentSet("WIA re-signed with untrusted key", resignedWia, 401));
+  }
 
-    SignedJWT untrustedWia = new SignedJWT(
-        new JWSHeader.Builder(JWSAlgorithm.ES256)
-            .type(new JOSEObjectType("oauth-client-attestation+jwt"))
-            .build(),
-        wiaClaims);
-    untrustedWia.sign(new ECDSASigner(untrustedKey));
-
+  @ParameterizedTest
+  @MethodSource("wiasAndExpectedStatus")
+  void acceptsOnlyTrustedWias(SignedJWT wia, int expectedStatusCode) throws Exception {
     String challenge = keycloak.getChallenge("pid-issuer-realm");
     String pop =
-        keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", walletKey, challenge);
+        keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", WALLET_KEY, challenge);
 
     Response response = keycloak.tryGetDpopAccessTokenWithClientAttestation(
-        "pid-issuer-realm", "eudiw", walletKey, untrustedWia.serialize(), pop, TOKEN_PARAMETERS);
+        "pid-issuer-realm", "eudiw", WALLET_KEY, wia.serialize(), pop, TOKEN_PARAMETERS);
 
-    response.then()
-        .assertThat()
-        .statusCode(401)
-        .body("error", is("invalid_client"));
+    if (expectedStatusCode == 200) {
+      response.then()
+          .assertThat()
+          .statusCode(200)
+          .body("access_token", notNullValue());
+    } else {
+      response.then()
+          .assertThat()
+          .statusCode(expectedStatusCode)
+          .body("error", is("invalid_client"));
+    }
   }
 
   @Test

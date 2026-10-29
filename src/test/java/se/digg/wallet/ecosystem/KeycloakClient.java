@@ -4,6 +4,7 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 
@@ -62,7 +63,7 @@ public class KeycloakClient {
         .statusCode(200)
         .and()
         .body("access_token", notNullValue())
-        .body("token_type", org.hamcrest.CoreMatchers.equalTo("DPoP"))
+        .body("token_type", equalTo("DPoP"))
         .extract()
         .path("access_token");
   }
@@ -129,7 +130,7 @@ public class KeycloakClient {
         .statusCode(200)
         .and()
         .body("access_token", notNullValue())
-        .body("token_type", org.hamcrest.CoreMatchers.equalTo("DPoP"))
+        .body("token_type", equalTo("DPoP"))
         .extract()
         .path("access_token");
   }
