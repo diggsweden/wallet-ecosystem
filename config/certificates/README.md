@@ -19,14 +19,16 @@ It passes `.env` through `--env-file` and uses
 [ecosystem.yaml](ecosystem.yaml). Ordinary `just up` does not regenerate keys.
 `just certs` generates TLS and service PKI.
 
+Utvecklarportalen localhost certificates are generated first using
+[utvecklarportalen.yaml](utvecklarportalen.yaml), before the ecosystem LoTE.
+
 The PKI image and `.env` path are fixed in the [justfile](../../justfile).
 
 The generator runs as the host user. It mounts this repository at `/workspace`
 and existing `config/certificates/ca` material read-only at
 `/workspace/config/certificates/ca`, preserving the configured relative paths.
-Generation reuses the existing roots and fails if their
-required files are missing or invalid. CA initialization or replacement is a
-separate, deliberate PKI-tool operation with a writable authority mount.
+Generation reuses existing CAs and fails if they are missing or invalid.
+CA initialization and replacement are separate PKI-tool operations.
 
 ### Run other PKI commands
 

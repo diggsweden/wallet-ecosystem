@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+schemaVersion: 1
+stateDirectory: ./config/certificates/utvecklarportalen
+outputDirectory: ./config
+
+organization:
+  name: DIGG
+  country: SE
+  identifier: VATSE-12345678
+
+authorities:
+  verifierAccess:
+    commonName: Verifier Access CA (Utvecklarportalen)
+  verifierRegistration:
+    commonName: Verifier Registration CA (Utvecklarportalen)
+
+caDistribution:
+  baseUrl: https://localhost/trust-source/utvecklarportalen
+  directory: trust-source/utvecklarportalen
+  rootCrlFile: trust-source/utvecklarportalen/revocation-list.pem
+
+verifier:
+  access:
+    keystoreFile: trust-source/utvecklarportalen/verifier/verifier-access-certificate.p12
+    commonName: Verifier Backend (Utvecklarportalen)
+    subjectAlternativeNames:
+      dns: [localhost]
+      uri: ['https://localhost/demo-verifier']
+    keystorePassword:
+      env: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD
+
+  registration:
+    keystoreFile: certificates/utvecklarportalen/registration-signer.p12
+    commonName: Verifier Registration (Utvecklarportalen)
+    keystorePassword:
+      env: VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD
+    registration:
+      jwtFile: trust-source/utvecklarportalen/verifier/registration_certificate.jwt
+      environmentFile: certificates/utvecklarportalen/registration_certificate.env
+      name: Verifier Backend (Utvecklarportalen)
+      serviceIdentifier: utvecklarportalen-localhost
+      intendedUseId: "1"
+      publicBaseUrl: https://localhost/local-registration-certificate
+      validityDays: 365
+      description:
+        - lang: sv
+          value: Utvecklarportalens verifierare för localhost
+      purpose:
+        - lang: sv
+          value: Identifiering med intyg
+      requestedPidClaims:
+        - personal_administrative_number
+        - family_name
+        - given_name
+        - birthdate
+        - address.street_address
+        - address.postal_code
+        - address.locality
+        - address.country
+      supervisoryAuthority:
+        name: Local Test Authority
+        country: SE
+        email: utvecklarportalen@example.com

@@ -336,9 +336,12 @@ pki *args:
         --workdir /workspace "{{pki_image}}" \
         "$@"
 
-# Regenerate service PKI using existing CAs and wallet-pki-tool
+# Generate Utvecklarportalen PKI before the ecosystem certificates and LoTE
 [group('pki')]
-pki-generate: (pki "ecosystem" "generate" "--config" "config/certificates/ecosystem.yaml")
+pki-generate:
+    just pki verifier access generate --config config/certificates/utvecklarportalen.yaml
+    just pki verifier registration generate --config config/certificates/utvecklarportalen.yaml
+    just pki ecosystem generate --config config/certificates/ecosystem.yaml
 
 # Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
 [group('setup')]
