@@ -4,9 +4,15 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.emptyArray;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.nimbusds.jose.Algorithm;
@@ -28,6 +34,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class WalletClientGatewayTest {
 
@@ -129,6 +137,40 @@ public class WalletClientGatewayTest {
         .then()
         .assertThat()
         .statusCode(202);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = "the-nonce-value")
+  @NullAndEmptySource
+  void serves_key_attestation(String nonce) {
+    var ecKey = generateKey();
+    var jwt = walletClientGateway.tryCreateKeyAttestation(session, ecKey, nonce)
+        .then().assertThat()
+        .statusCode(201)
+        .and().body("jwt", not(blankOrNullString()))
+        .extract().body().jsonPath().getString("jwt");
+    assertDoesNotThrow(() -> SignedJWT.parse(jwt),
+        "The Key Attestation result JWT could not be parsed");
+  }
+
+  @Test
+  void serves_wallet_instance_attestation() {
+    var ecKey = generateKey();
+    var jwt = walletClientGateway.createWalletInstanceAttestation(session, ecKey)
+        .then().assertThat()
+        .statusCode(201)
+        .and().body("jwt", not(blankOrNullString()))
+        .extract().body().jsonPath().getString("jwt");
+    assertDoesNotThrow(() -> SignedJWT.parse(jwt),
+        "The Wallet Instance Attestation result JWT could not be parsed");
+  }
+
+  @Test
+  void serves_lote_providers() {
+    walletClientGateway.getLoteProviders(session)
+        .then().assertThat()
+        .statusCode(200)
+        .and().body("items", allOf(not(nullValue()), not(emptyArray())));
   }
 
   static ECKey generateKey() {

@@ -11,7 +11,6 @@ import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import com.nimbusds.jose.jwk.ECKey;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -57,18 +56,6 @@ public class WalletClientGatewayClient {
         .extract().body().jsonPath().getString("accountId");
   }
 
-  public void addWalletKey(String sessionId, String keyBody) {
-    given()
-        .when()
-        .contentType(ContentType.JSON)
-        .body(keyBody)
-        .header("Session", sessionId)
-        .header("X-API-KEY", API_KEY)
-        .post(base.resolve("v0/accounts/wallet-keys"))
-        .then()
-        .assertThat().statusCode(201);
-  }
-
   public void addSecurityEnvelope(String sessionId, String keyBody) {
     given()
         .when()
@@ -107,6 +94,27 @@ public class WalletClientGatewayClient {
         .extract().body().jsonPath().get("sessionId");
   }
 
+  public Response createWalletInstanceAttestation(String sessionId, ECKey bindingKey) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("key", bindingKey.toPublicJWK().toJSONObject());
+    return given()
+        .when()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .header("Session", sessionId)
+        .header("X-API-KEY", API_KEY)
+        .post(base.resolve("attestation/v0/wallet-instance-attestations"));
+  }
+
+  public Response getLoteProviders(String sessionId) {
+    return given()
+        .when()
+        .accept(ContentType.JSON)
+        .header("Session", sessionId)
+        .header("X-API-KEY", API_KEY)
+        .get(base.resolve("trust/v0/lote-providers"));
+  }
+
   public Response tryCreateKeyAttestation(String sessionId, ECKey bindingKey, String nonce) {
     Map<String, Object> body = new HashMap<>();
     body.put("keys", List.of(bindingKey.toPublicJWK().toJSONObject()));
@@ -120,20 +128,6 @@ public class WalletClientGatewayClient {
         .header("X-API-KEY", API_KEY)
         .when()
         .post(base.resolve("attestation/v0/key-attestations"));
-  }
-
-  public Response tryCreateWalletUnitAttestation(String sessionId, String nonce) {
-    RequestSpecification request = given()
-        .when()
-        .contentType(ContentType.JSON)
-        .header("session", sessionId)
-        .header("X-API-KEY", API_KEY);
-
-    if (nonce != null) {
-      request.queryParam("nonce", nonce);
-    }
-
-    return request.post(base.resolve("wua"));
   }
 
   public Response saveDeviceState(String sessionId, String body) {
