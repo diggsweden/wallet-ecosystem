@@ -78,12 +78,14 @@ class KeycloakAbcaTest {
 
     return Stream.of(
         Arguments.argumentSet("trusted WIA from wallet provider", validWia, okValidation),
-        Arguments.argumentSet("WIA re-signed with untrusted key", resignedWia, unauthorizedValidation));
+        Arguments.argumentSet("WIA re-signed with untrusted key", resignedWia,
+            unauthorizedValidation));
   }
 
   @ParameterizedTest
   @MethodSource("wiasAndExpectedStatus")
-  void acceptsOnlyTrustedWias(SignedJWT wia, Consumer<Response> responseValidation) throws Exception {
+  void acceptsOnlyTrustedWias(SignedJWT wia, Consumer<Response> responseValidation)
+      throws Exception {
     String challenge = keycloak.getChallenge("pid-issuer-realm");
     String pop =
         keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", WALLET_KEY, challenge);
