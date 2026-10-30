@@ -100,7 +100,7 @@ public class ListOfTrustedEntities {
         "The registration certificate was not signed by expected key");
   }
 
-  private Set<X509Certificate> trustedCertificatesForService(String serviceType) {
+  Set<X509Certificate> trustedCertificatesForService(String serviceType) {
     var claims = LOTE_CLAIMS_OBJECT_MAPPER.readValue(
         lote.getPayload().toString(), LoteClaims.class);
     var trustedCertificates = claims.lote().trustedEntitiesList().stream()

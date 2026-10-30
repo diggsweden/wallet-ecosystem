@@ -5,6 +5,7 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +24,8 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ListOfTrustedEntitiesTest {
   private static final Path LOTE_PATH = Path.of(
@@ -39,10 +42,7 @@ class ListOfTrustedEntitiesTest {
     configuredAccessCertificate = CertificateTestSupport.loadAccessCertificateX509();
     configuredRegistrationCertificate = CertificateTestSupport.loadRegistrationCertificateJwt();
     configuredLote = SignedJWT.parse(Files.readString(LOTE_PATH));
-    try (var input = Files.newInputStream(TRUST_SOURCE_CA_PATH)) {
-      configuredTrustSourceCa =
-          (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(input);
-    }
+    configuredTrustSourceCa = readCertificate(TRUST_SOURCE_CA_PATH);
   }
 
   private final ListOfTrustedEntities subject = new ListOfTrustedEntities(configuredLote);
@@ -51,6 +51,20 @@ class ListOfTrustedEntitiesTest {
   void acceptsTrustedLoteAndRequest() throws Exception {
     subject.validateWalletRelyingPartyTrust(
         configuredAccessCertificate, configuredRegistrationCertificate);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance, config/certificates/ca/verifier-access-certificate/ca.pem",
+      "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance, config/certificates/utvecklarportalen/ca/verifier-access-certificate/ca.pem",
+      "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance, config/certificates/ca/verifier-registration-certificate/ca.pem",
+      "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance, config/certificates/utvecklarportalen/ca/verifier-registration-certificate/ca.pem"
+  })
+  void containsEcosystemAndUtvecklarportalenRpCas(
+      String serviceType, String pathOfExpectedCertificate) throws Exception {
+    var trustedCertificates = subject.trustedCertificatesForService(serviceType);
+
+    assertThat(trustedCertificates, hasItem(readCertificate(Path.of(pathOfExpectedCertificate))));
   }
 
   @Test
@@ -112,6 +126,12 @@ class ListOfTrustedEntitiesTest {
     var exception = assertThrows(AssertionError.class,
         () -> loteWithInvalidSignature.validateSignature(configuredTrustSourceCa));
     assertThat(exception.getMessage(), containsString("LoTE was not signed by expected key"));
+  }
+
+  private static X509Certificate readCertificate(Path path) throws Exception {
+    try (var input = Files.newInputStream(path)) {
+      return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(input);
+    }
   }
 
   private static SignedJWT signWithAnotherKey(SignedJWT toSign)
