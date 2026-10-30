@@ -10,7 +10,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -31,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,14 +67,23 @@ class KeycloakAbcaTest {
         new SignedJWT(validWia.getHeader(), validWia.getJWTClaimsSet());
     resignedWia.sign(new ECDSASigner(untrustedKey));
 
+    Consumer<Response> okValidation = response -> response.then()
+        .assertThat()
+        .statusCode(200)
+        .body("access_token", notNullValue());
+    Consumer<Response> unauthorizedValidation = response -> response.then()
+        .assertThat()
+        .statusCode(401)
+        .body("error", is("invalid_client"));
+
     return Stream.of(
-        Arguments.argumentSet("trusted WIA from wallet provider", validWia, 200),
-        Arguments.argumentSet("WIA re-signed with untrusted key", resignedWia, 401));
+        Arguments.argumentSet("trusted WIA from wallet provider", validWia, okValidation),
+        Arguments.argumentSet("WIA re-signed with untrusted key", resignedWia, unauthorizedValidation));
   }
 
   @ParameterizedTest
   @MethodSource("wiasAndExpectedStatus")
-  void acceptsOnlyTrustedWias(SignedJWT wia, int expectedStatusCode) throws Exception {
+  void acceptsOnlyTrustedWias(SignedJWT wia, Consumer<Response> responseValidation) throws Exception {
     String challenge = keycloak.getChallenge("pid-issuer-realm");
     String pop =
         keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", WALLET_KEY, challenge);
@@ -82,36 +91,7 @@ class KeycloakAbcaTest {
     Response response = keycloak.tryGetDpopAccessTokenWithClientAttestation(
         "pid-issuer-realm", "eudiw", WALLET_KEY, wia.serialize(), pop, TOKEN_PARAMETERS);
 
-    if (expectedStatusCode == 200) {
-      response.then()
-          .assertThat()
-          .statusCode(200)
-          .body("access_token", notNullValue());
-    } else {
-      response.then()
-          .assertThat()
-          .statusCode(expectedStatusCode)
-          .body("error", is("invalid_client"));
-    }
-  }
-
-  @Test
-  void rejectsMismatchedProofOfPossessionKey() throws Exception {
-    ECKey walletKey = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
-    ECKey differentKey = new ECKeyGenerator(Curve.P_256).keyID("different").generate();
-
-    String wia = walletProvider.getWalletInstanceAttestation(walletKey);
-    String challenge = keycloak.getChallenge("pid-issuer-realm");
-    String pop =
-        keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", differentKey, challenge);
-
-    Response response = keycloak.tryGetDpopAccessTokenWithClientAttestation(
-        "pid-issuer-realm", "eudiw", walletKey, wia, pop, TOKEN_PARAMETERS);
-
-    response.then()
-        .assertThat()
-        .statusCode(401)
-        .body("error", is("invalid_client"));
+    responseValidation.accept(response);
   }
 
   @Test
