@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
 import static se.digg.wallet.ecosystem.ServiceIdentifier.KEYCLOAK;
+
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWEAlgorithm;
