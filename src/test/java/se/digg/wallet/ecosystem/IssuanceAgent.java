@@ -23,45 +23,85 @@ import java.util.Map;
 
 public class IssuanceAgent {
 
+  public static final String DEFAULT_CLIENT_ID = "eudiw";
+  public static final String LEGACY_CLIENT_ID = "wallet-dev";
+
   private static final String DEFAULT_WUA_KEY_ID = "0";
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   static IssuanceAgent untrusted() {
-    return new IssuanceAgent(
-        new InternalWalletClient(
-            new WalletProviderClient(
-                ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot())),
-        new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()),
-        new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()),
-        ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString());
+    WalletProviderClient untrustedWalletProvider =
+        new WalletProviderClient(
+            ServiceIdentifier.UNTRUSTED_WALLET_PROVIDER.getResourceRoot());
+    return builder()
+        .wallet(new InternalWalletClient(untrustedWalletProvider))
+        .keycloak(new KeycloakClient(ServiceIdentifier.UNTRUSTED_KEYCLOAK.getResourceRoot()))
+        .pidIssuer(new PidIssuerClient(ServiceIdentifier.UNTRUSTED_PID_ISSUER.getResourceRoot()))
+        .walletProvider(untrustedWalletProvider)
+        .audience(ServiceIdentifier.UNTRUSTED_PID_ISSUER.toString())
+        .build();
   }
 
   private final WalletClient wallet;
   private final KeycloakClient keycloak;
   private final PidIssuerClient pidIssuer;
+  private final WalletProviderClient walletProvider;
   private final String audience;
+  private final String clientId;
 
-  public IssuanceAgent() {
-    this(new InternalWalletClient(new WalletProviderClient()));
+  private IssuanceAgent(Builder builder) {
+    this.wallet = builder.wallet;
+    this.keycloak = builder.keycloak;
+    this.pidIssuer = builder.pidIssuer;
+    this.walletProvider = builder.walletProvider;
+    this.audience = builder.audience;
+    this.clientId = builder.clientId;
   }
 
-  public IssuanceAgent(WalletClient wallet) {
-    this(
-        wallet,
-        new KeycloakClient(),
-        new PidIssuerClient(),
-        ServiceIdentifier.PID_ISSUER.toString());
-  }
+  public static class Builder {
+    private WalletProviderClient walletProvider = new WalletProviderClient();
+    private WalletClient wallet = new InternalWalletClient(walletProvider);
+    private KeycloakClient keycloak = new KeycloakClient();
+    private PidIssuerClient pidIssuer = new PidIssuerClient();
+    private String audience = ServiceIdentifier.PID_ISSUER.toString();
+    private String clientId = DEFAULT_CLIENT_ID;
 
-  public IssuanceAgent(
-      WalletClient wallet,
-      KeycloakClient keycloak,
-      PidIssuerClient pidIssuer,
-      String audience) {
+    public Builder wallet(WalletClient wallet) {
+      this.wallet = wallet;
+      return this;
+    }
 
-    this.wallet = wallet;
-    this.keycloak = keycloak;
-    this.pidIssuer = pidIssuer;
-    this.audience = audience;
+    public Builder keycloak(KeycloakClient keycloak) {
+      this.keycloak = keycloak;
+      return this;
+    }
+
+    public Builder pidIssuer(PidIssuerClient pidIssuer) {
+      this.pidIssuer = pidIssuer;
+      return this;
+    }
+
+    public Builder walletProvider(WalletProviderClient walletProvider) {
+      this.walletProvider = walletProvider;
+      return this;
+    }
+
+    public Builder audience(String audience) {
+      this.audience = audience;
+      return this;
+    }
+
+    public Builder clientId(String clientId) {
+      this.clientId = clientId;
+      return this;
+    }
+
+    public IssuanceAgent build() {
+      return new IssuanceAgent(this);
+    }
   }
 
   public String issuePidCredential(ECKey bindingKey, String username, String password)
@@ -72,17 +112,34 @@ public class IssuanceAgent {
             .keyUse(KeyUse.ENCRYPTION)
             .generate();
 
-    String accessToken =
-        keycloak.getDpopAccessToken(
-            "pid-issuer-realm",
-            bindingKey,
-            Map.of(
-                "grant_type", "password",
-                "client_id", "wallet-dev",
-                "username", username,
-                "password", password,
-                "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
-                "role", "user"));
+    String accessToken;
+    if (DEFAULT_CLIENT_ID.equals(clientId)) {
+      String wia = walletProvider.getWalletInstanceAttestation(bindingKey);
+      accessToken =
+          keycloak.getDpopAccessTokenWithClientAttestation(
+              "pid-issuer-realm",
+              clientId,
+              bindingKey,
+              wia,
+              Map.of(
+                  "grant_type", "password",
+                  "username", username,
+                  "password", password,
+                  "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                  "role", "user"));
+    } else {
+      accessToken =
+          keycloak.getDpopAccessToken(
+              "pid-issuer-realm",
+              bindingKey,
+              Map.of(
+                  "grant_type", "password",
+                  "client_id", clientId,
+                  "username", username,
+                  "password", password,
+                  "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                  "role", "user"));
+    }
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
     String walletAttestation = wallet.createKeyAttestation(bindingKey, nonce);
@@ -108,7 +165,7 @@ public class IssuanceAgent {
 
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
-            .issuer("wallet-dev")
+            .issuer(clientId)
             .audience(audience)
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)

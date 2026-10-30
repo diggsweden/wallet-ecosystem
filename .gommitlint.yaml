@@ -12,3 +12,4 @@ gommitlint:
   spell:
     ignore_words:
       - artifact
+      - optimized

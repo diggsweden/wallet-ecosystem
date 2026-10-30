@@ -89,6 +89,8 @@ services:
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_LOCATION: "http://trust-source/signed/trusted-entities.json"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_ISSUANCE_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance"
       TRUST_VALIDATOR_TRUST_SOURCES_WALLET_PROVIDERS_LOTE_REVOCATION_SERVICE: "http://uri.etsi.org/19602/SvcType/WalletSolution/Revocation"
+      JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
+      JAVA_TOOL_OPTIONS: "-XX:MaxDirectMemorySize=128M"
     depends_on:
       - trust-source
     labels:
@@ -137,7 +139,7 @@ services:
       WUA_KEYSTORE_ALIAS: "wallet_attestation_issuer"
       WALLET_ATTESTATION_ISSUER_ISSUER: "Digg"
       WALLET_ATTESTATION_ISSUER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
-      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "wallet-dev"
+      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "eudiw"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_NAME: "Digg Wallet"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_VERSION: "0.0.1"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_LINK: "${BASE_URL}/wallet-attestation-issuer"
@@ -171,7 +173,7 @@ services:
       WUA_KEYSTORE_ALIAS: "wallet_provider"
       WALLET_ATTESTATION_ISSUER_ISSUER: "Digg"
       WALLET_ATTESTATION_ISSUER_WUA_STATUS: '{"status_list": {"idx": 412,"uri": "http://trust-source/signed/status-list.jwt"}}'
-      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "wallet-dev"
+      WALLET_ATTESTATION_ISSUER_WIA_CLIENT_ID: "eudiw"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_NAME: "Digg Wallet"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_VERSION: "0.0.1"
       WALLET_ATTESTATION_ISSUER_WIA_WALLET_LINK: "${BASE_URL}/wallet-provider"
@@ -442,12 +444,8 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7.1@sha256:f1f1f01e472c8a78df40d8f2a49a925274eda4d3d80d5f6edbb5c880ee3c01c6
+    image: ghcr.io/diggsweden/wallet-keycloak:v0.1.4@sha256:50b0351497a056e6d38d32022fed3c95fde2c8a2b7bd2019099d4060e489c959
     container_name: keycloak
-    command:
-      - start
-      - --import-realm
-      - --features=dpop
     environment:
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
@@ -459,7 +457,14 @@ services:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=password
       - KC_DB=dev-file
-      - KEYCLOAK_PID_ISSUER_CLIENT_SECRET=cow3go8W5gbI5HcR5mim7O00DAYaAmfv
+      - KEYCLOAK_MASTER_FRONTEND_URL=${BASE_URL}/idp-internal
+      - KEYCLOAK_WEBAUTHN_RP_ENTITY_NAME=${BASE_URL}/idp
+      - KEYCLOAK_WEBAUTHN_RP_ID=localhost
+      - PID_ISSUER_ROOT_URL=http://localhost:8080
+      - PID_ISSUER_ADMIN_URL=http://localhost:8080
+      - PID_ISSUER_SRV_SECRET=cow3go8W5gbI5HcR5mim7O00DAYaAmfv
+      - KEYCLOAK_STATUS_LIST_URI=http://trust-source/signed/status-list.jwt
+      - KEYCLOAK_ABCA_TRUST_VALIDATOR_URL=http://trust-validator:8080/trust-validator/trust
     healthcheck:
       # This is the recommended way to perform the healthcheck without curl, as per:
       # https://www.keycloak.org/observability/health#_healthcheck
@@ -470,7 +475,6 @@ services:
       start_period: 120s
     volumes:
       - ./config/keycloak/themes/:/opt/keycloak/themes
-      - ./config/keycloak/realms/:/opt/keycloak/data/import/
     labels:
       - "traefik.enable=true"
       # Whitelist: pid-issuer-realm and shared resources
