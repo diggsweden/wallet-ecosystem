@@ -16,7 +16,7 @@ authorities:
   pidIssuer:
     commonName: DIGG Wallet PID Issuer CA
   walletAttestationIssuer:
-    commonName: DIGG Wallet Provider CA
+    commonName: DIGG Attestation Issuer CA
   verifierAccess:
     commonName: DIGG Wallet Verifier Access Certificate CA
   verifierRegistration:
@@ -114,7 +114,7 @@ trustSource:
   lote:
     outputFile: trust-source/signed/trusted-entities.json
     name: Local LoTE
-    sequenceNumber: 2
+    sequenceNumber: 3
     validityDays: 365
     trustedAuthorities:
       pidIssuer:
