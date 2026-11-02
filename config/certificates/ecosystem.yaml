@@ -127,12 +127,6 @@ trustSource:
           serviceName: Local Wallet Attestation Issuance
           informationUrl: http://localhost
           streetAddress: Local
-        # Keep legacy WP trusted while its existing identity remains in use.
-        - entityName: Local Wallet Provider
-          serviceName: Local Wallet Issuance
-          informationUrl: http://localhost
-          streetAddress: Local
-          certificateFile: ./config/certificates/ca/wallet-provider/ca.pem
       verifierAccess:
         - entityName: Local WRPAC Provider
           serviceName: Local WRPAC Issuance
