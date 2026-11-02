@@ -8,6 +8,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 
+import com.nimbusds.jwt.SignedJWT;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +51,26 @@ class TrustSourceTest {
   }
 
   @Test
+  void servesLoteTrustingUtvecklarportalenCertificates() throws Exception {
+    var keyStore = KeyStore.getInstance("PKCS12");
+    try (var input = trustSource.tryGet(Property.UTVECKLARPORTALEN_ACCESS_KEYSTORE_URI.getValue())
+        .then().assertThat().statusCode(200)
+        .extract().asInputStream()) {
+      keyStore.load(input,
+          Property.UTVECKLARPORTALEN_ACCESS_KEYSTORE_PASSWORD.getValue().toCharArray());
+    }
+    var accessCertificate = (X509Certificate) keyStore.getCertificate(
+        keyStore.aliases().nextElement());
+    var registrationCertificate = SignedJWT.parse(trustSource
+        .tryGet(Property.UTVECKLARPORTALEN_REGISTRATION_CERTIFICATE_URI.getValue())
+        .then().assertThat().statusCode(200)
+        .extract().asString().trim());
+    var lote = new ListOfTrustedEntities(trustSource.fetchLote());
+
+    lote.validateWalletRelyingPartyTrust(accessCertificate, registrationCertificate);
+  }
+
+  @Test
   void servesStatusListJwt() throws Exception {
     String body = trustSource.tryGet("signed/status-list.jwt")
         .then()
@@ -57,7 +80,7 @@ class TrustSourceTest {
     // Verify it's a valid JWT structurally
     assertThat(body.trim(), matchesPattern(JWT_PATTERN));
 
-    com.nimbusds.jwt.SignedJWT jwt = com.nimbusds.jwt.SignedJWT.parse(body.trim());
+    SignedJWT jwt = SignedJWT.parse(body.trim());
     org.junit.jupiter.api.Assertions.assertNotNull(jwt.getJWTClaimsSet().getSubject());
   }
 }

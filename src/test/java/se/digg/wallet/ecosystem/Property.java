@@ -21,6 +21,11 @@ public enum Property {
   VERIFIER_FRONTEND_BASE_URI("https://localhost/demo-verifier"),
   TRUST_VALIDATOR_BASE_URI("https://localhost/trust-validator"),
   TRUST_SOURCE_BASE_URI("https://localhost/trust-source"),
+  UTVECKLARPORTALEN_ACCESS_KEYSTORE_URI(
+      "utvecklarportalen/verifier/verifier-access-certificate.p12"),
+  UTVECKLARPORTALEN_ACCESS_KEYSTORE_PASSWORD("verifier_password"),
+  UTVECKLARPORTALEN_REGISTRATION_CERTIFICATE_URI(
+      "utvecklarportalen/verifier/registration_certificate.jwt"),
   WALLET_CLIENT_GATEWAY_BASE_URI("https://localhost/wallet-client-gateway"),
   WALLET_ACCOUNT_DB_BASE_URI("jdbc:postgresql://localhost:5432/wallet-account"),
   PID_ISSUER_DB_BASE_URI("jdbc:postgresql://localhost:5433/pid-issuer"),
