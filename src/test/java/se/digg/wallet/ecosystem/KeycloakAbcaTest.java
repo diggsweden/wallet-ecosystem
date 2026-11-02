@@ -40,7 +40,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class KeycloakAbcaTest {
 
-  private final WalletProviderClient walletProvider = new WalletProviderClient();
+  private final WalletAttestationIssuerClient attestationIssuer =
+      new WalletAttestationIssuerClient();
   private final KeycloakClient keycloak = new KeycloakClient();
 
   private static final Map<String, String> TOKEN_PARAMETERS = Map.of(
@@ -60,7 +61,8 @@ class KeycloakAbcaTest {
   }
 
   public static Stream<Arguments> wiasAndExpectedStatus() throws Exception {
-    String validWiaString = new WalletProviderClient().getWalletInstanceAttestation(WALLET_KEY);
+    String validWiaString =
+        new WalletAttestationIssuerClient().getWalletInstanceAttestation(WALLET_KEY);
     SignedJWT validWia = SignedJWT.parse(validWiaString);
 
     ECKey untrustedKey = new ECKeyGenerator(Curve.P_256).keyID("untrusted").generate();
@@ -102,7 +104,7 @@ class KeycloakAbcaTest {
     ECKey walletKey = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
 
     // 1. Get WIA from wallet-provider (sub: eudiw)
-    String wia = walletProvider.getWalletInstanceAttestation(walletKey);
+    String wia = attestationIssuer.getWalletInstanceAttestation(walletKey);
     assertNotNull(wia);
 
     // 2. Get challenge from Keycloak
@@ -181,7 +183,7 @@ class KeycloakAbcaTest {
     // 8. Issue PID credential via pid-issuer using ABCA token
     PidIssuerClient pidIssuer = new PidIssuerClient();
     String nonce = pidIssuer.getNonce(accessToken, walletKey);
-    String keyAttestation = walletProvider.getKeyAttestation(walletKey, nonce);
+    String keyAttestation = attestationIssuer.getKeyAttestation(walletKey, nonce);
 
     JWSHeader proofHeader = new JWSHeader.Builder(JWSAlgorithm.ES256)
         .type(new JOSEObjectType("openid4vci-proof+jwt"))

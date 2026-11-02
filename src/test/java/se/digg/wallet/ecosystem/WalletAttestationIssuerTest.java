@@ -34,12 +34,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class WalletAttestationIssuerTest {
 
-  private final WalletProviderClient walletProvider = new WalletProviderClient();
+  private final WalletAttestationIssuerClient attestationIssuer =
+      new WalletAttestationIssuerClient();
   private final TrustSourceClient trustSource = new TrustSourceClient();
 
   @Test
   void isHealthy() {
-    walletProvider.tryGetHealth()
+    attestationIssuer.tryGetHealth()
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
@@ -50,7 +51,7 @@ public class WalletAttestationIssuerTest {
   @ValueSource(strings = {"nonce", ""})
   @NullSource
   void createsWalletUnitAttestation(String nonce) throws Exception {
-    String wua = walletProvider.getWalletUnitAttestation(
+    String wua = attestationIssuer.getWalletUnitAttestation(
         new ECKeyGenerator(Curve.P_256).generate(),
         nonce);
 
@@ -68,7 +69,7 @@ public class WalletAttestationIssuerTest {
   @ValueSource(strings = {"nonce", ""})
   @NullSource
   void createsKeyAttestation(String nonce) throws Exception {
-    String ka = walletProvider.getKeyAttestation(
+    String ka = attestationIssuer.getKeyAttestation(
         new ECKeyGenerator(Curve.P_256).generate(),
         nonce);
 
@@ -88,7 +89,7 @@ public class WalletAttestationIssuerTest {
   @Test
   void createsKeyAttestationWithMultipleKeys() throws Exception {
     String ka =
-        walletProvider.getKeyAttestation(
+        attestationIssuer.getKeyAttestation(
             List.of(
                 new ECKeyGenerator(Curve.P_256).generate(),
                 new ECKeyGenerator(Curve.P_256).generate()),
@@ -105,7 +106,7 @@ public class WalletAttestationIssuerTest {
     var walletKey = new ECKeyGenerator(Curve.P_256).generate();
     final var beforeRequest = Instant.now().minusSeconds(1);
 
-    var jwt = SignedJWT.parse(walletProvider.getWalletInstanceAttestation(walletKey));
+    var jwt = SignedJWT.parse(attestationIssuer.getWalletInstanceAttestation(walletKey));
 
     assertThat(jwt.getHeader().getType().toString(), is("oauth-client-attestation+jwt"));
     assertThat(jwt.getHeader().getAlgorithm(), is(JWSAlgorithm.ES256));
@@ -157,7 +158,7 @@ public class WalletAttestationIssuerTest {
   @ParameterizedTest
   @ValueSource(strings = {"", " ", "not-json", "null", "{}", "{\"kty\":\"RSA\"}"})
   void rejectsInvalidWalletInstanceAttestationKeys(String invalidJwk) {
-    walletProvider.tryGetWalletInstanceAttestation(invalidJwk)
+    attestationIssuer.tryGetWalletInstanceAttestation(invalidJwk)
         .then()
         .assertThat()
         .statusCode(400)
@@ -170,7 +171,7 @@ public class WalletAttestationIssuerTest {
   void rejectsPrivateWalletInstanceAttestationKeys() throws Exception {
     var privateKey = new ECKeyGenerator(Curve.P_256).generate();
 
-    walletProvider.tryGetWalletInstanceAttestation(privateKey.toJSONString())
+    attestationIssuer.tryGetWalletInstanceAttestation(privateKey.toJSONString())
         .then()
         .assertThat()
         .statusCode(400)

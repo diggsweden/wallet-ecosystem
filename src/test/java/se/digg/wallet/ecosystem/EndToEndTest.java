@@ -44,13 +44,6 @@ public class EndToEndTest {
             IssuanceAgent.builder().wallet(new InternalWalletClient()).build(),
             ResponseMode.DIRECT_POST),
         Arguments.argumentSet(
-            "Internal route - wallet-attestation-issuer",
-            IssuanceAgent.builder()
-                .wallet(new InternalWalletClient(new WalletProviderClient(
-                    ServiceIdentifier.WALLET_ATTESTATION_ISSUER.getResourceRoot())))
-                .build(),
-            ResponseMode.DIRECT_POST),
-        Arguments.argumentSet(
             "Public route - direct_post.jwt",
             IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
             ResponseMode.DIRECT_POST_JWT),

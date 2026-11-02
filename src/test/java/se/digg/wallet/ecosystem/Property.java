@@ -15,8 +15,8 @@ public enum Property {
   PID_ISSUER_BASE_URI("https://localhost/pid-issuer"),
   UNTRUSTED_PID_ISSUER_BASE_URI("https://localhost/untrusted-pid-issuer"),
   WALLET_ATTESTATION_ISSUER_BASE_URI("https://localhost/wallet-attestation-issuer"),
-  WALLET_PROVIDER_BASE_URI("https://localhost/wallet-provider"),
-  UNTRUSTED_WALLET_PROVIDER_BASE_URI("https://localhost/untrusted-wallet-provider"),
+  UNTRUSTED_WALLET_ATTESTATION_ISSUER_BASE_URI(
+      "https://localhost/untrusted-wallet-attestation-issuer"),
   VERIFIER_BACKEND_BASE_URI("https://localhost/refimpl-verifier-backend"),
   VERIFIER_FRONTEND_BASE_URI("https://localhost/demo-verifier"),
   TRUST_VALIDATOR_BASE_URI("https://localhost/trust-validator"),
