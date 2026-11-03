@@ -80,7 +80,7 @@ class KeycloakAbcaTest {
         .body("error", is("invalid_client"));
 
     return Stream.of(
-        Arguments.argumentSet("trusted WIA from wallet provider", validWia, okValidation),
+        Arguments.argumentSet("WIA from a trusted wallet provider", validWia, okValidation),
         Arguments.argumentSet("WIA re-signed with untrusted key", resignedWia,
             unauthorizedValidation));
   }
@@ -103,7 +103,7 @@ class KeycloakAbcaTest {
   void authenticatesWithWalletInstanceAttestationAndPop() throws Exception {
     ECKey walletKey = new ECKeyGenerator(Curve.P_256).keyID("0").generate();
 
-    // 1. Get WIA from wallet-provider (sub: eudiw)
+    // 1. Get WIA (sub: eudiw)
     String wia = attestationIssuer.getWalletInstanceAttestation(walletKey);
     assertNotNull(wia);
 
