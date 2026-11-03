@@ -165,7 +165,6 @@ public class IssuanceAgent {
 
     JWTClaimsSet claims =
         new JWTClaimsSet.Builder()
-            .issuer(clientId)
             .audience(audience)
             .issueTime(Date.from(Instant.now()))
             .claim("nonce", nonce)
