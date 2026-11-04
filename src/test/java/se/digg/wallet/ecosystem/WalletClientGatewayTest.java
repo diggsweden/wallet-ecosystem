@@ -5,13 +5,11 @@
 package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.blankOrNullString;
-import static org.hamcrest.Matchers.emptyArray;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -170,7 +168,11 @@ public class WalletClientGatewayTest {
     walletClientGateway.getLoteProviders(session)
         .then().assertThat()
         .statusCode(200)
-        .and().body("items", allOf(not(nullValue()), not(emptyArray())));
+        .and().body("items.url", containsInAnyOrder(
+            "https://wallet.sandbox.digg.se/trust-source/signed/trusted-entities.json",
+            "https://development.trust.tech.ec.europa.eu/lists/eudiw/wallet-providers.json",
+            "https://development.trust.tech.ec.europa.eu/lists/eudiw/pid-providers.json",
+            "https://development.trust.tech.ec.europa.eu/lists/eudiw/wrpac-providers.json"));
   }
 
   static ECKey generateKey() {
