@@ -388,6 +388,8 @@ services:
       PROPERTIES_LOTEPROVIDERS_2_URL: "https://development.trust.tech.ec.europa.eu/lists/eudiw/pid-providers.json"
       PROPERTIES_LOTEPROVIDERS_3_ID: "Launchpad wrpac Providers"
       PROPERTIES_LOTEPROVIDERS_3_URL: "https://development.trust.tech.ec.europa.eu/lists/eudiw/wrpac-providers.json"
+      PROPERTIES_LOTEPROVIDERS_4_ID: "DIGG Local"
+      PROPERTIES_LOTEPROVIDERS_4_URL: "https://localhost/trust-source/signed/trusted-entities.json"
       SPRING_DATA_REDIS_HOST: "wallet-client-gateway-valkey"
       SPRING_DATA_REDIS_PORT: "6379"
       SERVER_FORWARD_HEADERS_STRATEGY: "framework"

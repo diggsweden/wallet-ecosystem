@@ -169,6 +169,7 @@ public class WalletClientGatewayTest {
         .then().assertThat()
         .statusCode(200)
         .and().body("items.url", containsInAnyOrder(
+            "https://localhost/trust-source/signed/trusted-entities.json",
             "https://wallet.sandbox.digg.se/trust-source/signed/trusted-entities.json",
             "https://development.trust.tech.ec.europa.eu/lists/eudiw/wallet-providers.json",
             "https://development.trust.tech.ec.europa.eu/lists/eudiw/pid-providers.json",
