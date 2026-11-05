@@ -26,6 +26,7 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -183,6 +185,12 @@ public class WalletClientGatewayTest {
   void includes_trust_source_in_list_of_lote_providers() {
     assertThat(loteProviderUrls(), hasItem(containsString(
         ServiceIdentifier.TRUST_SOURCE.toString())));
+  }
+
+  @ParameterizedTest
+  @MethodSource("loteProviderUrls")
+  void serves_valid_lote_provider_urls(String url) {
+    assertDoesNotThrow(() -> URI.create(url).toURL());
   }
 
   private static List<String> loteProviderUrls() {
