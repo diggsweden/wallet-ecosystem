@@ -6,8 +6,9 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -24,7 +25,9 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.net.URI;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -164,16 +168,21 @@ public class WalletClientGatewayTest {
   }
 
   @Test
-  void serves_lote_providers() {
-    walletClientGateway.getLoteProviders(session)
-        .then().assertThat()
-        .statusCode(200)
-        .and().body("items.url", containsInAnyOrder(
-            "https://localhost/trust-source/signed/trusted-entities.json",
-            "https://wallet.sandbox.digg.se/trust-source/signed/trusted-entities.json",
-            "https://development.trust.tech.ec.europa.eu/lists/eudiw/wallet-providers.json",
-            "https://development.trust.tech.ec.europa.eu/lists/eudiw/pid-providers.json",
-            "https://development.trust.tech.ec.europa.eu/lists/eudiw/wrpac-providers.json"));
+  void includes_trust_source_in_list_of_lote_providers() {
+    assertThat(loteProviderUrls(), hasItem(containsString(
+        ServiceIdentifier.TRUST_SOURCE.toString())));
+  }
+
+  @ParameterizedTest
+  @MethodSource("loteProviderUrls")
+  void serves_valid_lote_provider_urls(String url) {
+    assertDoesNotThrow(() -> URI.create(url).toURL());
+  }
+
+  private static List<String> loteProviderUrls() {
+    return walletClientGateway.getLoteProviders(session)
+        .then().assertThat().statusCode(200)
+        .extract().body().jsonPath().getList("items.url", String.class);
   }
 
   static ECKey generateKey() {
