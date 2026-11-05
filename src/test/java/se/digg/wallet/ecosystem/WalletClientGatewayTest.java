@@ -7,7 +7,9 @@ package se.digg.wallet.ecosystem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -25,6 +27,7 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -174,6 +177,18 @@ public class WalletClientGatewayTest {
             "https://development.trust.tech.ec.europa.eu/lists/eudiw/wallet-providers.json",
             "https://development.trust.tech.ec.europa.eu/lists/eudiw/pid-providers.json",
             "https://development.trust.tech.ec.europa.eu/lists/eudiw/wrpac-providers.json"));
+  }
+
+  @Test
+  void includes_trust_source_in_list_of_lote_providers() {
+    assertThat(loteProviderUrls(), hasItem(containsString(
+        ServiceIdentifier.TRUST_SOURCE.toString())));
+  }
+
+  private static List<String> loteProviderUrls() {
+    return walletClientGateway.getLoteProviders(session)
+        .then().assertThat().statusCode(200)
+        .extract().body().jsonPath().getList("items.url", String.class);
   }
 
   static ECKey generateKey() {
