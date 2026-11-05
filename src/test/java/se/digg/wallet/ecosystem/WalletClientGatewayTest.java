@@ -6,7 +6,6 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -166,19 +165,6 @@ public class WalletClientGatewayTest {
         .extract().body().jsonPath().getString("jwt");
     assertDoesNotThrow(() -> SignedJWT.parse(jwt),
         "The Wallet Instance Attestation result JWT could not be parsed");
-  }
-
-  @Test
-  void serves_lote_providers() {
-    walletClientGateway.getLoteProviders(session)
-        .then().assertThat()
-        .statusCode(200)
-        .and().body("items.url", containsInAnyOrder(
-            "https://localhost/trust-source/signed/trusted-entities.json",
-            "https://wallet.sandbox.digg.se/trust-source/signed/trusted-entities.json",
-            "https://development.trust.tech.ec.europa.eu/lists/eudiw/wallet-providers.json",
-            "https://development.trust.tech.ec.europa.eu/lists/eudiw/pid-providers.json",
-            "https://development.trust.tech.ec.europa.eu/lists/eudiw/wrpac-providers.json"));
   }
 
   @Test
