@@ -20,7 +20,6 @@ public class WalletAttestationIssuerClient {
   private final URI base;
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private static final String WUA_URL = "wallet-unit-attestation";
   private static final String KEY_ATTESTATIONS_URL = "v0/key-attestations";
   private static final String WALLET_INSTANCE_ATTESTATIONS_URL = "v0/wallet-instance-attestations";
 
@@ -57,25 +56,6 @@ public class WalletAttestationIssuerClient {
         .getString("wallet_instance_attestation");
   }
 
-  @Deprecated
-  public String getWalletUnitAttestation(ECKey jwk, String nonce) {
-    Map<String, Object> body = new HashMap<>();
-    body.put("jwk", jwk.toPublicJWK().toJSONString());
-    if (nonce != null) {
-      body.put("nonce", nonce);
-    }
-    return given()
-        .when()
-        .contentType(ContentType.JSON)
-        .body(OBJECT_MAPPER.writeValueAsString(body))
-        .post(base.resolve(WUA_URL))
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .extract()
-        .body()
-        .asString();
-  }
 
   public String getKeyAttestation(ECKey jwk, String nonce) {
     return getKeyAttestation(List.of(jwk), nonce);

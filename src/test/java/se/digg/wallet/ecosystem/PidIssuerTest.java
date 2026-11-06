@@ -145,7 +145,7 @@ public class PidIssuerTest {
   }
 
   @Test
-  void rejectsInvalidWuaKeyId() throws Exception {
+  void rejectsInvalidKeyIdInKaProof() throws Exception {
     ECKey bindingKey =
         new ECKeyGenerator(Curve.P_256)
             .algorithm(JWSAlgorithm.ES256)

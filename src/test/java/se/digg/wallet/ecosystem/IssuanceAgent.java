@@ -26,7 +26,7 @@ public class IssuanceAgent {
   public static final String DEFAULT_CLIENT_ID = "eudiw";
   public static final String LEGACY_CLIENT_ID = "wallet-dev";
 
-  private static final String DEFAULT_WUA_KEY_ID = "0";
+  private static final String DEFAULT_KA_KEY_ID = "0";
 
   public static Builder builder() {
     return new Builder();
@@ -155,12 +155,12 @@ public class IssuanceAgent {
     return extractSdJwtVc(payloadJson);
   }
 
-  private String createProof(ECKey jwk, String wua, String nonce) throws JOSEException {
+  private String createProof(ECKey jwk, String keyAttestation, String nonce) throws JOSEException {
     JWSHeader header =
         new JWSHeader.Builder(JWSAlgorithm.ES256)
             .type(new JOSEObjectType("openid4vci-proof+jwt"))
-            .keyID(DEFAULT_WUA_KEY_ID)
-            .customParam("key_attestation", wua)
+            .keyID(DEFAULT_KA_KEY_ID)
+            .customParam("key_attestation", keyAttestation)
             .build();
 
     JWTClaimsSet claims =
