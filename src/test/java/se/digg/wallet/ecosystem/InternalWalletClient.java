@@ -18,16 +18,6 @@ public class InternalWalletClient implements WalletClient {
     this.attestationIssuer = attestationIssuer;
   }
 
-  @Deprecated
-  public static WalletClient deprecatedWua() {
-    return deprecatedWua(new WalletAttestationIssuerClient());
-  }
-
-  @Deprecated
-  public static WalletClient deprecatedWua(WalletAttestationIssuerClient attestationIssuer) {
-    return (bindingKey, nonce) -> attestationIssuer.getWalletUnitAttestation(bindingKey, nonce);
-  }
-
   @Override
   public String createKeyAttestation(ECKey bindingKey, String nonce) {
     return attestationIssuer.getKeyAttestation(bindingKey, nonce);

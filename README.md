@@ -124,16 +124,16 @@ podman compose up
 
 ## Services
 
-| Service | URL | Description |
-|---|---|---|
-| Demo verifier | <https://localhost/demo-verifier> | Our verifier demo service |
-| EU reference verifier backend | <https://localhost/refimpl-verifier-backend> | Backend used by both verifier implementations |
-| EU reference PID issuer | <https://localhost/pid-issuer> | EU's reference implementation of a PID issuer |
-| Keycloak | <https://localhost/idp> | Identity provider for the PID issuer |
-| Wallet Attestation Issuer | <https://localhost/wallet-attestation-issuer> | Issues and manages the lifecycle of Wallet Unit Attestations (WUA) |
-| Wallet Client Gateway | <https://localhost/wallet-client-gateway> | BFF for the wallet app(s) |
-| Wallet Account | <https://localhost/wallet-account> | Manages user accounts |
-| Traefik | <http://localhost:8080> | Reverse proxy handling TLS termination |
+| Service | URL | Description                                                        |
+|---|---|--------------------------------------------------------------------|
+| Demo verifier | <https://localhost/demo-verifier> | Our verifier demo service                                          |
+| EU reference verifier backend | <https://localhost/refimpl-verifier-backend> | Backend used by both verifier implementations                      |
+| EU reference PID issuer | <https://localhost/pid-issuer> | EU's reference implementation of a PID issuer                      |
+| Keycloak | <https://localhost/idp> | Identity provider for the PID issuer                               |
+| Wallet Attestation Issuer | <https://localhost/wallet-attestation-issuer> | Issues Wallet Instance Attestations (WIA) and Key Attestations (KA) during credential issuance |
+| Wallet Client Gateway | <https://localhost/wallet-client-gateway> | BFF for the wallet app(s)                                          |
+| Wallet Account | <https://localhost/wallet-account> | Manages user accounts                                              |
+| Traefik | <http://localhost:8080> | Reverse proxy handling TLS termination                             |
 
 ---
 
