@@ -46,25 +46,6 @@ public class WalletAttestationIssuerTest {
         .and().body("status", equalTo("UP"));
   }
 
-  @Deprecated
-  @ParameterizedTest
-  @ValueSource(strings = {"nonce", ""})
-  @NullSource
-  void createsWalletUnitAttestation(String nonce) throws Exception {
-    String wua = attestationIssuer.getWalletUnitAttestation(
-        new ECKeyGenerator(Curve.P_256).generate(),
-        nonce);
-
-    assertThat(wua, matchesPattern(
-        "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
-
-    // Verify WUA contains the injected key_storage_status
-    SignedJWT jwt = SignedJWT.parse(wua);
-    assertNotNull(
-        jwt.getJWTClaimsSet().getClaim("key_storage_status"),
-        "WUA must contain the 'key_storage_status' claim");
-  }
-
   @ParameterizedTest
   @ValueSource(strings = {"nonce", ""})
   @NullSource
