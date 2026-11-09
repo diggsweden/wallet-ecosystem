@@ -8,7 +8,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -44,25 +43,6 @@ public class WalletAttestationIssuerTest {
         .then()
         .assertThat().statusCode(200)
         .and().body("status", equalTo("UP"));
-  }
-
-  @Deprecated
-  @ParameterizedTest
-  @ValueSource(strings = {"nonce", ""})
-  @NullSource
-  void createsWalletUnitAttestation(String nonce) throws Exception {
-    String wua = attestationIssuer.getWalletUnitAttestation(
-        new ECKeyGenerator(Curve.P_256).generate(),
-        nonce);
-
-    assertThat(wua, matchesPattern(
-        "^[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.[A-Za-z0-9\\-_]+$"));
-
-    // Verify WUA contains the injected key_storage_status
-    SignedJWT jwt = SignedJWT.parse(wua);
-    assertNotNull(
-        jwt.getJWTClaimsSet().getClaim("key_storage_status"),
-        "WUA must contain the 'key_storage_status' claim");
   }
 
   @ParameterizedTest
