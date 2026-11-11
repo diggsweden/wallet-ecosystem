@@ -124,7 +124,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-attestation-issuer:
-    image: ghcr.io/diggsweden/wallet-attestation-issuer:v0.3.0@sha256:d90da1c60a06ee7fb10ab91865dfa7039e701407c87c7d124731d978d198d0fb
+    image: ghcr.io/diggsweden/wallet-attestation-issuer:v0.3.1@sha256:dfb7b78ec39a6d6e943f2e0249b34e6b50dadd964715fe4990b9b9dcbe81a65b
     container_name: wallet-attestation-issuer
     hostname: wallet-attestation-issuer
     volumes:
