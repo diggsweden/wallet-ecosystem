@@ -4,8 +4,10 @@
 
 package se.digg.wallet.ecosystem;
 
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static se.digg.wallet.ecosystem.RestAssuredSugar.given;
@@ -152,6 +154,22 @@ class KeycloakTest {
     keycloak.tryGetAccountConsoleForRealm("pid-issuer-realm")
         .then().assertThat().statusCode(is(200))
         .and().contentType(containsString("text/html"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "/"})
+  void redirectsRootToPidIssuerRealmAccountConsole(String trailingSlash) {
+    String location = given().redirects().follow(false)
+        .when().get(KEYCLOAK + trailingSlash)
+        .then().assertThat().statusCode(anyOf(is(301), is(302), is(303), is(307), is(308)))
+        .and().header("Location", notNullValue())
+        .extract().header("Location");
+
+    var target = KEYCLOAK.toUri().resolve(location);
+    var accountConsole = KEYCLOAK.getResourceRoot().resolve("realms/pid-issuer-realm/account");
+    assertThat(target.getAuthority(), is(accountConsole.getAuthority()));
+    assertThat(target.getPath(),
+        anyOf(is(accountConsole.getPath()), is(accountConsole.getPath() + "/")));
   }
 
   @ParameterizedTest
