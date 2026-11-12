@@ -45,11 +45,6 @@ public class WalletClientGatewayClient {
         .when()
         .header("X-API-KEY", API_KEY)
         .header("Session", sessionId)
-        .header("Wallet-Device-OS", "Android")
-        .header("Wallet-Device-OS-Version", "15")
-        .header("Wallet-Device-Model", "Pixel 9")
-        .header("Wallet-App-Version", "1.2.3")
-        .header("Wallet-App-Build", "42")
         .contentType(ContentType.JSON)
         .body(body)
         .post(base.resolve("util/v0/client-logs"));
