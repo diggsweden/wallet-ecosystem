@@ -18,6 +18,8 @@ just pki-generate
 It passes `.env` through `--env-file` and uses
 [ecosystem.yaml](ecosystem.yaml). Ordinary `just up` does not regenerate keys.
 `just certs` generates TLS and service PKI.
+After the PKI generation steps complete, `pki-generate` automatically runs
+`reuse annotate` for newly generated files under `config/certificates`.
 
 Utvecklarportalen localhost certificates are generated first using
 [utvecklarportalen.yaml](utvecklarportalen.yaml), before the ecosystem LoTE.

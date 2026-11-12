@@ -342,6 +342,12 @@ pki-generate:
     just pki verifier access generate --config config/certificates/utvecklarportalen.yaml
     just pki verifier registration generate --config config/certificates/utvecklarportalen.yaml
     just pki ecosystem generate --config config/certificates/ecosystem.yaml
+    just reuse-annotate-certificates
+
+# Add REUSE metadata to newly generated PKI artifacts
+[group('pki')]
+reuse-annotate-certificates:
+    reuse annotate --recursive --skip-existing --fallback-dot-license --copyright 'Digg - Agency for Digital Government' --year 2026 --license CC0-1.0 config/certificates
 
 # Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
 [group('setup')]
