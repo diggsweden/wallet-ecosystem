@@ -37,6 +37,19 @@ public class WalletClientGatewayClient {
         .get(base.resolve("util/v0/client-configs"));
   }
 
+  public Response createClientLog(String sessionId, String level, String message) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("level", level);
+    body.put("message", message);
+    return given()
+        .when()
+        .header("X-API-KEY", API_KEY)
+        .header("Session", sessionId)
+        .contentType(ContentType.JSON)
+        .body(body)
+        .post(base.resolve("util/v0/client-logs"));
+  }
+
   public Response tryGetMaintenanceWindow() {
     return given()
         .when()
@@ -54,18 +67,6 @@ public class WalletClientGatewayClient {
         .assertThat().statusCode(201)
         .and().body("accountId", not(blankOrNullString()))
         .extract().body().jsonPath().getString("accountId");
-  }
-
-  public void addSecurityEnvelope(String sessionId, String keyBody) {
-    given()
-        .when()
-        .contentType(ContentType.JSON)
-        .body(keyBody)
-        .header("Session", sessionId)
-        .header("X-API-KEY", API_KEY)
-        .post(base.resolve("v0/accounts/security-envelopes"))
-        .then()
-        .assertThat().statusCode(201);
   }
 
   public String initChallenge(String accountId, String keyId) {

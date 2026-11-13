@@ -185,6 +185,13 @@ public class WalletClientGatewayTest {
         .extract().body().jsonPath().getList("items.url", String.class);
   }
 
+  @Test
+  void client_log_creation_responds_with_empty_body() {
+    walletClientGateway.createClientLog(session, "INFO", "wallet-ecosystem test")
+        .then().assertThat().statusCode(204)
+        .and().assertThat().body(blankOrNullString());
+  }
+
   static ECKey generateKey() {
     try {
       return new ECKeyGenerator(Curve.P_256)
