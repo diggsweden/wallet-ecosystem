@@ -448,6 +448,15 @@ services:
       - "traefik.http.routers.keycloak.entrypoints=websecure"
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.service=keycloak"
+      # Keycloak root redirects to the PID issuer realm account console.
+      - "traefik.http.routers.keycloak-root.rule=Path(`/idp`) || Path(`/idp/`)"
+      - "traefik.http.routers.keycloak-root.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-root.tls=true"
+      - "traefik.http.routers.keycloak-root.service=keycloak"
+      - "traefik.http.routers.keycloak-root.middlewares=keycloak-root-redirect"
+      - "traefik.http.middlewares.keycloak-root-redirect.redirectregex.regex=^(https?://[^/]+/idp)/?$$"
+      - "traefik.http.middlewares.keycloak-root-redirect.redirectregex.replacement=$${1}/realms/pid-issuer-realm/account"
+      - "traefik.http.middlewares.keycloak-root-redirect.redirectregex.permanent=true"
       # Whitelist: health endpoints → management port 9000
       - "traefik.http.routers.keycloak-health.rule=PathPrefix(`/idp/health`)"
       - "traefik.http.routers.keycloak-health.entrypoints=websecure"
