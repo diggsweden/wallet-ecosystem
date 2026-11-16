@@ -28,6 +28,13 @@ public class IssuanceAgent {
 
   private static final String DEFAULT_KA_KEY_ID = "0";
 
+  private static final String PID_SCOPE = "eu.europa.ec.eudi.pid_vc_sd_jwt";
+  private static final String PID_CONFIGURATION_ID = "eu.europa.ec.eudi.pid_vc_sd_jwt";
+  private static final String LEARNING_CREDENTIAL_SCOPE =
+      "urn:eu.europa.ec.eudi:learning:credential:1:dc+sd-jwt";
+  private static final String LEARNING_CREDENTIAL_CONFIGURATION_ID =
+      "urn:eu.europa.ec.eudi:learning:credential:1:dc+sd-jwt-compact";
+
   public static Builder builder() {
     return new Builder();
   }
@@ -106,6 +113,20 @@ public class IssuanceAgent {
 
   public String issuePidCredential(ECKey bindingKey, String username, String password)
       throws Exception {
+    return issueCredential(
+        bindingKey, username, password, PID_SCOPE, PID_CONFIGURATION_ID);
+  }
+
+  public String issueLearningCredential(ECKey bindingKey, String username, String password)
+      throws Exception {
+    return issueCredential(
+        bindingKey, username, password, LEARNING_CREDENTIAL_SCOPE,
+        LEARNING_CREDENTIAL_CONFIGURATION_ID);
+  }
+
+  private String issueCredential(
+      ECKey bindingKey, String username, String password, String scope,
+      String credentialConfigurationId) throws Exception {
     ECKey encryptionKey =
         new ECKeyGenerator(Curve.P_256)
             .algorithm(JWEAlgorithm.ECDH_ES)
@@ -125,7 +146,7 @@ public class IssuanceAgent {
                   "grant_type", "password",
                   "username", username,
                   "password", password,
-                  "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                  "scope", "openid " + scope,
                   "role", "user"));
     } else {
       accessToken =
@@ -137,7 +158,7 @@ public class IssuanceAgent {
                   "client_id", clientId,
                   "username", username,
                   "password", password,
-                  "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                  "scope", "openid " + scope,
                   "role", "user"));
     }
 
@@ -149,7 +170,7 @@ public class IssuanceAgent {
         pidIssuer
             .issueCredentials(
                 accessToken, bindingKey, encryptionKey, proof,
-                pidIssuerCredentialRequestEncryptionKey)
+                pidIssuerCredentialRequestEncryptionKey, credentialConfigurationId)
             .toJSONObject();
 
     return extractSdJwtVc(payloadJson);

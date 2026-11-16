@@ -162,6 +162,13 @@ public class PidIssuerClient {
 
   public Payload issueCredentials(String accessToken, ECKey userJwk, ECKey jwk, String proof,
       ECKey pidIssuerCredentialRequestEncryptionKey) throws JOSEException, ParseException {
+    return issueCredentials(accessToken, userJwk, jwk, proof,
+        pidIssuerCredentialRequestEncryptionKey, "eu.europa.ec.eudi.pid_vc_sd_jwt");
+  }
+
+  public Payload issueCredentials(String accessToken, ECKey userJwk, ECKey jwk, String proof,
+      ECKey pidIssuerCredentialRequestEncryptionKey, String credentialConfigurationId)
+      throws JOSEException, ParseException {
     return decryptPayload(
         postCredentials(
             accessToken, userJwk, encryptPayload(
@@ -169,14 +176,14 @@ public class PidIssuerClient {
                     {
                       "format": "vc+sd-jwt",
                       "proofs": { "jwt": ["%s"] },
-                      "credential_configuration_id": "eu.europa.ec.eudi.pid_vc_sd_jwt",
+                      "credential_configuration_id": "%s",
                       "credential_response_encryption": {
                         "jwk": %s,
                         "enc": "A128GCM",
                         "zip": "DEF"
                       }
                     }""",
-                    proof, jwk.toPublicJWK().toJSONString()),
+                    proof, credentialConfigurationId, jwk.toPublicJWK().toJSONString()),
                 pidIssuerCredentialRequestEncryptionKey)),
         jwk.toECPrivateKey());
   }
