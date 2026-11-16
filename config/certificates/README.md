@@ -47,8 +47,8 @@ attestation issuer, verifier access, verifier registration and trust source.
 Output paths and aliases match the Compose consumers. Public certificates,
 CRLs and signed documents are container-readable. Static trust-source assets
 and the verifier CPS remain in place. The signed status-list JWT is an all-valid
-development fixture. Increase `trustSource.lote.sequenceNumber` in `ecosystem.yaml`
-when publishing an updated LoTE.
+development fixture. The LoTE sequence number is incremented automatically from
+the existing `trusted-entities.json` when omitted from `ecosystem.yaml`.
 
 Keep regenerated development artifacts and their existing `.license` sidecars
 in Git. Before generating committed fixtures, set the passwords in `.env` to

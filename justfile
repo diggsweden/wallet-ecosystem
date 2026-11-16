@@ -14,7 +14,7 @@ colors := devtools_dir + "/utils/colors.sh"
 
 maven_opts := "--batch-mode --no-transfer-progress --errors -Dstyle.color=always"
 
-pki_image := "ghcr.io/diggsweden/wallet-pki-tool:v0.1.3"
+pki_image := "ghcr.io/diggsweden/wallet-pki-tool:v0.1.4"
 pki_env_file := ".env"
 
 # Color variables
@@ -342,6 +342,7 @@ pki-generate:
     just pki verifier access generate --config config/certificates/utvecklarportalen.yaml
     just pki verifier registration generate --config config/certificates/utvecklarportalen.yaml
     just pki ecosystem generate --config config/certificates/ecosystem.yaml
+    printf 'VERIFIER_INTENDEDUSES_0_REGISTRATIONCERTIFICATE=%s\n' "$(tr -d '\n' < config/certificates/verifier-registration-certificate/registration_certificate.jwt)" > config/certificates/verifier-registration-certificate/registration_certificate.env
 
 # Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
 [group('setup')]
