@@ -181,6 +181,8 @@ jobs:
 
       - name: Cleanup
         if: always()
+        # The runner is discarded after the job, so a failed teardown must not fail it.
+        continue-on-error: true
         run: |
           if [ -d "wallet-ecosystem" ]; then
             cd wallet-ecosystem

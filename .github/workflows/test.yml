@@ -85,4 +85,6 @@ jobs:
         run: podman compose logs
 
       - name: Down with podman compose
+        # The runner is discarded after the job, so a failed teardown must not fail it.
+        continue-on-error: true
         run: podman compose down
