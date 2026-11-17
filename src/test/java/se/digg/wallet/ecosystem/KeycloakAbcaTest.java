@@ -48,7 +48,7 @@ class KeycloakAbcaTest {
       "grant_type", "password",
       "username", "tneal",
       "password", "password",
-      "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt");
+      "scope", "openid " + IssuerScope.PID.scope());
 
   private static final ECKey WALLET_KEY;
 
@@ -153,7 +153,7 @@ class KeycloakAbcaTest {
             "client_id", "eudiw",
             "username", "tneal",
             "password", "password",
-            "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt"))
+            "scope", "openid " + IssuerScope.PID.scope()))
         .when()
         .post(tokenEndpoint)
         .then()

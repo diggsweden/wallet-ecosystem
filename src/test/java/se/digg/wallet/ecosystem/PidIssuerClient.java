@@ -163,7 +163,8 @@ public class PidIssuerClient {
   public Payload issueCredentials(String accessToken, ECKey userJwk, ECKey jwk, String proof,
       ECKey pidIssuerCredentialRequestEncryptionKey) throws JOSEException, ParseException {
     return issueCredentials(accessToken, userJwk, jwk, proof,
-        pidIssuerCredentialRequestEncryptionKey, "eu.europa.ec.eudi.pid_vc_sd_jwt");
+        pidIssuerCredentialRequestEncryptionKey,
+        IssuerScope.PID.credentialConfigurationId());
   }
 
   public Payload issueCredentials(String accessToken, ECKey userJwk, ECKey jwk, String proof,
