@@ -18,8 +18,10 @@ import com.nimbusds.jwt.SignedJWT;
 import java.text.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 class OpenId4VpAuthorizationRequestValidatorTest {
+  private static final JsonMapper JSON = JsonMapper.builder().build();
   private static SignedJWT registrationCertificate;
   private static JWSHeader accessCertificateHeader;
   private static JWSSigner accessCertificateSigner;
@@ -68,6 +70,51 @@ class OpenId4VpAuthorizationRequestValidatorTest {
         () -> validator.validateRelyingPartyAuthorizationRequest(requestWithUnregisteredClaim));
 
     assertThat(exception.getMessage(), containsString("not_registered_claim"));
+  }
+
+  @Test
+  void rejectsRegisteredClaimForUnregisteredCredentialType() throws Exception {
+    var authorizationRequest = new SignedJWT(accessCertificateHeader,
+        authorizationRequest(registrationCertificate,
+            "[{\"path\":[\"family_name\"]}]", "urn:example:unregistered"));
+    authorizationRequest.sign(accessCertificateSigner);
+
+    var exception = assertThrows(AssertionError.class,
+        () -> validator.validateRelyingPartyAuthorizationRequest(authorizationRequest));
+
+    assertThat(exception.getMessage(), containsString("family_name"));
+  }
+
+  @Test
+  void rejectsMixedRegisteredAndUnregisteredCredentialTypes() throws Exception {
+    var authorizationRequest = new SignedJWT(accessCertificateHeader,
+        authorizationRequest(registrationCertificate,
+            "[{\"path\":[\"family_name\"]}]", "urn:eudi:pid:1", "urn:example:unregistered"));
+    authorizationRequest.sign(accessCertificateSigner);
+
+    var exception = assertThrows(AssertionError.class,
+        () -> validator.validateRelyingPartyAuthorizationRequest(authorizationRequest));
+
+    assertThat(exception.getMessage(), containsString("family_name"));
+  }
+
+  @Test
+  void rejectsUnsupportedCredentialFormat() throws Exception {
+    var authorizationRequest = new SignedJWT(accessCertificateHeader,
+        JWTClaimsSet.parse("""
+            {
+              "verifier_info": [{"format": "registration_cert", "data": "%s"}],
+              "dcql_query": {
+                "credentials": [{"format": "mso_mdoc"}]
+              }
+            }
+            """.formatted(registrationCertificate.serialize())));
+    authorizationRequest.sign(accessCertificateSigner);
+
+    var exception = assertThrows(IllegalArgumentException.class,
+        () -> validator.validateRelyingPartyAuthorizationRequest(authorizationRequest));
+
+    assertThat(exception.getMessage(), containsString("Unsupported credential format 'mso_mdoc'"));
   }
 
   @Test
@@ -128,6 +175,11 @@ class OpenId4VpAuthorizationRequestValidatorTest {
 
   private JWTClaimsSet authorizationRequest(SignedJWT registrationCertificate, String claimsArray)
       throws ParseException {
+    return authorizationRequest(registrationCertificate, claimsArray, "urn:eudi:pid:1");
+  }
+
+  private JWTClaimsSet authorizationRequest(SignedJWT registrationCertificate, String claimsArray,
+      String... vcts) throws ParseException {
     return JWTClaimsSet.parse("""
         {
           "verifier_info": [
@@ -140,13 +192,14 @@ class OpenId4VpAuthorizationRequestValidatorTest {
             "credentials": [
               {
                 "format": "dc+sd-jwt",
-                "vct": "urn:eudi:pid:1",
+                "meta": { "vct_values": %s },
                 "claims": %s
               }
             ]
           }
         }
         """
-        .formatted(registrationCertificate.serialize(), claimsArray));
+        .formatted(registrationCertificate.serialize(), JSON.writeValueAsString(vcts),
+            claimsArray));
   }
 }

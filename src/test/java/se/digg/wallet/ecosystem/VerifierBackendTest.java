@@ -20,6 +20,7 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
 import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -75,7 +76,7 @@ class VerifierBackendTest {
   @Test
   void createsPresentationRequest() {
     VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(dcqlId);
+        verifierBackend.createPresentationRequestByValue(IntendedUse.PID, dcqlId);
 
     assertNotNull(presentationResponse);
     assertThat(presentationResponse.transaction_id(), notNullValue());
@@ -83,19 +84,33 @@ class VerifierBackendTest {
     assertThat(presentationResponse.client_id(), is(VerifierBackendClient.VERIFIER_AUDIENCE));
   }
 
-  @Test
-  void createsAuthorizationRequestCompliantWithRegistration() throws Exception {
-    var response = verifierBackend
-        .createPresentationRequestByValue(UUID.randomUUID().toString());
+  @ParameterizedTest
+  @CsvSource({
+      "PID, urn:eudi:pid:1, personal_administrative_number",
+      "LEARNING_CREDENTIAL, urn:eu.europa.ec.eudi:learning:credential:1, achievement_title"
+  })
+  void createsAuthorizationRequestCompliantWithRegistration(IntendedUse intendedUse,
+      String vct, String claim) throws Exception {
+    var response = verifierBackend.createPresentationRequestByValue(intendedUse, vct, claim);
 
-    authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(
-        SignedJWT.parse(response.request()));
+    var authorizationRequest = SignedJWT.parse(response.request());
+    authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(authorizationRequest);
+    var registrationCertificate =
+        authorizationRequestValidator.getRegistrationCertificate(authorizationRequest);
+    assertThat(registrationCertificate.getJWTClaimsSet().getStringClaim("intended_use_id"),
+        equalTo(intendedUse.id()));
+    var requestClaims = JsonPath.from(authorizationRequest.getPayload().toString());
+    assertThat(requestClaims.getList("dcql_query.credentials"), hasSize(1));
+    assertThat(requestClaims.getList("dcql_query.credentials[0].meta.vct_values"),
+        equalTo(List.of(vct)));
+    assertThat(requestClaims.getList("dcql_query.credentials[0].claims.path"),
+        equalTo(List.of(List.of(claim))));
   }
 
   @Test
   void createsTrustedPresentationRequest() throws Exception {
     var response = verifierBackend
-        .createPresentationRequestByValue(UUID.randomUUID().toString());
+        .createPresentationRequestByValue(IntendedUse.PID, UUID.randomUUID().toString());
     var authRequest = SignedJWT.parse(response.request());
     var accessCertificate = authorizationRequestValidator.getAccessCertificate(authRequest);
     var registrationCertificate = authorizationRequestValidator
@@ -114,7 +129,7 @@ class VerifierBackendTest {
       ResponseMode requestedMode, String expectedModeInResponse)
       throws Exception {
     VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(dcqlId, requestedMode);
+        verifierBackend.createPresentationRequestByValue(IntendedUse.PID, dcqlId, requestedMode);
 
     assertNotNull(presentationResponse);
     assertThat(presentationResponse.transaction_id(), notNullValue());
@@ -148,7 +163,7 @@ class VerifierBackendTest {
   @Test
   void returnsPresentationEvents() {
     VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(dcqlId);
+        verifierBackend.createPresentationRequestByValue(IntendedUse.PID, dcqlId);
     String transactionId = presentationResponse.transaction_id();
     Response response = verifierBackend.getPresentationEvents(transactionId);
 
@@ -235,7 +250,8 @@ class VerifierBackendTest {
   private Response postWalletResponseToDirectPostJwtRequest(ResponseMode wireFormat)
       throws Exception {
     VerifierPresentationResponse presentationResponse =
-        verifierBackend.createPresentationRequestByValue(dcqlId, ResponseMode.DIRECT_POST_JWT);
+        verifierBackend.createPresentationRequestByValue(
+            IntendedUse.PID, dcqlId, ResponseMode.DIRECT_POST_JWT);
 
     SignedJWT jwt = SignedJWT.parse(presentationResponse.request());
     String responseUri = jwt.getJWTClaimsSet().getStringClaim("response_uri");
