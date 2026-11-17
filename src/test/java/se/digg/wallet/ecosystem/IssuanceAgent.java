@@ -106,6 +106,17 @@ public class IssuanceAgent {
 
   public String issuePidCredential(ECKey bindingKey, String username, String password)
       throws Exception {
+    return issueCredential(bindingKey, username, password, IssuerScope.PID);
+  }
+
+  public String issueLearningCredential(ECKey bindingKey, String username, String password)
+      throws Exception {
+    return issueCredential(bindingKey, username, password, IssuerScope.LEARNING_CREDENTIAL);
+  }
+
+  private String issueCredential(
+      ECKey bindingKey, String username, String password, IssuerScope issuerScope)
+      throws Exception {
     ECKey encryptionKey =
         new ECKeyGenerator(Curve.P_256)
             .algorithm(JWEAlgorithm.ECDH_ES)
@@ -125,7 +136,7 @@ public class IssuanceAgent {
                   "grant_type", "password",
                   "username", username,
                   "password", password,
-                  "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                  "scope", "openid " + issuerScope.scope(),
                   "role", "user"));
     } else {
       accessToken =
@@ -137,7 +148,7 @@ public class IssuanceAgent {
                   "client_id", clientId,
                   "username", username,
                   "password", password,
-                  "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                  "scope", "openid " + issuerScope.scope(),
                   "role", "user"));
     }
 
@@ -149,7 +160,8 @@ public class IssuanceAgent {
         pidIssuer
             .issueCredentials(
                 accessToken, bindingKey, encryptionKey, proof,
-                pidIssuerCredentialRequestEncryptionKey)
+                pidIssuerCredentialRequestEncryptionKey,
+                issuerScope.credentialConfigurationId())
             .toJSONObject();
 
     return extractSdJwtVc(payloadJson);

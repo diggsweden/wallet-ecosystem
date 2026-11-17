@@ -135,7 +135,7 @@ public class PidIssuerTest {
                 "client_id", "wallet-dev",
                 "username", "tneal",
                 "password", "password",
-                "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                "scope", "openid " + IssuerScope.PID.scope(),
                 "role", "user"));
 
     // 2. Get nonce
@@ -161,7 +161,7 @@ public class PidIssuerTest {
                 "client_id", "wallet-dev",
                 "username", "tneal",
                 "password", "password",
-                "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                "scope", "openid " + IssuerScope.PID.scope(),
                 "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
@@ -198,9 +198,9 @@ public class PidIssuerTest {
                 {
                   "format": "vc+sd-jwt",
                   "proofs": { "jwt": ["%s"] },
-                  "credential_configuration_id": "eu.europa.ec.eudi.pid_vc_sd_jwt"
+                  "credential_configuration_id": "%s"
                 }""",
-            invalidProof);
+            invalidProof, IssuerScope.PID.credentialConfigurationId());
 
     given()
         .header("Authorization", "DPoP " + accessToken)
@@ -228,7 +228,7 @@ public class PidIssuerTest {
                 "client_id", "wallet-dev",
                 "username", "tneal",
                 "password", "password",
-                "scope", "openid eu.europa.ec.eudi.pid_vc_sd_jwt",
+                "scope", "openid " + IssuerScope.PID.scope(),
                 "role", "user"));
 
     String credentialsEndpoint =
