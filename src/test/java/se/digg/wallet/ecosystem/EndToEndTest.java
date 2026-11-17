@@ -52,6 +52,7 @@ public class EndToEndTest {
             IssuanceAgent.builder()
                 .wallet(new InternalWalletClient())
                 .clientId(IssuanceAgent.LEGACY_CLIENT_ID)
+                .with(AccessTokenStrategy.DPOP)
                 .build(),
             ResponseMode.DIRECT_POST));
   }

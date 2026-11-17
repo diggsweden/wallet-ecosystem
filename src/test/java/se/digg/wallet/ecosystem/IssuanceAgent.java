@@ -51,6 +51,7 @@ public class IssuanceAgent {
   private final WalletAttestationIssuerClient attestationIssuer;
   private final String audience;
   private final String clientId;
+  private final AccessTokenStrategy accessTokenStrategy;
 
   private IssuanceAgent(Builder builder) {
     this.wallet = builder.wallet;
@@ -59,6 +60,7 @@ public class IssuanceAgent {
     this.attestationIssuer = builder.attestationIssuer;
     this.audience = builder.audience;
     this.clientId = builder.clientId;
+    this.accessTokenStrategy = builder.accessTokenStrategy;
   }
 
   public static class Builder {
@@ -68,6 +70,8 @@ public class IssuanceAgent {
     private PidIssuerClient pidIssuer = new PidIssuerClient();
     private String audience = ServiceIdentifier.PID_ISSUER.toString();
     private String clientId = DEFAULT_CLIENT_ID;
+    private AccessTokenStrategy accessTokenStrategy =
+        AccessTokenStrategy.DPOP_WITH_CLIENT_ATTESTATION;
 
     public Builder wallet(WalletClient wallet) {
       this.wallet = wallet;
@@ -99,6 +103,11 @@ public class IssuanceAgent {
       return this;
     }
 
+    public Builder with(AccessTokenStrategy strategy) {
+      this.accessTokenStrategy = strategy;
+      return this;
+    }
+
     public IssuanceAgent build() {
       return new IssuanceAgent(this);
     }
@@ -123,34 +132,13 @@ public class IssuanceAgent {
             .keyUse(KeyUse.ENCRYPTION)
             .generate();
 
-    String accessToken;
-    if (DEFAULT_CLIENT_ID.equals(clientId)) {
-      String wia = attestationIssuer.getWalletInstanceAttestation(bindingKey);
-      accessToken =
-          keycloak.getDpopAccessTokenWithClientAttestation(
-              "pid-issuer-realm",
-              clientId,
-              bindingKey,
-              wia,
-              Map.of(
-                  "grant_type", "password",
-                  "username", username,
-                  "password", password,
-                  "scope", "openid " + issuerScope.scope(),
-                  "role", "user"));
-    } else {
-      accessToken =
-          keycloak.getDpopAccessToken(
-              "pid-issuer-realm",
-              bindingKey,
-              Map.of(
-                  "grant_type", "password",
-                  "client_id", clientId,
-                  "username", username,
-                  "password", password,
-                  "scope", "openid " + issuerScope.scope(),
-                  "role", "user"));
-    }
+    String accessToken = accessTokenStrategy.applyTo(
+        attestationIssuer, keycloak, clientId, bindingKey, Map.of(
+            "grant_type", "password",
+            "username", username,
+            "password", password,
+            "scope", "openid " + issuerScope.scope(),
+            "role", "user"));
 
     String nonce = pidIssuer.getNonce(accessToken, bindingKey);
     String walletAttestation = wallet.createKeyAttestation(bindingKey, nonce);
