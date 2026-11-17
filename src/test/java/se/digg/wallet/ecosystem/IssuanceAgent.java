@@ -133,7 +133,8 @@ public class IssuanceAgent {
             .generate();
 
     String accessToken = accessTokenStrategy.applyTo(
-        attestationIssuer, keycloak, clientId, bindingKey, Map.of(
+        attestationIssuer, keycloak, bindingKey, Map.of(
+            "client_id", clientId,
             "grant_type", "password",
             "username", username,
             "password", password,

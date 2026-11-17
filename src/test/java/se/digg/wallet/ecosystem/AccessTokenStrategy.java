@@ -6,7 +6,6 @@ package se.digg.wallet.ecosystem;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.ECKey;
-import java.util.HashMap;
 import java.util.Map;
 
 public enum AccessTokenStrategy {
@@ -14,29 +13,26 @@ public enum AccessTokenStrategy {
     @Override
     public String applyTo(
         WalletAttestationIssuerClient attestationIssuer, KeycloakClient keycloak,
-        String clientId, ECKey bindingKey, Map<String, String> parameters) throws JOSEException {
+        ECKey bindingKey, Map<String, String> parameters) throws JOSEException {
 
-      HashMap<String, String> extended = new HashMap<>(parameters);
-      extended.put("client_id", clientId);
-      return keycloak.getDpopAccessToken("pid-issuer-realm", bindingKey, extended);
+      return keycloak.getDpopAccessToken("pid-issuer-realm", bindingKey, parameters);
     }
   },
   DPOP_WITH_CLIENT_ATTESTATION {
     @Override
     public String applyTo(
         WalletAttestationIssuerClient attestationIssuer, KeycloakClient keycloak,
-        String clientId, ECKey bindingKey, Map<String, String> parameters) throws JOSEException {
+        ECKey bindingKey, Map<String, String> parameters) throws JOSEException {
 
       String wia = attestationIssuer.getWalletInstanceAttestation(bindingKey);
       return keycloak.getDpopAccessTokenWithClientAttestation(
-          "pid-issuer-realm", clientId, bindingKey, wia, parameters);
+          "pid-issuer-realm", bindingKey, wia, parameters);
     }
   };
 
   public abstract String applyTo(
       WalletAttestationIssuerClient attestationIssuer,
       KeycloakClient keycloak,
-      String clientId,
       ECKey bindingKey,
       Map<String, String> parameters) throws JOSEException;
 }
