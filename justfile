@@ -342,7 +342,20 @@ pki-generate:
     just pki verifier access generate --config config/certificates/utvecklarportalen.yaml
     just pki verifier registration generate --config config/certificates/utvecklarportalen.yaml
     just pki ecosystem generate --config config/certificates/ecosystem.yaml
-    printf 'VERIFIER_INTENDEDUSES_0_REGISTRATIONCERTIFICATE=%s\n' "$(tr -d '\n' < config/certificates/verifier-registration-certificate/registration_certificate.jwt)" > config/certificates/verifier-registration-certificate/registration_certificate.env
+    just pki-verifier-env
+
+# Rebuild the Compose environment file after generating verifier registration JWTs
+[group('pki')]
+pki-verifier-env:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    registration_dir=config/certificates/verifier-registration-certificate
+    pid_jwt=$(cat "$registration_dir/registration_certificate.jwt")
+    learning_jwt=$(cat "$registration_dir/learning/registration_certificate.jwt")
+    test -n "$pid_jwt"
+    test -n "$learning_jwt"
+    printf 'VERIFIER_INTENDEDUSES_0_REGISTRATIONCERTIFICATE=%s\nVERIFIER_INTENDEDUSES_1_REGISTRATIONCERTIFICATE=%s\n' \
+        "$pid_jwt" "$learning_jwt" > "$registration_dir/registration_certificate.env"
 
 # Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
 [group('setup')]

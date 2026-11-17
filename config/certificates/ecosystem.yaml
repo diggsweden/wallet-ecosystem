@@ -95,6 +95,30 @@ verifier:
             - address.postal_code
             - address.locality
             - address.country
+    - jwtFile: certificates/verifier-registration-certificate/learning/registration_certificate.jwt
+      name: DIGG Verifier - Learning Credential
+      serviceIdentifier: wallet-ecosystem
+      intendedUseId: "2"
+      defaultUri: https://localhost/local-registration-certificate/learning
+      validityDays: 365
+      description:
+        - lang: en
+          value: Learning Credential verification
+        - lang: sv
+          value: Verifiering av utbildningsintyg
+      purpose:
+        - lang: en
+          value: Verify the holder's learning achievement
+        - lang: sv
+          value: Verifiera innehavarens utbildningsmeriter
+      requestedCredentials:
+        - vct: urn:eu.europa.ec.eudi:learning:credential:1
+          claims:
+            - family_name
+            - given_name
+            - achievement_title
+            - assessment_grade
+            - learning_outcomes
 
 trustSource:
   signer:

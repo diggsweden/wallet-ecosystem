@@ -99,6 +99,15 @@ public final class OpenId4VpAuthorizationRequestValidator {
     // ARF RPRC_21: every attribute requested in the presentation must be
     // registered.
     for (var requestedCredential : authorizationClaims.dcqlQuery().credentials()) {
+      if (!"dc+sd-jwt".equals(requestedCredential.format())) {
+        throw new IllegalArgumentException(
+            "Unsupported credential format '%s'; only dc+sd-jwt is supported"
+                .formatted(requestedCredential.format()));
+      }
+      var metadata = requestedCredential.meta();
+      assertTrue(metadata != null && metadata.vctValues() != null
+          && !metadata.vctValues().isEmpty(),
+          "SD-JWT VC queries require non-empty meta.vct_values");
       if (requestedCredential.claims() == null) {
         continue;
       }
@@ -130,14 +139,8 @@ public final class OpenId4VpAuthorizationRequestValidator {
       return false;
     }
     var registeredMetadata = registeredCredential.meta();
-    if (requestedCredential.vct() != null) {
-      return registeredMetadata != null
-          && registeredMetadata.vctValues() != null
-          && registeredMetadata.vctValues().stream()
-              .anyMatch(requestedCredential.vct()::equals);
-    }
-
-    return true;
+    return registeredMetadata != null && registeredMetadata.vctValues() != null
+        && registeredMetadata.vctValues().containsAll(requestedCredential.meta().vctValues());
   }
 
   private String accessCertificateOrganizationIdentifier(X509Certificate accessCertificate) {
@@ -210,7 +213,7 @@ public final class OpenId4VpAuthorizationRequestValidator {
     private record DcqlQuery(List<CredentialQuery> credentials) {
       private record CredentialQuery(
           String format,
-          String vct,
+          Metadata meta,
           List<Claim> claims) {
       }
     }
@@ -221,9 +224,10 @@ public final class OpenId4VpAuthorizationRequestValidator {
         String format,
         Metadata meta,
         List<Claim> claim) {
-      private record Metadata(List<String> vctValues) {
-      }
     }
+  }
+
+  private record Metadata(List<String> vctValues) {
   }
 
   private record Claim(List<String> path) {

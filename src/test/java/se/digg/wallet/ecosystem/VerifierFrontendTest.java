@@ -39,7 +39,8 @@ class VerifierFrontendTest {
   @ParameterizedTest
   @FieldSource("SITE_NAMES")
   void createsVerificationRequest(String siteName) {
-    VerifierPresentationResponse response = verifierFrontend.createPresentationRequest(siteName);
+    VerifierPresentationResponse response =
+        verifierFrontend.createPresentationRequest(IntendedUse.PID, siteName);
     assertNotNull(response);
     assertThat(response.transaction_id(), notNullValue());
     assertThat(response.request_uri(), notNullValue());
@@ -50,7 +51,7 @@ class VerifierFrontendTest {
   @FieldSource("SITE_NAMES")
   void returnsVerificationStatusForValidTransaction(String siteName) {
     VerifierPresentationResponse presentationResponse =
-        verifierFrontend.createPresentationRequest(siteName);
+        verifierFrontend.createPresentationRequest(IntendedUse.PID, siteName);
     String transactionId = presentationResponse.transaction_id();
 
     Response response = verifierFrontend.getPresentationStatus(siteName, transactionId);
