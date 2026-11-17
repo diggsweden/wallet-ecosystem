@@ -4,8 +4,9 @@
 
 package se.digg.wallet.ecosystem;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasEntry;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.Curve;
@@ -38,13 +39,17 @@ public class LearningCredentialTest {
         IssuanceAgent.builder().build().issueLearningCredential(bindingKey, username, "password");
 
     SdJwtVc credential = SdJwtVc.parse(rawCredential);
-    assertThat(credential.issuerJwt().getJWTClaimsSet().getStringClaim("vct"), is(VCT));
     // achievement_title is a plain claim in the issuer JWT, not selectively disclosable.
     assertThat(
-        credential.issuerJwt().getJWTClaimsSet().getStringClaim("achievement_title"),
-        is("Foundations of Applied AI in Business"));
-    assertThat(credential.disclosedClaims().get("given_name"), is(expectedGivenName));
-    assertThat(credential.disclosedClaims().get("family_name"), is(expectedFamilyName));
-    assertThat(credential.disclosedClaims().containsKey("assessment_grade"), is(true));
+        credential.issuerJwt().getJWTClaimsSet().getClaims(),
+        allOf(
+            hasEntry("vct", VCT),
+            hasEntry("achievement_title", "Foundations of Applied AI in Business")));
+    assertThat(
+        credential.disclosedClaims(),
+        allOf(
+            hasEntry("given_name", expectedGivenName),
+            hasEntry("family_name", expectedFamilyName),
+            hasEntry("assessment_grade", "Excellent")));
   }
 }
