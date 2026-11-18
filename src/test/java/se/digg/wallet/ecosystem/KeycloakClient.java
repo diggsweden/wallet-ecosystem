@@ -21,7 +21,6 @@ import io.restassured.response.Response;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -102,18 +101,16 @@ public class KeycloakClient {
 
   public String getDpopAccessTokenWithClientAttestation(
       String realm,
-      String clientId,
       ECKey key,
       String walletInstanceAttestation,
       Map<String, String> parameters)
       throws JOSEException {
     return getDpopAccessTokenWithClientAttestation(
-        realm, clientId, key, key, walletInstanceAttestation, parameters);
+        realm, key, key, walletInstanceAttestation, parameters);
   }
 
   public String getDpopAccessTokenWithClientAttestation(
       String realm,
-      String clientId,
       ECKey dpopKey,
       ECKey walletKey,
       String walletInstanceAttestation,
@@ -121,10 +118,11 @@ public class KeycloakClient {
       throws JOSEException {
 
     String challenge = getChallenge(realm);
-    String pop = createClientAttestationPop(realm, clientId, walletKey, challenge);
+    String pop = createClientAttestationPop(
+        realm, parameters.get("client_id"), walletKey, challenge);
 
     return tryGetDpopAccessTokenWithClientAttestation(
-        realm, clientId, dpopKey, walletInstanceAttestation, pop, parameters)
+        realm, dpopKey, walletInstanceAttestation, pop, parameters)
         .then()
         .assertThat()
         .statusCode(200)
@@ -137,7 +135,6 @@ public class KeycloakClient {
 
   public Response tryGetDpopAccessTokenWithClientAttestation(
       String realm,
-      String clientId,
       ECKey dpopKey,
       String walletInstanceAttestation,
       String clientAttestationPop,
@@ -151,9 +148,6 @@ public class KeycloakClient {
       throw new RuntimeException(e);
     }
 
-    Map<String, String> allParams = new HashMap<>(parameters);
-    allParams.put("client_id", clientId);
-
     var request = given()
         .contentType(ContentType.URLENC)
         .header("DPoP", dpopProof);
@@ -166,7 +160,7 @@ public class KeycloakClient {
     }
 
     return request
-        .formParams(allParams)
+        .formParams(parameters)
         .when()
         .post(tokenEndpoint);
   }

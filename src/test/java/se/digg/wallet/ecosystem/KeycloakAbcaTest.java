@@ -45,6 +45,7 @@ class KeycloakAbcaTest {
   private final KeycloakClient keycloak = new KeycloakClient();
 
   private static final Map<String, String> TOKEN_PARAMETERS = Map.of(
+      "client_id", "eudiw",
       "grant_type", "password",
       "username", "tneal",
       "password", "password",
@@ -94,7 +95,7 @@ class KeycloakAbcaTest {
         keycloak.createClientAttestationPop("pid-issuer-realm", "eudiw", WALLET_KEY, challenge);
 
     Response response = keycloak.tryGetDpopAccessTokenWithClientAttestation(
-        "pid-issuer-realm", "eudiw", WALLET_KEY, wia.serialize(), pop, TOKEN_PARAMETERS);
+        "pid-issuer-realm", WALLET_KEY, wia.serialize(), pop, TOKEN_PARAMETERS);
 
     responseValidation.accept(response);
   }
