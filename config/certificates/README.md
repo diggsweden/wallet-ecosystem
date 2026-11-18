@@ -62,3 +62,34 @@ just pull
 just up
 just test
 ```
+
+## Testcentralen: expired registration certificate
+
+The verifier has a second intended use, `expired-registration`, for the
+demo-verifier's Testcentralen page. Its registration JWT expired on `2000-01-01`,
+but has a valid signature and the same signing certificate, trusted chain,
+organisation and registered attributes as the normal registration JWT. The access
+certificate and authorization request signing remain valid, so the wallet can
+reach its registration-expiry check.
+
+`just pki-generate` also regenerates this fixture using the current registration
+keystore. This step requires Node.js (managed by mise) and OpenSSL 3. To regenerate
+only the expired JWT after replacing the normal registration JWT or keystore:
+
+```shell
+just pki-generate-expired-registration
+```
+
+Commit both `expired_registration_certificate.jwt` and
+`expired_registration_certificate.env` with their license sidecars. As with the
+normal fixtures, regenerate using the development passwords from `.env.example`
+when preparing files for Git. Recreate `refimpl-verifier-backend` after updating
+its environment files; restarting alone does not reload them.
+
+After releasing the web change, update the `demo-verifier` image tag and digest in
+`docker-compose.yaml` to a release containing `/testcentralen`.
+Open that page, then scan its QR code with an enrolled wallet containing a PID,
+or open the wallet on the same device. The wallet must block sharing and show an
+understandable error. Assess the message in the wallet; the website does not
+automatically determine whether the test passed. The other centrals use intended
+use `1` and retain their normal registration certificate.

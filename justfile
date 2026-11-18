@@ -342,6 +342,12 @@ pki-generate:
     just pki verifier access generate --config config/certificates/utvecklarportalen.yaml
     just pki verifier registration generate --config config/certificates/utvecklarportalen.yaml
     just pki ecosystem generate --config config/certificates/ecosystem.yaml
+    just pki-generate-expired-registration
+
+# Derive Testcentralen's expired JWT using the current registration signing key
+[group('pki')]
+pki-generate-expired-registration:
+    node --env-file="{{pki_env_file}}" scripts/generate-expired-registration-certificate.mjs
 
 # Generate all certificates (TLS via mkcert and ecosystem PKI via wallet-pki-tool)
 [group('setup')]
