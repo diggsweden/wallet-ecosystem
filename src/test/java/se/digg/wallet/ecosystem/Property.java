@@ -19,6 +19,7 @@ public enum Property {
       "https://localhost/untrusted-wallet-attestation-issuer"),
   VERIFIER_BACKEND_BASE_URI("https://localhost/refimpl-verifier-backend"),
   VERIFIER_FRONTEND_BASE_URI("https://localhost/demo-verifier"),
+  PTS_VERIFIER_BACKEND_BASE_URI("https://localhost/pts-verifier-backend"),
   TRUST_VALIDATOR_BASE_URI("https://localhost/trust-validator"),
   TRUST_SOURCE_BASE_URI("https://localhost/trust-source"),
   UTVECKLARPORTALEN_ACCESS_KEYSTORE_URI(

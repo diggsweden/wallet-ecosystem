@@ -27,7 +27,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class EndToEndTest {
 
-  private final VerifierBackendClient verifierBackend = new VerifierBackendClient();
   private final TrustSourceClient trustSource = new TrustSourceClient();
   private final OpenId4VpAuthorizationRequestValidator authorizationRequestValidator =
       new OpenId4VpAuthorizationRequestValidator();
@@ -38,15 +37,23 @@ public class EndToEndTest {
         Arguments.argumentSet(
             "Public route - direct_post",
             IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
-            ResponseMode.DIRECT_POST),
+            ResponseMode.DIRECT_POST,
+            new VerifierBackendClient()),
         Arguments.argumentSet(
             "Internal route - direct_post",
             IssuanceAgent.builder().wallet(new InternalWalletClient()).build(),
-            ResponseMode.DIRECT_POST),
+            ResponseMode.DIRECT_POST,
+            new VerifierBackendClient()),
         Arguments.argumentSet(
             "Public route - direct_post.jwt",
             IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
-            ResponseMode.DIRECT_POST_JWT),
+            ResponseMode.DIRECT_POST_JWT,
+            new VerifierBackendClient()),
+        Arguments.argumentSet(
+            "PTS",
+            IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
+            ResponseMode.DIRECT_POST,
+            new VerifierBackendClient(ServiceIdentifier.PTS_VERIFIER_BACKEND.toUri())),
         Arguments.argumentSet(
             "Legacy client - wallet-dev - direct_post",
             IssuanceAgent.builder()
@@ -54,12 +61,14 @@ public class EndToEndTest {
                 .clientId(IssuanceAgent.LEGACY_CLIENT_ID)
                 .with(AccessTokenStrategy.DPOP)
                 .build(),
-            ResponseMode.DIRECT_POST));
+            ResponseMode.DIRECT_POST,
+            new VerifierBackendClient()));
   }
 
   @ParameterizedTest
   @MethodSource("testCases")
-  void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, ResponseMode responseMode)
+  void supportsIssuanceAndPresentationOfPid(
+      IssuanceAgent issuer, ResponseMode responseMode, VerifierBackendClient verifierBackend)
       throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
