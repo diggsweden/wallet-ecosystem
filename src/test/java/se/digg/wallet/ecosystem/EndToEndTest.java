@@ -61,11 +61,6 @@ public class EndToEndTest {
   @MethodSource("testCases")
   void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, ResponseMode responseMode)
       throws Exception {
-    runIssuanceAndPresentationFlow(issuer, responseMode);
-  }
-
-  private void runIssuanceAndPresentationFlow(IssuanceAgent issuer, ResponseMode responseMode)
-      throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
