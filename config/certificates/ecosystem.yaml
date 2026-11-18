@@ -2,8 +2,7 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-schemaVersion: 1
-stateDirectory: ./config/certificates
+schemaVersion: 2
 # All artifact paths below are relative to outputDirectory.
 outputDirectory: ./config
 
@@ -13,6 +12,7 @@ organization:
   identifier: VATSE-12345678
 
 authorities:
+  directory: ./config/certificates
   pidIssuer:
     commonName: DIGG Wallet PID Issuer CA
   walletAttestationIssuer:
@@ -33,8 +33,6 @@ pidIssuer:
   keystoreFile: certificates/issuer/pid_issuer.p12
   signing:
     commonName: PID Issuer (Ecosystem)
-  encryption:
-    subjectAlternativeNames: {}
   keystorePassword:
     env: PID_ISSUER_KEYSTORE_PASSWORD
   registration:
@@ -68,11 +66,10 @@ verifier:
       env: VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD
     registration:
       jwtFile: certificates/verifier-registration-certificate/registration_certificate.jwt
-      environmentFile: certificates/verifier-registration-certificate/registration_certificate.env
       name: DIGG Verifier
       serviceIdentifier: wallet-ecosystem
       intendedUseId: "1"
-      publicBaseUrl: https://localhost/local-registration-certificate
+      defaultUri: https://localhost/local-registration-certificate
       validityDays: 365
       description:
         - lang: en
@@ -101,15 +98,13 @@ verifier:
 trustSource:
   signer:
     keystoreFile: certificates/trust-list-signer/trust_source.p12
-    certificateFile: certificates/trust-list-signer/trust_source_cert.pem
     commonName: Trust Source (Ecosystem)
     keystorePassword:
       env: TRUST_SOURCE_KEYSTORE_PASSWORD
 
   lote:
-    outputFile: trust-source/signed/trusted-entities.json
+    jwtFile: trust-source/signed/trusted-entities.json
     name: Local LoTE
-    sequenceNumber: 3
     validityDays: 365
     trustedAuthorities:
       pidIssuer:
@@ -131,7 +126,7 @@ trustSource:
           serviceName: Utvecklarportalen WRPAC Issuance
           informationUrl: http://localhost
           streetAddress: Local
-          certificateFile: ./config/certificates/utvecklarportalen/ca/verifier-access-certificate/ca.pem
+          caCertificateFile: ./config/certificates/utvecklarportalen/ca/verifier-access-certificate/ca.pem
       verifierRegistration:
         - entityName: Local WRPRC Provider
           serviceName: Local WRPRC Issuance
@@ -141,4 +136,4 @@ trustSource:
           serviceName: Utvecklarportalen WRPRC Issuance
           informationUrl: http://localhost
           streetAddress: Local
-          certificateFile: ./config/certificates/utvecklarportalen/ca/verifier-registration-certificate/ca.pem
+          caCertificateFile: ./config/certificates/utvecklarportalen/ca/verifier-registration-certificate/ca.pem
