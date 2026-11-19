@@ -24,6 +24,11 @@ public final class VerifiablePresentationToken {
 
   public static String asString(String sdJwtVc, ECKey bindingKey, String nonce)
       throws NoSuchAlgorithmException, JOSEException {
+    return asString(sdJwtVc, bindingKey, nonce, VerifierBackendClient.VERIFIER_AUDIENCE);
+  }
+
+  public static String asString(String sdJwtVc, ECKey bindingKey, String nonce, String audience)
+      throws NoSuchAlgorithmException, JOSEException {
 
     SignedJWT kbJwt =
         new SignedJWT(
@@ -32,7 +37,7 @@ public final class VerifiablePresentationToken {
                 .type(new JOSEObjectType("kb+jwt"))
                 .build(),
             new JWTClaimsSet.Builder()
-                .audience(VerifierBackendClient.VERIFIER_AUDIENCE)
+                .audience(audience)
                 .issueTime(Date.from(Instant.now()))
                 .claim("nonce", nonce)
                 .claim("sd_hash", Base64.getUrlEncoder().withoutPadding().encodeToString(

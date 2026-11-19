@@ -27,6 +27,32 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class EndToEndTest {
 
+  private enum TrustListPolicy {
+    STRICT {
+      @Override
+      public void applyTo(
+          TrustSourceClient trustSource,
+          X509Certificate accessCertificate,
+          SignedJWT registrationCertificate) throws Exception {
+
+        new ListOfTrustedEntities(trustSource.fetchLote())
+            .validateWalletRelyingPartyTrust(accessCertificate, registrationCertificate);
+      }
+    },
+    NONE {
+      @Override
+      public void applyTo(
+          TrustSourceClient trustSource,
+          X509Certificate accessCertificate,
+          SignedJWT registrationCertificate) {}
+    };
+
+    public abstract void applyTo(
+        TrustSourceClient trustSource,
+        X509Certificate accessCertificate,
+        SignedJWT registrationCertificate) throws Exception;
+  }
+
   private final TrustSourceClient trustSource = new TrustSourceClient();
   private final OpenId4VpAuthorizationRequestValidator authorizationRequestValidator =
       new OpenId4VpAuthorizationRequestValidator();
@@ -38,22 +64,30 @@ public class EndToEndTest {
             "Public route - direct_post",
             IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
             ResponseMode.DIRECT_POST,
-            new VerifierBackendClient()),
+            new VerifierBackendClient(),
+            Property.VERIFIER_AUDIENCE.getValue(),
+            TrustListPolicy.STRICT),
         Arguments.argumentSet(
             "Internal route - direct_post",
             IssuanceAgent.builder().wallet(new InternalWalletClient()).build(),
             ResponseMode.DIRECT_POST,
-            new VerifierBackendClient()),
+            new VerifierBackendClient(),
+            Property.VERIFIER_AUDIENCE.getValue(),
+            TrustListPolicy.STRICT),
         Arguments.argumentSet(
             "Public route - direct_post.jwt",
             IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
             ResponseMode.DIRECT_POST_JWT,
-            new VerifierBackendClient()),
+            new VerifierBackendClient(),
+            Property.VERIFIER_AUDIENCE.getValue(),
+            TrustListPolicy.STRICT),
         Arguments.argumentSet(
             "PTS",
             IssuanceAgent.builder().wallet(new PublicWalletClient()).build(),
             ResponseMode.DIRECT_POST,
-            new VerifierBackendClient(ServiceIdentifier.PTS_VERIFIER_BACKEND.toUri())),
+            new VerifierBackendClient(ServiceIdentifier.PTS_VERIFIER_BACKEND.toUri()),
+            Property.PTS_VERIFIER_AUDIENCE.getValue(),
+            TrustListPolicy.NONE),
         Arguments.argumentSet(
             "Legacy client - wallet-dev - direct_post",
             IssuanceAgent.builder()
@@ -62,13 +96,16 @@ public class EndToEndTest {
                 .with(AccessTokenStrategy.DPOP)
                 .build(),
             ResponseMode.DIRECT_POST,
-            new VerifierBackendClient()));
+            new VerifierBackendClient(),
+            Property.VERIFIER_AUDIENCE.getValue(),
+            TrustListPolicy.STRICT));
   }
 
   @ParameterizedTest
   @MethodSource("testCases")
   void supportsIssuanceAndPresentationOfPid(
-      IssuanceAgent issuer, ResponseMode responseMode, VerifierBackendClient verifierBackend)
+      IssuanceAgent issuer, ResponseMode responseMode, VerifierBackendClient verifierBackend,
+      String audience, TrustListPolicy trustListPolicy)
       throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
@@ -88,9 +125,7 @@ public class EndToEndTest {
         authorizationRequestValidator.getAccessCertificate(signedAuthRequest);
     SignedJWT registrationCertificate = authorizationRequestValidator
         .getRegistrationCertificate(signedAuthRequest);
-    SignedJWT lote = trustSource.fetchLote();
-    new ListOfTrustedEntities(lote)
-        .validateWalletRelyingPartyTrust(accessCertificate, registrationCertificate);
+    trustListPolicy.applyTo(trustSource, accessCertificate, registrationCertificate);
 
     // 3. Get credential
     String uniqueKid = UUID.randomUUID().toString();
@@ -105,7 +140,7 @@ public class EndToEndTest {
 
     // 4. Create vp_token
     String vpToken =
-        VerifiablePresentationToken.asString(rawCredential, bindingKey, nonce);
+        VerifiablePresentationToken.asString(rawCredential, bindingKey, nonce, audience);
 
     // 5. Post wallet response
     Response postWalletResponse =

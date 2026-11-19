@@ -35,6 +35,7 @@ public enum Property {
   WALLET_CLIENT_GATEWAY_API_KEY("apikey"),
   WALLET_CLIENT_GATEWAY_LOCAL_FEATURE_FLAGS_TESTING_ENABLED("true"),
   VERIFIER_AUDIENCE("x509_san_dns:localhost"),
+  PTS_VERIFIER_AUDIENCE("x509_san_dns:local.digg.se"),
   VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD("verifier_registration_password"),
   VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD("verifier_password");
 
