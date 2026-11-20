@@ -14,9 +14,8 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
-import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -61,32 +60,25 @@ public class EndToEndTest {
   @MethodSource("testCases")
   void supportsIssuanceAndPresentationOfPid(IssuanceAgent issuer, ResponseMode responseMode)
       throws Exception {
-    runIssuanceAndPresentationFlow(issuer, responseMode);
+    runPidIssuanceAndPresentationFlow(issuer, responseMode);
   }
 
-  private void runIssuanceAndPresentationFlow(IssuanceAgent issuer, ResponseMode responseMode)
+  private void runPidIssuanceAndPresentationFlow(IssuanceAgent issuer, ResponseMode responseMode)
       throws Exception {
     // 1. Initialize transaction
     String nonce = UUID.randomUUID().toString();
     String dcqlId = UUID.randomUUID().toString();
 
     VerifierPresentationResponse transaction =
-        verifierBackend.createPresentationRequestByReference(nonce, dcqlId, responseMode);
+        verifierBackend.createPresentationRequestByReference(
+            IntendedUse.PID, nonce, dcqlId, responseMode);
 
     // 2. Get authorization request
     Response authRequestResponse = given().baseUri(transaction.request_uri())
         .when().get()
         .then().extract().response();
     SignedJWT signedAuthRequest = SignedJWT.parse(authRequestResponse.body().asString());
-    String responseUri = signedAuthRequest.getJWTClaimsSet().getStringClaim("response_uri");
-    authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(signedAuthRequest);
-    X509Certificate accessCertificate =
-        authorizationRequestValidator.getAccessCertificate(signedAuthRequest);
-    SignedJWT registrationCertificate = authorizationRequestValidator
-        .getRegistrationCertificate(signedAuthRequest);
-    SignedJWT lote = trustSource.fetchLote();
-    new ListOfTrustedEntities(lote)
-        .validateWalletRelyingPartyTrust(accessCertificate, registrationCertificate);
+    validateAuthorizationRequest(signedAuthRequest);
 
     // 3. Get credential
     String uniqueKid = UUID.randomUUID().toString();
@@ -105,12 +97,8 @@ public class EndToEndTest {
 
     // 5. Post wallet response
     Response postWalletResponse =
-        given()
-            .baseUri(responseUri).contentType(ContentType.URLENC)
-            .formParams(responseMode.getFormParams(
-                signedAuthRequest, Map.of(dcqlId, List.of(vpToken))))
-            .when().post()
-            .then().extract().response();
+        verifierBackend.submitPresentation(
+            signedAuthRequest, responseMode, Map.of(dcqlId, List.of(vpToken)));
 
     assertThat(postWalletResponse.getStatusCode(), is(200));
 
@@ -158,5 +146,54 @@ public class EndToEndTest {
             rs.getString("key_storage_status_list_uri"));
       }
     }
+  }
+
+  @ParameterizedTest
+  @MethodSource("testCases")
+  void supportsIssuanceAndPresentationOfLearningCredential(
+      IssuanceAgent issuer, ResponseMode responseMode) throws Exception {
+    runLearningCredentialIssuanceAndPresentationFlow(issuer, responseMode);
+  }
+
+  private void runLearningCredentialIssuanceAndPresentationFlow(
+      IssuanceAgent issuer, ResponseMode responseMode) throws Exception {
+    String vct = "urn:eu.europa.ec.eudi:learning:credential:1";
+    var transaction = verifierBackend.createPresentationRequestByValue(
+        IntendedUse.LEARNING_CREDENTIAL, vct, "achievement_title", responseMode);
+    var authorizationRequest = SignedJWT.parse(transaction.request());
+    var requestClaims = authorizationRequest.getJWTClaimsSet();
+    var dcqlId = JsonPath.from(authorizationRequest.getPayload().toString())
+        .getString("dcql_query.credentials[0].id");
+    validateAuthorizationRequest(authorizationRequest);
+
+    var bindingKey = new ECKeyGenerator(Curve.P_256)
+        .keyID(UUID.randomUUID().toString())
+        .algorithm(JWSAlgorithm.ES256)
+        .keyUse(KeyUse.SIGNATURE)
+        .generate();
+    var rawCredential = issuer.issueLearningCredential(bindingKey, "fstrom", "password");
+    var vpToken = VerifiablePresentationToken.asString(
+        rawCredential, bindingKey, requestClaims.getStringClaim("nonce"));
+
+    verifierBackend.submitPresentation(
+        authorizationRequest, responseMode, Map.of(dcqlId, List.of(vpToken)))
+        .then().statusCode(200);
+
+    var response = verifierBackend.getPresentationsStatus(transaction.transaction_id());
+    assertThat(response.getStatusCode(), is(200));
+    Map<String, List<String>> vpTokenMap = response.jsonPath().getMap("vp_token");
+    var credential = SdJwtVc.parse(vpTokenMap.get(dcqlId).getFirst());
+    assertThat(credential.getIssuer(), is(SdJwtVc.parse(rawCredential).getIssuer()));
+    var credentialClaims = credential.issuerJwt().getJWTClaimsSet();
+    assertThat(credentialClaims.getStringClaim("vct"), is(vct));
+    assertThat(credentialClaims.getStringClaim("achievement_title"),
+        is("Foundations of Applied AI in Business"));
+  }
+
+  private void validateAuthorizationRequest(SignedJWT request) throws Exception {
+    authorizationRequestValidator.validateRelyingPartyAuthorizationRequest(request);
+    new ListOfTrustedEntities(trustSource.fetchLote()).validateWalletRelyingPartyTrust(
+        authorizationRequestValidator.getAccessCertificate(request),
+        authorizationRequestValidator.getRegistrationCertificate(request));
   }
 }

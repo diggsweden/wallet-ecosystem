@@ -12,9 +12,6 @@ import java.net.URI;
 
 public class VerifierFrontendClient {
 
-  public static final String DEFAULT_INTENDED_USE_ID =
-      VerifierBackendClient.DEFAULT_INTENDED_USE_ID;
-
   private final URI base;
 
   public VerifierFrontendClient() {
@@ -29,7 +26,8 @@ public class VerifierFrontendClient {
     return given().when().get(base.toString());
   }
 
-  public VerifierPresentationResponse createPresentationRequest(String siteName) {
+  public VerifierPresentationResponse createPresentationRequest(IntendedUse intendedUse,
+      String siteName) {
     return given()
         .baseUri(base.toString())
         .contentType(ContentType.JSON)
@@ -38,12 +36,10 @@ public class VerifierFrontendClient {
               "dcql_query": {
                 "credentials": [{
                   "format": "dc+sd-jwt",
-                  "vct": "urn:eudi:pid:1",
                   "id": "query_0",
-                  "meta": {"doctype_value": "eu.europa.ec.eudi.pid.1"},
+                  "meta": {"vct_values": ["urn:eudi:pid:1"]},
                   "claims": [{
                       "path": [
-                        "eu.europa.ec.eudi.pid.1",
                         "family_name"
                       ]
                   }]
@@ -57,7 +53,7 @@ public class VerifierFrontendClient {
               "jar_mode": "by_value",
               "intended_use_id": "%s"
             }
-            """.formatted(DEFAULT_INTENDED_USE_ID))
+            """.formatted(intendedUse.id()))
         .when()
         .post("api/{sitename}-request", siteName)
         .then()
