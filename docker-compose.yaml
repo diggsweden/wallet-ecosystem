@@ -104,7 +104,7 @@ services:
       - wallet-ecosystem-network
 
   trust-source:
-    image: nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005
+    image: nginx:1.31.8-alpine-slim@sha256:4c734d33ee731135dc9f2349914a34551c920f4451fca8bb05bf5880eb9079e8
     container_name: trust-source
     hostname: trust-source
     volumes:
