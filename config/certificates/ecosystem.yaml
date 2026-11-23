@@ -132,7 +132,7 @@ trustSource:
           serviceName: PTS WRPAC Issuance
           informationUrl: http://localhost
           streetAddress: Local
-          caCertificateFile: ./config/certificates/pts/relying-party-registration-root-ca.pem
+          caCertificateFile: ./config/certificates/pts/access-certificate-issuer-ca.pem
       verifierRegistration:
         - entityName: Local WRPRC Provider
           serviceName: Local WRPRC Issuance

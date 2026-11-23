@@ -39,12 +39,15 @@ public class EndToEndTest {
             .validateWalletRelyingPartyTrust(accessCertificate, registrationCertificate);
       }
     },
-    NONE {
+    ACCESS_CERTIFICATE_ONLY {
       @Override
       public void applyTo(
           TrustSourceClient trustSource,
           X509Certificate accessCertificate,
-          SignedJWT registrationCertificate) {}
+          SignedJWT registrationCertificate) throws Exception {
+        new ListOfTrustedEntities(trustSource.fetchLote())
+            .validateAccessCertificate(accessCertificate);
+      }
     };
 
     public abstract void applyTo(
@@ -87,7 +90,7 @@ public class EndToEndTest {
             ResponseMode.DIRECT_POST,
             new VerifierBackendClient(ServiceIdentifier.PTS_VERIFIER_BACKEND.toUri()),
             Property.PTS_VERIFIER_AUDIENCE.getValue(),
-            TrustListPolicy.NONE),
+            TrustListPolicy.ACCESS_CERTIFICATE_ONLY),
         Arguments.argumentSet(
             "Legacy client - wallet-dev - direct_post",
             IssuanceAgent.builder()
