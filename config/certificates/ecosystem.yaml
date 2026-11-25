@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-schemaVersion: 2
+schemaVersion: 3
 # All artifact paths below are relative to outputDirectory.
 outputDirectory: ./config
 
@@ -58,14 +58,17 @@ verifier:
       uri: ['https://localhost/demo-verifier']
     keystorePassword:
       env: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD
-
-  registration:
+  registrationSigner:
     keystoreFile: certificates/verifier-registration-certificate/verifier-registration-certificate.p12
     commonName: DIGG Verifier
     keystorePassword:
       env: VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD
-    registration:
-      jwtFile: certificates/verifier-registration-certificate/registration_certificate.jwt
+  supervisoryAuthority:
+    name: Local Wallet Ecosystem
+    country: SE
+    email: walletecosystem@example.com
+  registrations:
+    - jwtFile: certificates/verifier-registration-certificate/registration_certificate.jwt
       name: DIGG Verifier
       serviceIdentifier: wallet-ecosystem
       intendedUseId: "1"
@@ -81,19 +84,17 @@ verifier:
           value: Identification with credentials
         - lang: sv
           value: Identifiering med intyg
-      requestedPidClaims:
-        - personal_administrative_number
-        - family_name
-        - given_name
-        - birthdate
-        - address.street_address
-        - address.postal_code
-        - address.locality
-        - address.country
-      supervisoryAuthority:
-        name: Local Wallet Ecosystem
-        country: SE
-        email: walletecosystem@example.com
+      requestedCredentials:
+        - vct: urn:eudi:pid:1
+          claims:
+            - personal_administrative_number
+            - family_name
+            - given_name
+            - birthdate
+            - address.street_address
+            - address.postal_code
+            - address.locality
+            - address.country
 
 trustSource:
   signer:
