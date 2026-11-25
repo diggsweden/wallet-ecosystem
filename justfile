@@ -14,7 +14,7 @@ colors := devtools_dir + "/utils/colors.sh"
 
 maven_opts := "--batch-mode --no-transfer-progress --errors -Dstyle.color=always"
 
-pki_image := "ghcr.io/diggsweden/wallet-pki-tool:v0.1.4"
+pki_image := "ghcr.io/diggsweden/wallet-pki-tool:v0.1.5"
 pki_env_file := ".env"
 
 # Color variables

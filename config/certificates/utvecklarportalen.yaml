@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-schemaVersion: 2
+schemaVersion: 3
 outputDirectory: ./config
 
 organization:
@@ -31,14 +31,17 @@ verifier:
       uri: ['https://localhost/demo-verifier']
     keystorePassword:
       env: VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD
-
-  registration:
+  registrationSigner:
     keystoreFile: certificates/utvecklarportalen/registration-signer.p12
     commonName: Verifier Registration (Utvecklarportalen)
     keystorePassword:
       env: VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD
-    registration:
-      jwtFile: trust-source/utvecklarportalen/verifier/registration_certificate.jwt
+  supervisoryAuthority:
+    name: Local Test Authority
+    country: SE
+    email: utvecklarportalen@example.com
+  registrations:
+    - jwtFile: trust-source/utvecklarportalen/verifier/registration_certificate.jwt
       name: Verifier Backend (Utvecklarportalen)
       serviceIdentifier: utvecklarportalen-localhost
       intendedUseId: "1"
@@ -50,16 +53,14 @@ verifier:
       purpose:
         - lang: sv
           value: Identifiering med intyg
-      requestedPidClaims:
-        - personal_administrative_number
-        - family_name
-        - given_name
-        - birthdate
-        - address.street_address
-        - address.postal_code
-        - address.locality
-        - address.country
-      supervisoryAuthority:
-        name: Local Test Authority
-        country: SE
-        email: utvecklarportalen@example.com
+      requestedCredentials:
+        - vct: urn:eudi:pid:1
+          claims:
+            - personal_administrative_number
+            - family_name
+            - given_name
+            - birthdate
+            - address.street_address
+            - address.postal_code
+            - address.locality
+            - address.country
