@@ -31,6 +31,29 @@ x-kafka-common: &kafka-common
     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
 services:
+  pts-verifier:
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.20@sha256:502ca97fb8f17a518770f51eee1940a13dd1fb761f5cf2ef59294aa11b2e92e7
+    container_name: pts-verifier
+    hostname: pts-verifier
+    environment:
+      HOST_API: "http://pts-verifier-backend:8080/pts-verifier-backend"
+      PORT: "3002"
+      NITRO_PORT: "3002"
+      NUXT_PUBLIC_BASE_URL: "${BASE_URL}/pts-verifier"
+      NUXT_APP_BASE_URL: "/pts-verifier"
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+    depends_on:
+      - pts-verifier-backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pts-verifier.rule=PathPrefix(`/pts-verifier`)"
+      - "traefik.http.routers.pts-verifier.entrypoints=websecure"
+      - "traefik.http.routers.pts-verifier.tls=true"
+      - "traefik.http.services.pts-verifier.loadbalancer.server.port=3002"
+    restart: on-failure
+    networks:
+      - wallet-ecosystem-network
+
   pts-verifier-backend:
     image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.12.0@sha256:b56390f2078f9ce705f2b20db86fdd52297c0a587dd4110c82f173c223a3a07f
     container_name: pts-verifier-backend
