@@ -147,4 +147,4 @@ trustSource:
           serviceName: PTS WRPRC Issuance
           informationUrl: http://localhost
           streetAddress: Local
-          caCertificateFile: ./config/certificates/pts/relying-party-registration-root-ca.pem
+          caCertificateFile: ./config/certificates/pts/wallet-relying-party-registration-certificate-issuer.pem

@@ -90,7 +90,7 @@ public class EndToEndTest {
             ResponseMode.DIRECT_POST,
             new VerifierBackendClient(ServiceIdentifier.PTS_VERIFIER_BACKEND.toUri()),
             Property.PTS_VERIFIER_AUDIENCE.getValue(),
-            TrustListPolicy.ACCESS_CERTIFICATE_ONLY),
+            TrustListPolicy.STRICT),
         Arguments.argumentSet(
             "Legacy client - wallet-dev - direct_post",
             IssuanceAgent.builder()

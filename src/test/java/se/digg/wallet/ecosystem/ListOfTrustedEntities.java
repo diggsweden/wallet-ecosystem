@@ -110,8 +110,6 @@ public class ListOfTrustedEntities {
         .flatMap(service -> service.serviceInformation().serviceDigitalIdentity()
             .x509Certificates().stream())
         .map(certificate -> certificateFromBase64(certificate.val()))
-        // Trust the issuing CA, not the leaf certificate
-        .filter(certificate -> certificate.getBasicConstraints() >= 0)
         .collect(Collectors.toSet());
 
     assertThat(trustedCertificates, not(empty()));
