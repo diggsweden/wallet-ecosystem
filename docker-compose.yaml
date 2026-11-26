@@ -65,8 +65,8 @@ services:
     environment:
       SPRING_WEBFLUX_BASEPATH: "/pts-verifier-backend"
       VERIFIER_PUBLICURL: "${BASE_URL}/pts-verifier-backend"
-      VERIFIER_ORIGINALCLIENTID: "local.digg.se"
-      VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
+      VERIFIER_ORIGINALCLIENTID: "mw2Gt_oJpbJADdMHZUkBoRp7B-g3_RiQanGqj3xhVXA"
+      VERIFIER_CLIENTIDPREFIX: "x509_hash"
       SPRING_PROFILES_ACTIVE: "self-signed"
       VERIFIER_ACCESS_CERTIFICATE_SIGNING_ALGORITHM: "ES256"
       VERIFIER_ACCESS_CERTIFICATE_KEYSTORE: "file:///opt/common/verifier-access-certificate.p12"
