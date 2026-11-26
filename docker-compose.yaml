@@ -31,6 +31,70 @@ x-kafka-common: &kafka-common
     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
 services:
+  pts-verifier:
+    image: ghcr.io/diggsweden/wallet-verifier-test-web:0.1.20@sha256:502ca97fb8f17a518770f51eee1940a13dd1fb761f5cf2ef59294aa11b2e92e7
+    container_name: pts-verifier
+    hostname: pts-verifier
+    environment:
+      HOST_API: "http://pts-verifier-backend:8080/pts-verifier-backend"
+      PORT: "3002"
+      NITRO_PORT: "3002"
+      NUXT_PUBLIC_BASE_URL: "${BASE_URL}/pts-verifier"
+      NUXT_APP_BASE_URL: "/pts-verifier"
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+    depends_on:
+      - pts-verifier-backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pts-verifier.rule=PathPrefix(`/pts-verifier`)"
+      - "traefik.http.routers.pts-verifier.entrypoints=websecure"
+      - "traefik.http.routers.pts-verifier.tls=true"
+      - "traefik.http.services.pts-verifier.loadbalancer.server.port=3002"
+    restart: on-failure
+    networks:
+      - wallet-ecosystem-network
+
+  pts-verifier-backend:
+    image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.12.0@sha256:b56390f2078f9ce705f2b20db86fdd52297c0a587dd4110c82f173c223a3a07f
+    container_name: pts-verifier-backend
+    hostname: pts-verifier-backend
+    env_file:
+      - config/certificates/pts/verifier-registration-certificate.env
+    volumes:
+      - ./config/certificates/pts/verifier-access-certificate.p12:/opt/common/verifier-access-certificate.p12:ro
+    environment:
+      SPRING_WEBFLUX_BASEPATH: "/pts-verifier-backend"
+      VERIFIER_PUBLICURL: "${BASE_URL}/pts-verifier-backend"
+      VERIFIER_ORIGINALCLIENTID: "local.digg.se"
+      VERIFIER_CLIENTIDPREFIX: "x509_san_dns"
+      SPRING_PROFILES_ACTIVE: "self-signed"
+      VERIFIER_ACCESS_CERTIFICATE_SIGNING_ALGORITHM: "ES256"
+      VERIFIER_ACCESS_CERTIFICATE_KEYSTORE: "file:///opt/common/verifier-access-certificate.p12"
+      VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_TYPE: "PKCS12"
+      VERIFIER_ACCESS_CERTIFICATE_KEYSTORE_PASSWORD: "secret"
+      VERIFIER_ACCESS_CERTIFICATE_ALIAS: "pts"
+      VERIFIER_ACCESS_CERTIFICATE_PASSWORD: "secret"
+      VERIFIER_DEFAULTHTTPRESPONSEMODE: "DirectPost"
+      VERIFIER_ATTESTATIONCLASSIFICATIONS_PID_VCTS: "urn:eudi:pid:1"
+      VERIFIER_TRUST_VALIDATOR_SERVICE_URL: "http://trust-validator:8080/trust-validator/trust"
+      VERIFIER_INTENDEDUSES_0_ID: "1"
+      VERIFIER_INTENDEDUSES_0_DESCRIPTION: "Local registration certificate"
+      # VERIFIER_INTENDEDUSES_0_REGISTRATIONCERTIFICATE is loaded from env_file
+      LOGGING_LEVEL_EU_EUROPA_EC_EUDI_VERIFIER_ENDPOINT: "DEBUG"
+      JAVA_OPTS: "-XX:MaxDirectMemorySize=128M"
+    depends_on:
+      trust-validator:
+        condition: service_started
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pts-verifier-backend.rule=PathPrefix(`/pts-verifier-backend`)"
+      - "traefik.http.routers.pts-verifier-backend.entrypoints=websecure"
+      - "traefik.http.routers.pts-verifier-backend.tls=true"
+      - "traefik.http.routers.pts-verifier-backend.service=pts-verifier-backend"
+      - "traefik.http.services.pts-verifier-backend.loadbalancer.server.port=8080"
+    networks:
+      - wallet-ecosystem-network
+
   refimpl-verifier-backend:
     image: ghcr.io/eu-digital-identity-wallet/eudi-srv-verifier-endpoint:v0.12.0@sha256:b56390f2078f9ce705f2b20db86fdd52297c0a587dd4110c82f173c223a3a07f
     container_name: refimpl-verifier-backend

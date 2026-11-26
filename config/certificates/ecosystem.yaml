@@ -128,6 +128,11 @@ trustSource:
           informationUrl: http://localhost
           streetAddress: Local
           caCertificateFile: ./config/certificates/utvecklarportalen/ca/verifier-access-certificate/ca.pem
+        - entityName: PTS WRPAC Provider
+          serviceName: PTS WRPAC Issuance
+          informationUrl: http://localhost
+          streetAddress: Local
+          caCertificateFile: ./config/certificates/pts/access-certificate-issuer-ca.pem
       verifierRegistration:
         - entityName: Local WRPRC Provider
           serviceName: Local WRPRC Issuance
@@ -138,3 +143,8 @@ trustSource:
           informationUrl: http://localhost
           streetAddress: Local
           caCertificateFile: ./config/certificates/utvecklarportalen/ca/verifier-registration-certificate/ca.pem
+        - entityName: PTS WRPRC Provider
+          serviceName: PTS WRPRC Issuance
+          informationUrl: http://localhost
+          streetAddress: Local
+          caCertificateFile: ./config/certificates/pts/wallet-relying-party-registration-certificate-issuer.pem
