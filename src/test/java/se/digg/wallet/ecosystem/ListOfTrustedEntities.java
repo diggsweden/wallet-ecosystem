@@ -6,6 +6,7 @@ package se.digg.wallet.ecosystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,6 +41,8 @@ public class ListOfTrustedEntities {
       "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance";
   private static final String WRPAC_ISSUANCE_SERVICE =
       "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance";
+  private static final String PID_ISSUANCE_SERVICE =
+      "http://uri.etsi.org/19602/SvcType/PID/Issuance";
 
   private final SignedJWT lote;
 
@@ -55,6 +58,19 @@ public class ListOfTrustedEntities {
       SignedJWT registrationCertificate) throws Exception {
     validateAccessCertificate(accessCertificate);
     validateRegistrationCertificate(registrationCertificate);
+  }
+
+  public void validatePidIssuerTrust(
+      X509Certificate signingCertificate,
+      SignedJWT registrationCertificate) throws Exception {
+    var trustedCertificates = trustedCertificatesForService(PID_ISSUANCE_SERVICE);
+    validateCertificateChainAgainstTrust(List.of(signingCertificate), trustedCertificates);
+
+    var registrationSigner = certificateFromBase64(
+        registrationCertificate.getHeader().getX509CertChain().getFirst());
+    assertThat("The issuer registration certificate must use the signing certificate",
+        registrationSigner, equalTo(signingCertificate));
+    validateRegistrationCertificateSignature(registrationCertificate, signingCertificate);
   }
 
   /**

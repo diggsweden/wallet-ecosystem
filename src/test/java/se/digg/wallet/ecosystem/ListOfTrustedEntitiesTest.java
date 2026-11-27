@@ -36,6 +36,8 @@ class ListOfTrustedEntitiesTest {
   private static X509Certificate configuredAccessCertificate;
   private static SignedJWT configuredRegistrationCertificate;
   private static X509Certificate configuredTrustSourceCa;
+  private static X509Certificate configuredIssuerSigningCertificate;
+  private static SignedJWT configuredIssuerRegistrationCertificate;
 
   @BeforeAll
   static void beforeAll() throws Exception {
@@ -43,6 +45,10 @@ class ListOfTrustedEntitiesTest {
     configuredRegistrationCertificate = CertificateTestSupport.loadRegistrationCertificateJwt();
     configuredLote = SignedJWT.parse(Files.readString(LOTE_PATH));
     configuredTrustSourceCa = readCertificate(TRUST_SOURCE_CA_PATH);
+    configuredIssuerSigningCertificate =
+        CertificateTestSupport.loadUtvecklarportalenIssuerSigningCertificate();
+    configuredIssuerRegistrationCertificate =
+        CertificateTestSupport.loadUtvecklarportalenIssuerRegistrationCertificate();
   }
 
   private final ListOfTrustedEntities subject = new ListOfTrustedEntities(configuredLote);
@@ -55,12 +61,14 @@ class ListOfTrustedEntitiesTest {
 
   @ParameterizedTest
   @CsvSource({
+      "http://uri.etsi.org/19602/SvcType/PID/Issuance, config/certificates/ca/pid-issuer/ca.pem",
+      "http://uri.etsi.org/19602/SvcType/PID/Issuance, config/certificates/utvecklarportalen/ca/pid-issuer/ca.pem",
       "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance, config/certificates/ca/verifier-access-certificate/ca.pem",
       "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance, config/certificates/utvecklarportalen/ca/verifier-access-certificate/ca.pem",
       "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance, config/certificates/ca/verifier-registration-certificate/ca.pem",
       "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance, config/certificates/utvecklarportalen/ca/verifier-registration-certificate/ca.pem"
   })
-  void containsEcosystemAndUtvecklarportalenRpCas(
+  void containsEcosystemAndUtvecklarportalenCas(
       String serviceType, String pathOfExpectedCertificate) throws Exception {
     var trustedCertificates = subject.trustedCertificatesForService(serviceType);
 
@@ -126,6 +134,47 @@ class ListOfTrustedEntitiesTest {
     var exception = assertThrows(AssertionError.class,
         () -> loteWithInvalidSignature.validateSignature(configuredTrustSourceCa));
     assertThat(exception.getMessage(), containsString("LoTE was not signed by expected key"));
+  }
+
+  @Test
+  void acceptsUtvecklarportalenIssuerCertificates() throws Exception {
+    subject.validatePidIssuerTrust(
+        configuredIssuerSigningCertificate, configuredIssuerRegistrationCertificate);
+  }
+
+  @Test
+  void rejectsIssuerSigningCertificateFromAnotherCa() throws Exception {
+    var exception = assertThrows(CertPathValidatorException.class,
+        () -> subject.validatePidIssuerTrust(
+            configuredAccessCertificate, configuredIssuerRegistrationCertificate));
+
+    assertThat(exception.getReason(), is(PKIXReason.NO_TRUST_ANCHOR));
+  }
+
+  @Test
+  void rejectsIssuerRegistrationCertificateWithInvalidSignature() throws Exception {
+    var registrationCertificateSignedByAnotherKey =
+        signWithAnotherKey(configuredIssuerRegistrationCertificate);
+
+    var exception = assertThrows(AssertionError.class,
+        () -> subject.validatePidIssuerTrust(
+            configuredIssuerSigningCertificate, registrationCertificateSignedByAnotherKey));
+
+    assertThat(exception.getMessage(),
+        containsString("The registration certificate was not signed by expected key"));
+  }
+
+  @Test
+  void rejectsIssuerRegistrationCertificateFromAnotherSigner() throws Exception {
+    var otherIssuerRegistrationCertificate = SignedJWT.parse(
+        Files.readString(Path.of("config/pid-issuer/issuer_wrprc.jwt")));
+
+    var exception = assertThrows(AssertionError.class,
+        () -> subject.validatePidIssuerTrust(
+            configuredIssuerSigningCertificate, otherIssuerRegistrationCertificate));
+
+    assertThat(exception.getMessage(),
+        containsString("The issuer registration certificate must use the signing certificate"));
   }
 
   private static X509Certificate readCertificate(Path path) throws Exception {

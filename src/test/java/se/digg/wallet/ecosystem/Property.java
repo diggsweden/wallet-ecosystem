@@ -26,6 +26,11 @@ public enum Property {
   UTVECKLARPORTALEN_ACCESS_KEYSTORE_PASSWORD("verifier_password"),
   UTVECKLARPORTALEN_REGISTRATION_CERTIFICATE_URI(
       "utvecklarportalen/verifier/registration_certificate.jwt"),
+  UTVECKLARPORTALEN_ISSUER_KEYSTORE_URI(
+      "utvecklarportalen/issuer/issuer-signing-certificate.p12"),
+  UTVECKLARPORTALEN_ISSUER_KEYSTORE_PASSWORD("abcd1234"),
+  UTVECKLARPORTALEN_ISSUER_REGISTRATION_CERTIFICATE_URI(
+      "utvecklarportalen/issuer/registration_certificate.jwt"),
   WALLET_CLIENT_GATEWAY_BASE_URI("https://localhost/wallet-client-gateway"),
   WALLET_ACCOUNT_DB_BASE_URI("jdbc:postgresql://localhost:5432/wallet-account"),
   PID_ISSUER_DB_BASE_URI("jdbc:postgresql://localhost:5433/pid-issuer"),
