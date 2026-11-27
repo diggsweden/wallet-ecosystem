@@ -134,7 +134,7 @@ services:
       - wallet-ecosystem-network
 
   wallet-attestation-issuer:
-    image: ghcr.io/diggsweden/wallet-attestation-issuer:v0.3.1@sha256:dfb7b78ec39a6d6e943f2e0249b34e6b50dadd964715fe4990b9b9dcbe81a65b
+    image: ghcr.io/diggsweden/wallet-attestation-issuer:v0.3.2@sha256:930be9a80012ccfe8e108dc727af7c276e034c1819464c508cdc9bef4d40af38
     container_name: wallet-attestation-issuer
     hostname: wallet-attestation-issuer
     volumes:
@@ -424,7 +424,7 @@ services:
       - wallet-ecosystem-network
 
   keycloak:
-    image: ghcr.io/diggsweden/wallet-keycloak:v0.1.7@sha256:32c1dd15e261f59881460433f6e9907fb47f1e53b52043d29c84c6585bbd3f05
+    image: ghcr.io/diggsweden/wallet-keycloak:v0.1.8@sha256:3cde16d495f4312d158b0b3950c8bc397e6480c2242c289ec42c8dd7bd6d52f6
     container_name: keycloak
     environment:
       - KC_PROXY_HEADERS=xforwarded
