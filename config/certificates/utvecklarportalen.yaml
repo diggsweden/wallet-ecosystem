@@ -12,6 +12,8 @@ organization:
 
 authorities:
   directory: ./config/certificates/utvecklarportalen
+  pidIssuer:
+    commonName: Issuer CA (Utvecklarportalen)
   verifierAccess:
     commonName: Verifier Access CA (Utvecklarportalen)
   verifierRegistration:
@@ -21,6 +23,18 @@ caDistribution:
   baseUrl: https://localhost/trust-source/utvecklarportalen
   directory: trust-source/utvecklarportalen
   rootCrlFile: trust-source/utvecklarportalen/revocation-list.pem
+
+pidIssuer:
+  keystoreFile: trust-source/utvecklarportalen/issuer/issuer-signing-certificate.p12
+  signing:
+    commonName: Test Issuer (Utvecklarportalen)
+    keyAlias: pid_issuer
+  keystorePassword:
+    env: UTVECKLARPORTALEN_ISSUER_KEYSTORE_PASSWORD
+  registration:
+    jwtFile: trust-source/utvecklarportalen/issuer/registration_certificate.jwt
+    issuer: https://localhost
+    subject: https://localhost
 
 verifier:
   access:

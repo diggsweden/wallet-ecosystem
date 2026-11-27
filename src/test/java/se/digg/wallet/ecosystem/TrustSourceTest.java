@@ -51,7 +51,7 @@ class TrustSourceTest {
   }
 
   @Test
-  void servesLoteTrustingUtvecklarportalenCertificates() throws Exception {
+  void servesLoteTrustingUtvecklarportalenVerifierCertificates() throws Exception {
     var keyStore = KeyStore.getInstance("PKCS12");
     try (var input = trustSource.tryGet(Property.UTVECKLARPORTALEN_ACCESS_KEYSTORE_URI.getValue())
         .then().assertThat().statusCode(200)
@@ -68,6 +68,25 @@ class TrustSourceTest {
     var lote = new ListOfTrustedEntities(trustSource.fetchLote());
 
     lote.validateWalletRelyingPartyTrust(accessCertificate, registrationCertificate);
+  }
+
+  @Test
+  void servesLoteTrustingUtvecklarportalenIssuerCertificates() throws Exception {
+    var keyStore = KeyStore.getInstance("PKCS12");
+    try (var input = trustSource.tryGet(Property.UTVECKLARPORTALEN_ISSUER_KEYSTORE_URI.getValue())
+        .then().assertThat().statusCode(200)
+        .extract().asInputStream()) {
+      keyStore.load(input,
+          Property.UTVECKLARPORTALEN_ISSUER_KEYSTORE_PASSWORD.getValue().toCharArray());
+    }
+    var signingCertificate = (X509Certificate) keyStore.getCertificate("pid_issuer");
+    var registrationCertificate = SignedJWT.parse(trustSource
+        .tryGet(Property.UTVECKLARPORTALEN_ISSUER_REGISTRATION_CERTIFICATE_URI.getValue())
+        .then().assertThat().statusCode(200)
+        .extract().asString().trim());
+    var lote = new ListOfTrustedEntities(trustSource.fetchLote());
+
+    lote.validatePidIssuerTrust(signingCertificate, registrationCertificate);
   }
 
   @Test

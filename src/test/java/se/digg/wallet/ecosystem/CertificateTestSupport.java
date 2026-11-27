@@ -34,6 +34,11 @@ final class CertificateTestSupport {
           + "verifier-registration-certificate.p12");
   private static final String REGISTRATION_ALIAS = "registration";
 
+  private static final Path UTVECKLARPORTALEN_ISSUER_KEYSTORE = Path.of(
+      "config/trust-source/utvecklarportalen/issuer/issuer-signing-certificate.p12");
+  private static final Path UTVECKLARPORTALEN_ISSUER_REGISTRATION_CERTIFICATE = Path.of(
+      "config/trust-source/utvecklarportalen/issuer/registration_certificate.jwt");
+
   private CertificateTestSupport() {}
 
   static JWSSigner loadAccessCertificateSigner() throws Exception {
@@ -76,6 +81,16 @@ final class CertificateTestSupport {
         REGISTRATION_ALIAS,
         VERIFIER_REGISTRATION_CERTIFICATE_KEYSTORE_PASSWORD);
     certificate.sign(new ECDSASigner(privateKey));
+  }
+
+  static X509Certificate loadUtvecklarportalenIssuerSigningCertificate() throws Exception {
+    var password = Property.UTVECKLARPORTALEN_ISSUER_KEYSTORE_PASSWORD.getValue().toCharArray();
+    var keyStore = loadKeyStore(UTVECKLARPORTALEN_ISSUER_KEYSTORE, password);
+    return (X509Certificate) keyStore.getCertificate("pid_issuer");
+  }
+
+  static SignedJWT loadUtvecklarportalenIssuerRegistrationCertificate() throws Exception {
+    return SignedJWT.parse(Files.readString(UTVECKLARPORTALEN_ISSUER_REGISTRATION_CERTIFICATE));
   }
 
   private static KeyStore loadRegistrationKeyStore() throws Exception {

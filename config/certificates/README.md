@@ -19,7 +19,7 @@ It passes `.env` through `--env-file` and uses
 [ecosystem.yaml](ecosystem.yaml). Ordinary `just up` does not regenerate keys.
 `just certs` generates TLS and service PKI.
 
-Utvecklarportalen localhost certificates are generated first using
+Utvecklarportalen issuer and verifier credentials are generated first using
 [utvecklarportalen.yaml](utvecklarportalen.yaml), before the ecosystem LoTE.
 
 The PKI image and `.env` path are fixed in the [justfile](../../justfile).
