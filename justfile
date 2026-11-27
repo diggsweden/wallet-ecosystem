@@ -341,6 +341,7 @@ pki *args:
 pki-generate:
     just pki verifier access generate --config config/certificates/utvecklarportalen.yaml
     just pki verifier registration generate --config config/certificates/utvecklarportalen.yaml
+    just pki pid-issuer generate --config config/certificates/utvecklarportalen.yaml
     just pki ecosystem generate --config config/certificates/ecosystem.yaml
     just pki-verifier-env
 

@@ -137,6 +137,12 @@ trustSource:
           serviceName: Local PID Issuance
           informationUrl: http://localhost
           streetAddress: Local
+        # Uses PID profile for all utvecklarportalen issuers for now
+        - entityName: Utvecklarportalen Test Issuer
+          serviceName: Utvecklarportalen Test Issuer Certificate Issuance
+          informationUrl: http://localhost
+          streetAddress: Local
+          caCertificateFile: ./config/certificates/utvecklarportalen/ca/pid-issuer/ca.pem
       walletAttestationIssuer:
         - entityName: Local Wallet Attestation Issuer
           serviceName: Local Wallet Attestation Issuance
